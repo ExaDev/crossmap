@@ -12,4 +12,9 @@ export default defineConfig(
   },
   { ...js.configs.recommended, files: ['**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'] },
   ...exadev,
+  {
+    // The one reasoned exception to the Object.assign ban, made as a files-scoped override rather than an inline disable (this config runs with noInlineConfig): src/define.ts is the house schema-attached guard helper, which augments a Zod schema object in place because object spread would drop the prototype's parse/refine methods. The file is isolated so this override reaches exactly that one assign and nothing else.
+    files: ['src/define.ts'],
+    rules: { 'exadev/no-object-assign': 'off' },
+  },
 );
