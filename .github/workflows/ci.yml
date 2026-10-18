@@ -83,9 +83,9 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-      # Build before test: the JSON Schema suite reads schemas/twindex.schema.json, which the build generates.
+      # Build before both typecheck and test: the schema generation script's program (tsconfig.node.json) imports the built dist, and the JSON Schema suite reads schemas/twindex.schema.json, which the build generates.
       - run: pnpm build
+      - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm exec publint
       - run: pnpm exec attw --pack --profile esm-only
@@ -192,15 +192,17 @@ jobs:
           cat > check.mjs <<'EOF'
           import assert from 'node:assert/strict';
           import { readFile } from 'node:fs/promises';
+          import { join } from 'node:path';
           import { assertRoundTrip, decode, encode, parseCrosswalk } from 'twindex';
 
           const crosswalk = parseCrosswalk(JSON.parse(await readFile('crosswalk.json', 'utf8')));
           const native = JSON.parse(await readFile('sample.json', 'utf8'));
           const shared = encode(crosswalk, native);
           assert.deepEqual(shared, JSON.parse(await readFile('shared.json', 'utf8')));
-          assert.deepEqual(decode(crosswalk, shared), native);
+          // decode answers the native shape over the mapped paths; the encode-side drop's path is gone by design, so the expected document omits it too.
+          assert.deepEqual(decode(crosswalk, shared), JSON.parse(await readFile('decoded.json', 'utf8')));
           assertRoundTrip(crosswalk, [native]);
-          const schema = JSON.parse(await readFile(new URL('twindex/schemas/twindex.schema.json', import.meta.url), 'utf8'));
+          const schema = JSON.parse(await readFile(join(import.meta.dirname, 'node_modules/twindex/schemas/twindex.schema.json'), 'utf8'));
           assert.match(schema.$defs.When.$ref, /trilean@\d+\.\d+\.\d+\/schemas\/trilean\.schema\.json#\/\$defs\/PredicateNode/);
           EOF
           cat > crosswalk.json <<'EOF'
@@ -238,6 +240,15 @@ jobs:
             "routeLegs": ["Bangor", "Holyhead", "Dublin"],
             "items": [{ "sku": "P-1" }],
             "origin": "meridian-freight"
+          }
+          EOF
+          cat > decoded.json <<'EOF'
+          {
+            "consignmentId": "MF-2041",
+            "weightGrams": 1250000,
+            "state": "inbound",
+            "route": "Bangor>Holyhead>Dublin",
+            "parcels": [{ "code": "P-1" }]
           }
           EOF
           node check.mjs
