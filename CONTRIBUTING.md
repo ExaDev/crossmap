@@ -21,4 +21,6 @@
 
 ## Releases
 
-There is no release workflow yet, and `package.json` stays at `0.0.0`. Do not hand-bump the version or add a publish step: releasing waits on confirming the npm name and registering trusted publishing for the repository.
+A push to `main` runs semantic-release in CI (the `release` job in `ci.yml`, whose filename is the one the npm trusted publisher is registered against). It reads the conventional commits since the last tag, bumps the version, publishes to npm through OIDC trusted publishing with provenance, tags the release, writes `CHANGELOG.md` and commits it back to `main`. `release.config.ts` holds the commit types and the release level each triggers, and commitlint imports the same list.
+
+Never hand-bump the `package.json` version or edit `CHANGELOG.md`: both are overwritten by the next release. The job needs a GitHub-hosted runner, and the release commit is pushed with the workflow's own token, which works only while `main` has no ruleset. Adding one needs a bypass identity for that push first.
