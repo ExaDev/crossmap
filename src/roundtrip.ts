@@ -2,6 +2,7 @@ import { type Crosswalk } from "./crosswalk";
 import { CrosswalkStructureError, RoundTripMismatchError } from "./errors";
 import { type Locus, type PathStep, parsePathMemo } from "./paths";
 import { decode, encode } from "./executor";
+import { setOwn } from "./own";
 import { validateCrosswalk } from "./validate";
 
 /**
@@ -66,13 +67,13 @@ function pruneLocus(value: unknown, locus: readonly PathStep[]): unknown {
   const rebuilt: Record<string, unknown> = {};
   for (const [key, child] of Object.entries(value)) {
     if (key !== first.key) {
-      rebuilt[key] = child;
+      setOwn(rebuilt, key, child);
       continue;
     }
     if (rest.length === 0) {
       continue;
     }
-    rebuilt[key] = pruneLocus(child, rest);
+    setOwn(rebuilt, key, pruneLocus(child, rest));
   }
 
   return rebuilt;
