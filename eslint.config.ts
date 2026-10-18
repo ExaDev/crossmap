@@ -7,7 +7,7 @@ export default defineConfig(
   { ignores: ['dist', 'coverage', 'node_modules', 'reports', 'schemas'] },
   {
     languageOptions: {
-      parserOptions: { project: './tsconfig.json', tsconfigRootDir: import.meta.dirname },
+      parserOptions: { project: ['./tsconfig.json', './tsconfig.node.json'], tsconfigRootDir: import.meta.dirname },
     },
   },
   { ...js.configs.recommended, files: ['**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'] },
