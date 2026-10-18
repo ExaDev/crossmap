@@ -1,6 +1,6 @@
 # twindex
 
-[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/ExaDev/twindex) [![CI](https://img.shields.io/github/actions/workflow/status/ExaDev/twindex/ci.yml?branch=main)](https://github.com/ExaDev/twindex/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/ExaDev/twindex) [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/twindex) [![Release](https://img.shields.io/github/v/release/ExaDev/twindex)](https://github.com/ExaDev/twindex/releases/latest) [![CI](https://img.shields.io/github/actions/workflow/status/ExaDev/twindex/ci.yml?branch=main)](https://github.com/ExaDev/twindex/actions)
 
 A bidirectional crosswalk codec. One crosswalk document describes how to map between a dataset's native JSON shape and a shared target shape, and that one document derives both directions: every two-way operation knows its own inverse, so `decode` undoes `encode` over the paths the crosswalk maps. What cannot be undone is declared as one-way rules rather than hidden. Rules are gated with [trilean](https://github.com/ExaDev/trilean) predicate trees, and the whole format is defined by one Zod schema with a generated JSON Schema shipped in the package.
 
