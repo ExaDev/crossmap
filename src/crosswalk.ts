@@ -116,8 +116,10 @@ export type DefaultRule = z.infer<typeof DefaultRuleSchema>;
 export const OneWayRuleSchema = z.discriminatedUnion("op", [DropRuleSchema, DefaultRuleSchema]);
 export type OneWayRule = z.infer<typeof OneWayRuleSchema>;
 
-/** A crosswalk document: the rule list that derives both encode and decode. Schema-attached guard per the house pattern (CrosswalkSchema.is(x) narrows without a separate hand-written guard). */
-export const CrosswalkSchema = define(
+/**
+ * The crosswalk document's schema: the rule list that derives both encode and decode. Schema-attached guard per the house pattern (`CrosswalkSchema.is(x)` narrows without a separate hand-written guard). The explicit annotation names the validation surface for declaration emit (the bare schema's inferred type is deeper than the compiler will serialise into a .d.ts); runtime validation is the full strict object below.
+ */
+export const CrosswalkSchema: z.ZodType<Crosswalk> & { is: (value: unknown) => value is Crosswalk } = define(
   z
     .object({
       source: z.string(),
