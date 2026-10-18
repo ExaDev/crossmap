@@ -8,7 +8,7 @@
 
 ## Before opening a PR
 
-`pnpm run prepublishOnly` runs the gate CI enforces: lint, typecheck over both tsconfig programs, tests, build, `publint` and `attw --pack --profile esm-only`. CI also packs the tarball and installs it into a clean project on each supported Node line, which is the check that the exports map works for a consumer. Tests are colocated as `*.unit.test.ts`.
+`pnpm run prepublishOnly` runs the gate CI enforces: lint, build, typecheck over both tsconfig programs, tests, `publint` and `attw --pack --profile esm-only`. The build comes before typecheck and tests because the schema generation script imports the built `dist` and the schema tests read the generated schema. CI also packs the tarball and installs it into a clean project on each supported Node line, which is the check that the exports map works for a consumer. Tests are colocated as `*.unit.test.ts`.
 
 ## Constraints a change must preserve
 
