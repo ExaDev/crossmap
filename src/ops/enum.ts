@@ -1,11 +1,12 @@
 import type { EnumRule } from "../crosswalk";
+import { getOwn } from "../own";
 
 function throughMap(map: Readonly<Record<string, string>>, value: unknown, mapName: string): string {
   if (typeof value !== "string") {
     throw new Error(`enum applies to strings, found: ${JSON.stringify(value)}`);
   }
-  const mapped = map[value];
-  if (mapped === undefined) {
+  const mapped = getOwn(map, value);
+  if (typeof mapped !== "string") {
     throw new Error(`value ${JSON.stringify(value)} has no entry in ${mapName}`);
   }
 

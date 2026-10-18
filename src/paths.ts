@@ -1,4 +1,5 @@
 import { CrosswalkSyntaxError } from "./errors";
+import { getOwn, setOwn } from "./own";
 
 /**
  * One step of a parsed path: a record key, or a wildcard addressing every element of the array the preceding steps reach.
@@ -11,9 +12,14 @@ export type PathStep = { readonly kind: "key"; readonly key: string } | { readon
 export type Locus = readonly PathStep[];
 
 /**
- * The path grammar, as one anchored regex the crosswalk schema also uses for its `from`/`to` fields (schema-level checks are syntax only; the structural checks live in validateCrosswalk): `segment ('.' segment | '[]')*` where a segment is `[A-Za-z0-9_-]+`.
+ * A path segment: `[A-Za-z0-9_-]+` except exactly `__proto__`. Every output passes through trilean's JSON value schema, which drops an own `__proto__` key without a word, so a rule mapping that key would lose its value silently; refusing the segment in the grammar makes it fail loudly where the crosswalk is parsed.
  */
-export const PATH_REGEX = /^(?:[A-Za-z0-9_-]+)(?:\.(?:[A-Za-z0-9_-]+)|\[\])*$/;
+const SEGMENT = "(?!__proto__(?![A-Za-z0-9_-]))[A-Za-z0-9_-]+";
+
+/**
+ * The path grammar, as one anchored regex the crosswalk schema also uses for its `from`/`to` fields (schema-level checks are syntax only; the structural checks live in validateCrosswalk): `segment ('.' segment | '[]')*` where a segment is `[A-Za-z0-9_-]+` other than `__proto__`.
+ */
+export const PATH_REGEX = new RegExp(`^(?:${SEGMENT})(?:\\.(?:${SEGMENT})|\\[\\])*$`);
 
 /**
  * Parses a path string into its locus.
@@ -69,7 +75,7 @@ export function readLocus(root: unknown, locus: Locus): readonly PathMatch[] | u
     const next: PathMatch[] = [];
     for (const site of frontier) {
       if (step.kind === "key") {
-        if (!isRecord(site.value) || !(step.key in site.value)) {
+        if (!isRecord(site.value) || !Object.hasOwn(site.value, step.key)) {
           return undefined;
         }
         const container: Record<string, unknown> = site.value;
@@ -115,7 +121,7 @@ export function writeMatches(
       if (Array.isArray(node)) {
         node[arrayIndex(key)] = child;
       } else {
-        node[key] = child;
+        setOwn(node, key, child);
       }
       node = child;
     }
@@ -123,7 +129,7 @@ export function writeMatches(
     if (Array.isArray(node)) {
       node[arrayIndex(key)] = match.value;
     } else {
-      node[key] = match.value;
+      setOwn(node, key, match.value);
     }
   }
 }
@@ -137,7 +143,7 @@ function childContainer(
   nextKey: string,
   soFar: string,
 ): Record<string, unknown> | unknown[] {
-  const existing: unknown = isReadonlyArray(node) ? node[arrayIndex(key)] : node[key];
+  const existing: unknown = isReadonlyArray(node) ? node[arrayIndex(key)] : getOwn(node, key);
   if (isContainer(existing)) {
     return existing;
   }
