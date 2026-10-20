@@ -180,7 +180,13 @@ A crosswalk is `{ source, target, rules, oneWay }`: two labels naming the shapes
 
 ### Paths
 
-A path is `segment ('.' segment | '[]')*` with segments matching `[A-Za-z0-9_-]+` other than the exact name `__proto__`, which is refused because the output's JSON check drops that key without a word. `[]` addresses every element of the array reached so far, so `parcels[].code` is the `code` of each parcel. Wildcards are index-aligned: `parcels[3].code` maps to `items[3].sku`. A rule's `to` has the same wildcard pattern as its `from`, and one target array is fed by exactly one source array, because anything else is not index-invertible. Every `from` path and every `to` path is unique across the crosswalk, so one value has one destination and rule order carries no meaning.
+A path starts with a key and continues with any sequence of `.key`, a quoted key `["..."]`, a fixed index `[n]` or a wildcard `[]`. A bare key matches `[A-Za-z0-9_-]+`; any other key, such as one holding a dot, a bracket, a colon or a space, is written quoted, with `\"` and `\\` as its only escapes, so `["dc:title"]` and `meta["a.b"]` address those keys. No key may be exactly `__proto__`, bare or quoted, because the output's JSON check drops that key without a word. A bare key made of digits is a record key: `a.0` is the key `"0"` of the record `a`, and `a[0]` is the first element of the array `a`.
+
+`[]` addresses every element of the array reached so far, so `parcels[].code` is the `code` of each parcel, and `grid[][]` is every cell of an array of arrays. Wildcards are index-aligned: the n-th wildcard of `from` pairs with the n-th wildcard of `to`, so `parcels[3].code` maps to `items[3].sku`. A rule's `to` has as many wildcards as its `from`; the keys and indices around them may differ, which is how a single `move` nests a field (`street` to `address.street`) or flattens one (`meta.owner.name` to `ownerName`). Every array a target wildcard iterates, at every depth, is fed by exactly one source array, because two arrays merged into one are not index-invertible. An empty source array, at any depth, encodes to an empty target array.
+
+`[n]` addresses one element, for tuple-like arrays such as `point[0]` and `point[1]`. An index past the end of the array is an absent path, so reading it is a `RuleApplicationError` like any absent `from`; gate an optional position with a `when`. One array is addressed either by fixed indices or by a wildcard, never both on the same side. Writing a later index while nothing writes an earlier one leaves a gap, which is a `RuleApplicationError` naming the missing element.
+
+Every `from` path and every `to` path is unique across the crosswalk, compared in canonical spelling (`["a"].b` is `a.b`), so one value has one destination and rule order carries no meaning. Two rules whose destinations overlap, one inside the other, are an error whichever runs first.
 
 ### Two-way rules
 
@@ -231,15 +237,12 @@ The crosswalk format is published as a JSON Schema 2020-12 document, generated f
 
 Each of these is a deliberate omission, listed so it is not mistaken for an oversight:
 
-- `nest` and `unnest`: compose them from `move` rules.
+- `nest` and `unnest`: a `move` whose `to` is deeper nests, one whose `to` is shallower flattens, and a `move` of a whole record carries every field in it, so a dedicated operation would add nothing the format cannot already say.
 - Templates or concatenation of several fields into one.
 - Lookup against external tables.
 - Aggregates and folds over arrays.
 - Array filter and sort.
 - Per-element `when` gating inside a wildcard.
-- Paths through arrays of arrays.
-- Key escaping, for keys containing `.` or `[]`.
-- Numeric indices in paths.
 - Regex split.
 - One rule writing several targets.
 - Further `format` kinds.
