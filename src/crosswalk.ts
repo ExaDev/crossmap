@@ -6,7 +6,7 @@ import { PATH_REGEX } from "./paths";
 
 /** A path string as the crosswalk format accepts it: syntax only (the structural checks over sets of paths live in validateCrosswalk, which sees the whole rule list). */
 const PathField = z.string().regex(PATH_REGEX, {
-  message: "not a well-formed path (segment ('.' segment | '[]')*, segments [A-Za-z0-9_-]+ other than __proto__)",
+  message: `not a well-formed path (a key, then any of '.key', '["quoted key"]', '[n]' or '[]'; bare keys are [A-Za-z0-9_-]+, and no key may be __proto__)`,
 });
 
 /** A trilean predicate tree, the shape of every rule's optional `when`: evaluated against the governing document (source for encode, target for decode; wildcards forbidden, checked structurally in validateCrosswalk). Exported so consumers building crosswalks in TypeScript have the type without importing trilean separately. */

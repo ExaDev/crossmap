@@ -1,11 +1,11 @@
 import type { Crosswalk, OneWayRule, TwoWayRule } from "./crosswalk";
 import type { CrosswalkIssue } from "./errors";
-import { type Locus, PATH_REGEX, parsePathMemo } from "./paths";
+import { canonicalPath, formatPath, type Locus, PATH_REGEX, parsePathMemo, wildcardCount } from "./paths";
 
 /**
  * Validates a syntactically parsed crosswalk against the structural rules that make its rule list executable and decode a true inverse of encode. Schema parsing (parseCrosswalk) checks each rule in isolation; these checks are properties of the rule list as a whole, which is why they are reported as a list rather than thrown mid-parse. Each check below returns its issues and the results are concatenated, so a check with nothing to report returns an empty list.
  *
- * Checked here: per two-way rule, the `to` path's wildcard count and nesting order equal the `from` path's; across rules, every `to`-side wildcard root array is fed by exactly one `from`-side wildcard root; every `to` path and every `from` path is unique; `when` reference paths (references and collection references alike) are well-formed and contain no wildcards; a `default` rule's `to` is wildcard-free (a default has no source array to size a materialisation from).
+ * Checked here: per two-way rule, the `to` path has as many wildcards as the `from` path (key and index steps around them may differ, which is how a rule nests or flattens); across rules, every `to`-side array a wildcard iterates, at every depth, is fed by exactly one `from`-side array; every `to` path and every `from` path is unique, compared in canonical spelling; no array is addressed both by a fixed index and by a wildcard on the same side; `when` reference paths (references and collection references alike) are well-formed and contain no wildcards; a `default` rule's `to` is wildcard-free (a default has no source array to size a materialisation from).
  * @param crosswalk - The parsed crosswalk.
  * @returns Every issue found (empty means valid). Issue indices number the two-way rules first, then the one-way rules.
  */
@@ -24,35 +24,31 @@ export function validateCrosswalk(crosswalk: Crosswalk): readonly CrosswalkIssue
     }),
     ...checkPathUniqueness(crosswalk),
     ...checkWildcardRoots(crosswalk),
+    ...checkIndexWildcardMix(crosswalk),
   ];
 }
 
-/** Design check (a): the `to` path's wildcards must match the `from` path's in count and nesting order, because runtime mapping is index-aligned (`papers[3].id` maps to `nodes[3].id`) and that is what makes decode a true inverse. */
+/** Design check (a): the `to` path must have as many wildcards as the `from` path, because runtime mapping is index-aligned (the n-th wildcard of `from` pairs with the n-th of `to`, so `papers[3].id` maps to `nodes[3].ref`) and carrying every index across is what makes decode a true inverse. The key and index steps between wildcards are free: `a` to `b.a` nests and `a[].b.c` to `x[].c` flattens, and decode reverses either by the same pairing. */
 function checkWildcardAlignment(rule: TwoWayRule, index: number): readonly CrosswalkIssue[] {
-  const fromWildcardPattern = wildcardPattern(parsePathMemo(rule.from));
-  const toWildcardPattern = wildcardPattern(parsePathMemo(rule.to));
-  if (fromWildcardPattern === toWildcardPattern) {
+  const fromWildcards = wildcardCount(parsePathMemo(rule.from));
+  const toWildcards = wildcardCount(parsePathMemo(rule.to));
+  if (fromWildcards === toWildcards) {
     return [];
   }
 
   return [
     {
       ruleIndex: index,
-      message: `wildcard pattern of to (${toWildcardPattern}) must equal from (${fromWildcardPattern}): mapping is index-aligned`,
+      message: `to has ${String(toWildcards)} wildcards where from has ${String(fromWildcards)}: mapping is index-aligned, one wildcard to one`,
     },
   ];
-}
-
-/** The wildcard signature of a locus: which steps are wildcards, in order, e.g. "key-wildcard-key". */
-function wildcardPattern(locus: Locus): string {
-  return locus.map((step) => step.kind).join("-");
 }
 
 /** Design check (e), plus the same for collection references: a `when` is evaluated against one governing document as a whole, so a wildcard inside it has no element to bind to. The grammar is re-checked too, so an exotic-but-schematic predicate cannot smuggle in a malformed path. */
 function checkWhenPaths(when: unknown, index: number): readonly CrosswalkIssue[] {
   const issues: CrosswalkIssue[] = [];
   walkPredicate(when, (reference) => {
-    if (typeof reference !== "string" || !PATH_REGEX.test(reference) || reference.includes("[]")) {
+    if (typeof reference !== "string" || !PATH_REGEX.test(reference) || wildcardCount(parsePathMemo(reference)) > 0) {
       issues.push({
         ruleIndex: index,
         message: `when references a path that is malformed or contains a wildcard: ${JSON.stringify(reference)}`,
@@ -90,7 +86,7 @@ function walkPredicate(node: unknown, visit: (reference: unknown) => void): void
 
 /** A `default` inserts one value at one place: a wildcard in its `to` would need an array length no rule supplies. */
 function checkDefaultTo(rule: OneWayRule & { op: "default" }, index: number): readonly CrosswalkIssue[] {
-  if (!rule.to.includes("[]")) {
+  if (wildcardCount(parsePathMemo(rule.to)) === 0) {
     return [];
   }
 
@@ -102,10 +98,13 @@ function checkDefaultTo(rule: OneWayRule & { op: "default" }, index: number): re
   ];
 }
 
+/** The issue index of a defect that lies between rules rather than in one (CrosswalkIssue's documented negative index). */
+const BETWEEN_RULES = -1;
+
 /** The sentinel a repeated path is recorded under: no single rule owns the conflict. */
 const DUPLICATE = -1;
 
-/** Design checks (c) and (d): one value, one destination. A repeated `to` makes rule order significant (later writes would overwrite earlier ones) and a repeated `from` reads one value twice, which only one destination can hold. */
+/** Design checks (c) and (d): one value, one destination. A repeated `to` makes rule order significant (later writes would overwrite earlier ones) and a repeated `from` reads one value twice, which only one destination can hold. Paths are compared in canonical spelling, so `a.b` and `["a"].b` are one path. */
 function checkPathUniqueness(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
   const ruleCount = crosswalk.rules.length;
   const toPaths = new Map<string, number>();
@@ -124,12 +123,12 @@ function checkPathUniqueness(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
   const issues: CrosswalkIssue[] = [];
   for (const [path, index] of toPaths) {
     if (index === DUPLICATE) {
-      issues.push({ ruleIndex: -1, message: `two rules write the same to path: ${path}` });
+      issues.push({ ruleIndex: BETWEEN_RULES, message: `two rules write the same to path: ${path}` });
     }
   }
   for (const [path, index] of fromPaths) {
     if (index === DUPLICATE) {
-      issues.push({ ruleIndex: -1, message: `two rules read the same from path: ${path}` });
+      issues.push({ ruleIndex: BETWEEN_RULES, message: `two rules read the same from path: ${path}` });
     }
   }
 
@@ -138,39 +137,78 @@ function checkPathUniqueness(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
 
 /** Records a path in the map, marking a duplicate with the sentinel (the first index is kept for the message-free bookkeeping; the issue names no rule because the conflict is between two). */
 function notePath(paths: Map<string, number>, path: string, index: number): void {
-  paths.set(path, paths.has(path) ? DUPLICATE : index);
+  const canonical = canonicalPath(path);
+  paths.set(canonical, paths.has(canonical) ? DUPLICATE : index);
 }
 
-/** Design check (b): every `to`-side wildcard root array (the path prefix ending in the first wildcard, e.g. `papers[]`) is fed by exactly one `from`-side root. Two source arrays merging into one target array are not index-invertible: decode could not tell which source a given element came from. */
+/** Design check (b): every `to`-side array a wildcard iterates (the path prefix through that wildcard, e.g. `papers[]` or `papers[].tags[]`), at every depth, is fed by exactly one `from`-side array at the same depth. Two source arrays merging into one target array are not index-invertible: decode could not tell which source a given element came from. Checking only the outermost array would miss two inner arrays (`p[].a[]` and `p[].b[]`) merging under one shared outer pair. */
 function checkWildcardRoots(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
   const issues: CrosswalkIssue[] = [];
-  const toRoots = new Map<string, string>();
+  const feeders = new Map<string, string>();
   crosswalk.rules.forEach((rule, index) => {
-    const fromRoot = wildcardRoot(rule.from);
-    const toRoot = wildcardRoot(rule.to);
-    if (fromRoot === undefined || toRoot === undefined) {
-      return;
-    }
-    const existing = toRoots.get(toRoot);
-    if (existing !== undefined && existing !== fromRoot) {
-      issues.push({
-        ruleIndex: index,
-        message: `two source arrays (${existing}, ${fromRoot}) feed the one target array ${toRoot}: the merge is not index-invertible`,
-      });
+    const fromArrays = wildcardArrays(parsePathMemo(rule.from));
+    const toArrays = wildcardArrays(parsePathMemo(rule.to));
+    toArrays.forEach((toArray, depth) => {
+      const fromArray = fromArrays[depth];
+      if (fromArray === undefined) {
+        // Check (a) reports the unequal wildcard count; there is no array at this depth to pair.
+        return;
+      }
+      const existing = feeders.get(toArray);
+      if (existing !== undefined && existing !== fromArray) {
+        issues.push({
+          ruleIndex: index,
+          message: `two source arrays (${existing}, ${fromArray}) feed the one target array ${toArray}: the merge is not index-invertible`,
+        });
 
-      return;
-    }
-    toRoots.set(toRoot, fromRoot);
+        return;
+      }
+      feeders.set(toArray, fromArray);
+    });
   });
 
   return issues;
 }
 
-/** The path prefix up to and including the first wildcard, or undefined for a wildcard-free path. */
-function wildcardRoot(path: string): string | undefined {
-  const cut = path.indexOf("[]");
+/** The canonical path prefix through each wildcard of a locus, outermost first: the arrays its wildcards iterate. */
+function wildcardArrays(locus: Locus): readonly string[] {
+  const arrays: string[] = [];
+  locus.forEach((step, position) => {
+    if (step.kind === "wildcard") {
+      arrays.push(formatPath(locus.slice(0, position + 1)));
+    }
+  });
 
-  return cut === -1 ? undefined : path.slice(0, cut + 2);
+  return arrays;
+}
+
+/** An array is addressed by position or by wildcard on one side, never both: a fixed index into an array that a wildcard also iterates makes the array's length depend on two rules, so an empty source array would encode to a one-element target that decode cannot read back, and reading one element both ways would write it twice on the way back. Each side (every `from` path, and every `to` path including a default's) is checked on its own, since the two sides are different documents. */
+function checkIndexWildcardMix(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
+  const fromSide = crosswalk.rules.map((rule) => rule.from);
+  const toSide = [...crosswalk.rules.map((rule) => rule.to), ...crosswalk.oneWay.flatMap((rule) => (rule.op === "default" ? [rule.to] : []))];
+
+  return [...mixedArrays(fromSide), ...mixedArrays(toSide)].map((array) => ({
+    ruleIndex: BETWEEN_RULES,
+    message: `the array ${array} is addressed both by a fixed index and by a wildcard`,
+  }));
+}
+
+/** The canonical locations (wildcards in the prefix printed as `[]`) of every array some path addresses by index and another by wildcard. */
+function mixedArrays(paths: readonly string[]): readonly string[] {
+  const indexed = new Set<string>();
+  const iterated = new Set<string>();
+  for (const path of paths) {
+    const locus = parsePathMemo(path);
+    locus.forEach((step, position) => {
+      if (step.kind === "key") {
+        return;
+      }
+      const array = position === 0 ? "" : formatPath(locus.slice(0, position));
+      (step.kind === "index" ? indexed : iterated).add(array);
+    });
+  }
+
+  return [...indexed].filter((array) => iterated.has(array));
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

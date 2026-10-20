@@ -7,7 +7,7 @@ import { applyOneWayRule } from "./ops/one-way";
 import { scaleDecode, scaleEncode } from "./ops/scale";
 import { splitDecode, splitEncode } from "./ops/split";
 import { type JsonValue, JsonValueSchema } from "trilean";
-import { type Locus, parsePathMemo, readLocus, writeMatches } from "./paths";
+import { bindLocus, ensureArray, findHole, formatPath, parsePathMemo, readLocus, wildcardIndexes, writeMatches } from "./paths";
 import { validateCrosswalk } from "./validate";
 import { evaluateWhen } from "./when";
 
@@ -17,7 +17,7 @@ import { evaluateWhen } from "./when";
  * @param doc - The native (source-side) document.
  * @returns The shared (target-side) document.
  * @throws CrosswalkStructureError when the crosswalk fails structural validation.
- * @throws RuleApplicationError when a rule's `from` path is absent or a value does not fit the operation.
+ * @throws RuleApplicationError when a rule's `from` path is absent, a value does not fit the operation, two rules claim one output location, or an output array is left with an element no rule wrote (ruleIndex -1, since that gap belongs to no single rule).
  */
 export function encode(crosswalk: Crosswalk, doc: unknown): JsonValue {
   return run(crosswalk, doc, "encode");
@@ -29,11 +29,14 @@ export function encode(crosswalk: Crosswalk, doc: unknown): JsonValue {
  * @param doc - The shared (target-side) document.
  * @returns The native (source-side) document.
  * @throws CrosswalkStructureError when the crosswalk fails structural validation.
- * @throws RuleApplicationError when a rule's `to` path (the decode read side) is absent or a value does not fit the inverse operation.
+ * @throws RuleApplicationError when a rule's `to` path (the decode read side) is absent, a value does not fit the inverse operation, two rules claim one output location, or an output array is left with a gap (ruleIndex -1).
  */
 export function decode(crosswalk: Crosswalk, doc: unknown): JsonValue {
   return run(crosswalk, doc, "decode");
 }
+
+/** The rule index a RuleApplicationError carries when the failure belongs to the rule list as a whole: a gap in an output array is the absence of a write, which no one rule owns. */
+const NO_SINGLE_RULE = -1;
 
 function run(crosswalk: Crosswalk, doc: unknown, direction: "encode" | "decode"): JsonValue {
   const issues = validateCrosswalk(crosswalk);
@@ -49,18 +52,19 @@ function run(crosswalk: Crosswalk, doc: unknown, direction: "encode" | "decode")
     const toPath = direction === "encode" ? rule.to : rule.from;
     const fromLocus = parsePathMemo(fromPath);
     const toLocus = parsePathMemo(toPath);
-    const matches = readLocus(doc, fromLocus);
-    if (matches === undefined) {
+    const reading = readLocus(doc, fromLocus);
+    if (reading === undefined) {
       throw new RuleApplicationError(index, fromPath, "the path is absent from the document");
     }
-    const writes = matches.map((match) => ({
-      keys: projectKeys(fromLocus, toLocus, match.keys),
+    const writes = reading.matches.map((match) => ({
+      trail: bindLocus(toLocus, wildcardIndexes(fromLocus, match.trail)),
       value: applyOp(rule, direction, match.value, { index, path: fromPath }),
     }));
     try {
       writeMatches(target, writes);
-      if (matches.length === 0 && toLocus.some((step) => step.kind === "wildcard")) {
-        materialiseEmptyRoot(target, toLocus, index, toPath);
+      for (const empty of reading.empties) {
+        // An existing empty source array yields no matches, so without this its counterpart would never come into being: decode would find the path absent, or an inner array would leave a gap or a shorter outer array.
+        ensureArray(target, bindLocus(toLocus, wildcardIndexes(fromLocus, empty.trail), empty.wildcard));
       }
     } catch (error) {
       throw new RuleApplicationError(index, toPath, errorMessage(error));
@@ -76,6 +80,10 @@ function run(crosswalk: Crosswalk, doc: unknown, direction: "encode" | "decode")
       throw new RuleApplicationError(crosswalk.rules.length + index, rule.op === "drop" ? rule.from : rule.to, errorMessage(error));
     }
   });
+  const hole = findHole(target);
+  if (hole !== undefined) {
+    throw new RuleApplicationError(NO_SINGLE_RULE, formatPath(hole), "no rule wrote this array element, so the array would have a gap");
+  }
 
   return parseJsonValue(target);
 }
@@ -99,58 +107,6 @@ function applyOp(rule: TwoWayRule, direction: "encode" | "decode", value: unknow
     }
   } catch (error) {
     throw new RuleApplicationError(where.index, where.path, errorMessage(error));
-  }
-}
-
-/**
- * The concrete key trail of `toLocus` for one match found at `fromLocus`: key steps contribute their own key, and each wildcard step takes the array index the match used at the corresponding wildcard of the from-side, in order. Wildcard counts and nesting order are equal by structural validation, so the indexes always run out exactly.
- */
-function projectKeys(fromLocus: Locus, toLocus: Locus, sourceKeys: readonly string[]): readonly string[] {
-  const indexes: string[] = [];
-  fromLocus.forEach((step, position) => {
-    if (step.kind === "wildcard") {
-      const index = sourceKeys[position];
-      if (index === undefined) {
-        throw new Error(`the read match has fewer keys than its locus has steps: ${sourceKeys.join(".")}`);
-      }
-      indexes.push(index);
-    }
-  });
-  const keys: string[] = [];
-  for (const step of toLocus) {
-    if (step.kind === "key") {
-      keys.push(step.key);
-      continue;
-    }
-    const index = indexes.shift();
-    if (index === undefined) {
-      throw new Error(`the target locus has more wildcards than the source provided indexes for`);
-    }
-    keys.push(index);
-  }
-
-  return keys;
-}
-
-/**
- * A source array that exists with zero elements reads as zero matches, so no element write happens and the target wildcard root would never come into being: decode of that output would then find the path absent and fail. An existing-but-empty array is real structure, so its root is materialised as an empty array (only when nothing is there yet, so a sibling rule that already wrote elements is never clobbered).
- */
-function materialiseEmptyRoot(target: Record<string, unknown>, toLocus: Locus, index: number, toPath: string): void {
-  const rootKeys: string[] = [];
-  for (const step of toLocus) {
-    if (step.kind === "wildcard") {
-      break;
-    }
-    rootKeys.push(step.key);
-  }
-  const rootLocus: Locus = toLocus.slice(0, rootKeys.length);
-  if (readLocus(target, rootLocus) !== undefined) {
-    return;
-  }
-  try {
-    writeMatches(target, [{ keys: rootKeys, value: [] }]);
-  } catch (error) {
-    throw new RuleApplicationError(index, toPath, errorMessage(error));
   }
 }
 

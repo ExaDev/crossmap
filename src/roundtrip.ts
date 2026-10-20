@@ -1,6 +1,6 @@
 import { type Crosswalk } from "./crosswalk";
 import { CrosswalkStructureError, RoundTripMismatchError } from "./errors";
-import { type Locus, type PathStep, parsePathMemo } from "./paths";
+import { formatPath, type Locus, type PathStep, parsePathMemo, type TrailStep } from "./paths";
 import { decode, encode } from "./executor";
 import { setOwn } from "./own";
 import { validateCrosswalk } from "./validate";
@@ -31,7 +31,7 @@ export function assertRoundTrip(crosswalk: Crosswalk, samples: readonly unknown[
     const roundTripped = decode(crosswalk, encode(crosswalk, sample));
     const left = prunePaths(sample, excludedLoci);
     const right = prunePaths(roundTripped, excludedLoci);
-    compare(left, right, "", sampleIndex);
+    compare(left, right, [], sampleIndex);
   });
 }
 
@@ -45,8 +45,11 @@ function prunePaths(doc: unknown, loci: readonly Locus[]): unknown {
   return pruned;
 }
 
+/** What a pruned array element is replaced by on both sides of the comparison: removing the element would shift every later index, so the slot is kept and filled with one value that compares equal only to itself. */
+const PRUNED = Symbol("pruned");
+
 /**
- * Rebuilds the document with one locus's locations absent: a wildcard step rebuilds every element, a key step rebuilds the record without that key when the locus ends there or recursed otherwise. Nothing is mutated, and absence along the way is fine (the path may simply not exist in this document).
+ * Rebuilds the document with one locus's locations absent: a wildcard step rebuilds every element, a key step rebuilds the record without that key when the locus ends there or recursed otherwise, and an index step rebuilds that one element (replacing it with {@link PRUNED} when the locus ends there). Nothing is mutated, and absence along the way is fine (the path may simply not exist in this document).
  */
 function pruneLocus(value: unknown, locus: readonly PathStep[]): unknown {
   const first = locus[0];
@@ -60,6 +63,19 @@ function pruneLocus(value: unknown, locus: readonly PathStep[]): unknown {
     }
 
     return value.map((element) => pruneLocus(element, rest));
+  }
+  if (first.kind === "index") {
+    if (!Array.isArray(value) || first.index >= value.length) {
+      return value;
+    }
+
+    return value.map((element: unknown, index): unknown => {
+      if (index !== first.index) {
+        return element;
+      }
+
+      return rest.length === 0 ? PRUNED : pruneLocus(element, rest);
+    });
   }
   if (!isRecord(value)) {
     return value;
@@ -83,14 +99,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** Deep comparison over the correspondence subset: leaves compare with Object.is, arrays by length then element, records by key set then value. The first difference throws, naming the path in the sample's own grammar. */
-function compare(left: unknown, right: unknown, path: string, sampleIndex: number): void {
+/** Deep comparison over the correspondence subset: leaves compare with Object.is, arrays by length then element, records by key set then value. The first difference throws, naming the location in the path grammar (canonical spelling, `[n]` for an element), or the empty string for the root. */
+function compare(left: unknown, right: unknown, trail: readonly TrailStep[], sampleIndex: number): void {
+  const path = formatPath(trail);
   if (Array.isArray(left) && Array.isArray(right)) {
     if (left.length !== right.length) {
       throw new RoundTripMismatchError(sampleIndex, path, `arrays differ in length: ${String(left.length)} against ${String(right.length)}`);
     }
     left.forEach((element, index) => {
-      compare(element, right[index], `${path}[${String(index)}]`, sampleIndex);
+      compare(element, right[index], [...trail, { kind: "index", index }], sampleIndex);
     });
 
     return;
@@ -104,7 +121,7 @@ function compare(left: unknown, right: unknown, path: string, sampleIndex: numbe
     for (const key of leftKeys) {
       const leftValue: unknown = left[key];
       const rightValue: unknown = right[key];
-      compare(leftValue, rightValue, path === "" ? key : `${path}.${key}`, sampleIndex);
+      compare(leftValue, rightValue, [...trail, { kind: "key", key }], sampleIndex);
     }
 
     return;
@@ -113,8 +130,13 @@ function compare(left: unknown, right: unknown, path: string, sampleIndex: numbe
     throw new RoundTripMismatchError(sampleIndex, path, `values differ in kind: ${kindOf(left)} against ${kindOf(right)}`);
   }
   if (!Object.is(left, right)) {
-    throw new RoundTripMismatchError(sampleIndex, path, `values differ: ${String(left)} against ${String(right)}`);
+    throw new RoundTripMismatchError(sampleIndex, path, `values differ: ${describe(left)} against ${describe(right)}`);
   }
+}
+
+/** A leaf for a mismatch message: String() for ordinary values, and a name for the pruned marker (String of a symbol would print its description, which reads like a value). */
+function describe(value: unknown): string {
+  return value === PRUNED ? "(a pruned element)" : String(value);
 }
 
 function kindOf(value: unknown): string {

@@ -1,4 +1,5 @@
 import { type ComputedValue, type PredicateNode, type Resolution, createSyncEvaluator, type SyncResolvers } from "trilean";
+import { getOwn } from "./own";
 import { parsePathMemo, readLocus } from "./paths";
 
 /**
@@ -43,9 +44,9 @@ export function createWhenResolvers(doc: unknown): Readonly<SyncResolvers> {
         return { found: false };
       }
       if (context instanceof WhenItem) {
-        return scalarResolution(context.values[key]);
+        return scalarResolution(getOwn(context.values, key));
       }
-      const matches = readLocus(doc, parsePathMemo(key));
+      const matches = readLocus(doc, parsePathMemo(key))?.matches;
       const match = matches?.[0];
       if (matches?.length !== 1 || match === undefined) {
         return { found: false };
@@ -60,7 +61,7 @@ export function createWhenResolvers(doc: unknown): Readonly<SyncResolvers> {
       if (typeof collection !== "string") {
         throw new Error(`a when collection reference must be a path string, found: ${JSON.stringify(collection)}`);
       }
-      const matches = readLocus(doc, parsePathMemo(collection));
+      const matches = readLocus(doc, parsePathMemo(collection))?.matches;
       const match = matches?.[0];
       if (matches === undefined || match === undefined || matches.length !== 1) {
         throw new Error(`a when collection reference resolved to nothing in the governing document: ${collection}`);
