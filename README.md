@@ -6,72 +6,139 @@ A bidirectional crosswalk codec. One crosswalk document describes how to map bet
 
 ## Usage
 
-A fictional logistics tenant, Meridian Freight, keeps consignments in its own shape and shares them through a common one:
+A crosswalk does not depend on what the dataset is about. The three examples below map a table, a graph and a nested record to a shared shape with the same small set of rules, and each one holds its round trip.
+
+### Rows of a table
+
+Sensor readings, such as a CSV read into JSON, with text numbers, a unit and a flag column:
 
 ```ts
 import { assertRoundTrip, decode, encode, parseCrosswalk } from "twindex";
 
-const crosswalk = parseCrosswalk({
-  source: "meridian-freight/consignment",
-  target: "shared/consignment/v1",
+const readings = parseCrosswalk({
+  source: "field-sensors/reading",
+  target: "observations/v1",
   rules: [
-    { op: "move", from: "consignmentId", to: "id" },
-    { op: "move", from: "recipient.name", to: "delivery.contactName" },
-    { op: "format", from: "collectedAt", to: "collectedAtMs", kind: "isoDateTime" },
-    { op: "scale", from: "declaredValue", to: "declaredValuePence", factor: 100 },
-    { op: "enum", from: "state", to: "status", map: { inbound: "IN_TRANSIT", delivered: "DELIVERED" }, mapBack: { IN_TRANSIT: "inbound", DELIVERED: "delivered" } },
-    { op: "split", from: "route", to: "routeLegs", separator: ">" },
-    { op: "move", from: "parcels[].code", to: "items[].sku" },
-    { op: "move", from: "insured", to: "insured" },
+    { op: "move", from: "rows[].sensor", to: "observations[].deviceId" },
+    { op: "format", from: "rows[].takenAt", to: "observations[].takenAtMs", kind: "isoDateTime" },
+    { op: "format", from: "rows[].level", to: "observations[].level", kind: "numberText" },
+    { op: "scale", from: "rows[].depthM", to: "observations[].depthMm", factor: 1000 },
+    { op: "enum", from: "rows[].flag", to: "observations[].quality", map: { ok: "GOOD", sus: "SUSPECT" }, mapBack: { GOOD: "ok", SUSPECT: "sus" } },
+  ],
+  oneWay: [{ op: "drop", from: "rows[].batteryPct", direction: "encode" }],
+});
+
+const table = {
+  rows: [
+    { sensor: "S-01", takenAt: "2026-10-18T09:30:00.000Z", level: "12.5", depthM: 3, flag: "ok", batteryPct: 91 },
+    { sensor: "S-02", takenAt: "2026-10-18T09:45:00.000Z", level: "7", depthM: 5, flag: "sus", batteryPct: 40 },
+  ],
+};
+
+encode(readings, table);
+// {
+//   observations: [
+//     { deviceId: "S-01", takenAtMs: 1792315800000, level: 12.5, depthMm: 3000, quality: "GOOD" },
+//     { deviceId: "S-02", takenAtMs: 1792316700000, level: 7, depthMm: 5000, quality: "SUSPECT" },
+//   ],
+// }
+
+// decode gives the rows back, except batteryPct: the drop rule declared it lossy.
+assertRoundTrip(readings, [table]);
+```
+
+### A graph
+
+Two arrays that refer to each other, here a citation network exported with its own field names, mapped onto nodes and edges:
+
+```ts
+const network = parseCrosswalk({
+  source: "reading-group/export",
+  target: "graph/v1",
+  rules: [
+    { op: "move", from: "papers[].key", to: "nodes[].id" },
+    { op: "move", from: "papers[].venue", to: "nodes[].type" },
+    { op: "move", from: "cites[].citing", to: "edges[].source" },
+    { op: "move", from: "cites[].cited", to: "edges[].target" },
+    { op: "enum", from: "cites[].kind", to: "edges[].type", map: { direct: "CITES", survey: "CITES_IN_SURVEY" }, mapBack: { CITES: "direct", CITES_IN_SURVEY: "survey" } },
+  ],
+  oneWay: [],
+});
+
+const exported = {
+  papers: [
+    { key: "p1", venue: "journal" },
+    { key: "p2", venue: "workshop" },
+    { key: "p3", venue: "journal" },
+  ],
+  cites: [
+    { citing: "p2", cited: "p1", kind: "direct" },
+    { citing: "p3", cited: "p1", kind: "survey" },
+  ],
+};
+
+encode(network, exported);
+// {
+//   nodes: [{ id: "p1", type: "journal" }, { id: "p2", type: "workshop" }, { id: "p3", type: "journal" }],
+//   edges: [{ source: "p2", target: "p1", type: "CITES" }, { source: "p3", target: "p1", type: "CITES_IN_SURVEY" }],
+// }
+
+assertRoundTrip(network, [exported]);
+```
+
+### A nested record with an optional block
+
+A catalogue record that nests a list and an optional licence block, with a field that is lossy in one direction and a value added on the way out:
+
+```ts
+const catalogue = parseCrosswalk({
+  source: "branch-library/record",
+  target: "catalogue/v2",
+  rules: [
+    { op: "move", from: "recordId", to: "id" },
+    { op: "split", from: "subjects", to: "topics", separator: ";" },
+    { op: "move", from: "copies[].barcode", to: "holdings[].barcode" },
+    { op: "move", from: "digital", to: "digital" },
     {
       op: "move",
-      from: "insurance.policy",
-      to: "cover.policyNumber",
-      when: { kind: "compare", op: "eq", left: { kind: "reference", key: "insured" }, right: { kind: "booleanLiteral", value: true } },
+      from: "licence.url",
+      to: "access.licenceUrl",
+      when: { kind: "compare", op: "eq", left: { kind: "reference", key: "digital" }, right: { kind: "booleanLiteral", value: true } },
     },
   ],
   oneWay: [
-    { op: "drop", from: "internalNotes", direction: "encode" },
-    { op: "default", to: "origin", value: "meridian-freight", direction: "encode" },
+    { op: "drop", from: "staffNotes", direction: "encode" },
+    { op: "default", to: "origin", value: "branch-library", direction: "encode" },
   ],
 });
 
-const native = {
-  consignmentId: "MF-2041",
-  recipient: { name: "Harbour Museum" },
-  collectedAt: "2026-10-18T09:30:00.000Z",
-  declaredValue: 2400,
-  state: "inbound",
-  route: "Bangor>Holyhead>Dublin",
-  parcels: [{ code: "P-1" }, { code: "P-2" }],
-  insured: true,
-  insurance: { policy: "POL-77" },
-  internalNotes: "ring ahead",
+const record = {
+  recordId: "BL-1042",
+  subjects: "maps;local history",
+  copies: [{ barcode: "0041" }, { barcode: "0042" }],
+  digital: true,
+  licence: { url: "https://example.org/licence" },
+  staffNotes: "re-bind spine",
 };
 
-const shared = encode(crosswalk, native);
+const entry = encode(catalogue, record);
 // {
-//   id: "MF-2041",
-//   delivery: { contactName: "Harbour Museum" },
-//   collectedAtMs: 1792315800000,
-//   declaredValuePence: 240000,
-//   status: "IN_TRANSIT",
-//   routeLegs: ["Bangor", "Holyhead", "Dublin"],
-//   items: [{ sku: "P-1" }, { sku: "P-2" }],
-//   insured: true,
-//   cover: { policyNumber: "POL-77" },
-//   origin: "meridian-freight",
+//   id: "BL-1042",
+//   topics: ["maps", "local history"],
+//   holdings: [{ barcode: "0041" }, { barcode: "0042" }],
+//   digital: true,
+//   access: { licenceUrl: "https://example.org/licence" },
+//   origin: "branch-library",
 // }
 
-decode(crosswalk, shared);
-// native again, except internalNotes: the drop rule declared it lossy
+decode(catalogue, entry);
+// record again, except staffNotes: the drop rule declared it lossy
 
-// An uninsured consignment has no insurance block. The gated rule is skipped, not an error.
-const { insurance: _policy, ...withoutInsurance } = native;
-const uninsured = { ...withoutInsurance, insured: false };
+// A print-only record has no licence block. The gated rule is skipped, not an error.
+const printOnly = { recordId: "BL-1043", subjects: "maps", copies: [{ barcode: "0043" }], digital: false };
 
 // Throws RoundTripMismatchError naming the first path where decode(encode(sample)) differs from the sample.
-assertRoundTrip(crosswalk, [native, uninsured]);
+assertRoundTrip(catalogue, [record, printOnly]);
 ```
 
 ## The format
@@ -119,7 +186,7 @@ The errors twindex defines all extend `TwindexError`: `CrosswalkSyntaxError` for
 
 - A crosswalk is a total mapping over the document. A field no rule maps does not survive encode, so a sample carrying one fails its own round trip.
 - A `scale` with a non-integer factor can fail bit-identity: multiplying and then dividing is exact for integers and powers of two, and can differ in the last bit for factors such as `0.1`. Decode divides and does not multiply by a reciprocal, which is the more accurate route.
-- A `when` must not read a field its own rule moves. Decode evaluates it against the target document, where that path no longer exists, so the rule would skip on the way back. Gate on a separate field that keeps the same path in both shapes, as `insured` does above. Static validation cannot decide this, so `assertRoundTrip` is the check.
+- A `when` must not read a field its own rule moves. Decode evaluates it against the target document, where that path no longer exists, so the rule would skip on the way back. Gate on a separate field that keeps the same path in both shapes, as `digital` does above. Static validation cannot decide this, so `assertRoundTrip` is the check.
 - A sample that populates the target of an encode-direction `default` differs from its round trip, because a default only fills an absent target. Leave those paths unset in samples.
 - Lookup tables are not available inside `when` in this version. A `lookup` node in a predicate throws when it is evaluated.
 
