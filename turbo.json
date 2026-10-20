@@ -9,9 +9,9 @@
   "tasks": {
     "_build": {
       // scripts/** covers the schema generation step that runs as part of the build; package.json is an input because the generation reads it.
-      "inputs": ["src/**", "scripts/**", "tsdown.config.ts", "tsconfig.json", "package.json"],
-      // schemas/** is the build's second output, beside tsdown's dist/.
-      "outputs": ["dist/**", "schemas/**"]
+      "inputs": ["src/**", "cli/**", "scripts/**", "tsdown.config.ts", "tsconfig.json", "package.json"],
+      // schemas/** is the generation step's output and dist-cli/** is tsdown's second entry (the command), both beside dist/.
+      "outputs": ["dist/**", "dist-cli/**", "schemas/**"]
     },
     "_lint": {
       "inputs": ["$TURBO_DEFAULT$", "eslint.config.ts"],

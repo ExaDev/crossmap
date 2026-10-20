@@ -26,5 +26,5 @@
     "types": ["node"],
     "verbatimModuleSyntax": true
   },
-  "include": ["src", "test", "*.config.ts"]
+  "include": ["src", "cli", "test", "*.config.ts"]
 }
