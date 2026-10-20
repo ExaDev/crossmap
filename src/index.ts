@@ -13,7 +13,7 @@ export type {
   TwoWayRule,
   When,
 } from "./crosswalk";
-export { CrosswalkStructureError, CrosswalkSyntaxError, RuleApplicationError, RoundTripMismatchError, TwindexError } from "./errors";
+export { CrosswalkStructureError, CrosswalkSyntaxError, RuleApplicationError, RoundTripMismatchError, CrossmapError } from "./errors";
 export type { CrosswalkIssue, SyntaxIssue } from "./errors";
 export { decode, encode } from "./executor";
 export { assertRoundTrip } from "./roundtrip";

@@ -220,7 +220,7 @@ jobs:
           import assert from 'node:assert/strict';
           import { readFile } from 'node:fs/promises';
           import { join } from 'node:path';
-          import { assertRoundTrip, decode, encode, parseCrosswalk } from 'twindex';
+          import { assertRoundTrip, decode, encode, parseCrosswalk } from 'crossmap';
 
           const crosswalk = parseCrosswalk(JSON.parse(await readFile('crosswalk.json', 'utf8')));
           const native = JSON.parse(await readFile('sample.json', 'utf8'));
@@ -229,7 +229,7 @@ jobs:
           // decode answers the native shape over the mapped paths; the encode-side drop's path is gone by design, so the expected document omits it too.
           assert.deepEqual(decode(crosswalk, shared), JSON.parse(await readFile('decoded.json', 'utf8')));
           assertRoundTrip(crosswalk, [native]);
-          const schema = JSON.parse(await readFile(join(import.meta.dirname, 'node_modules/twindex/schemas/twindex.schema.json'), 'utf8'));
+          const schema = JSON.parse(await readFile(join(import.meta.dirname, 'node_modules/crossmap/schemas/crossmap.schema.json'), 'utf8'));
           assert.match(schema.$defs.When.$ref, /trilean@\d+\.\d+\.\d+\/schemas\/trilean\.schema\.json#\/\$defs\/PredicateNode/);
           EOF
           cat > crosswalk.json <<'EOF'
@@ -279,9 +279,9 @@ jobs:
           }
           EOF
           node check.mjs
-          # The installed `twindex` command, resolved from the scratch project's node_modules/.bin the way `npx` does: it must validate the crosswalk and print the same shared document the library produced.
-          npx --no-install twindex validate crosswalk.json
-          npx --no-install twindex encode crosswalk.json sample.json > encoded.json
+          # The installed `crossmap` command, resolved from the scratch project's node_modules/.bin the way `npx` does: it must validate the crosswalk and print the same shared document the library produced.
+          npx --no-install crossmap validate crosswalk.json
+          npx --no-install crossmap encode crosswalk.json sample.json > encoded.json
           node -e "require('node:assert/strict').deepEqual(JSON.parse(require('node:fs').readFileSync('encoded.json', 'utf8')), JSON.parse(require('node:fs').readFileSync('shared.json', 'utf8')))"
 
   required-checks:

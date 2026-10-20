@@ -119,12 +119,12 @@ describe("run", () => {
       const result = exec(args);
 
       expect(result.status).toBe(EXIT_USAGE);
-      expect(result.stderr).toContain("Usage: twindex");
+      expect(result.stderr).toContain("Usage: crossmap");
     }
   });
 
   it("prints the version and the help text on success", () => {
     expect(exec(["--version"])).toEqual({ status: EXIT_OK, stdout: "9.9.9\n", stderr: "" });
-    expect(exec(["-h"]).stdout).toContain("Usage: twindex");
+    expect(exec(["-h"]).stdout).toContain("Usage: crossmap");
   });
 });

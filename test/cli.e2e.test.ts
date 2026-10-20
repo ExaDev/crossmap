@@ -1,4 +1,4 @@
-// Runs the built command (dist-cli/twindex.mjs) as a child process, the way `npx twindex` does, so what is checked is the shipped file: its shebang line, its imports resolving against the installed dependencies, its stdin handling and its exit status. The `bin` entry in package.json must name that same file, which is checked here too. The build runs first through turbo.json's `_test` dependency.
+// Runs the built command (dist-cli/crossmap.mjs) as a child process, the way `npx crossmap` does, so what is checked is the shipped file: its shebang line, its imports resolving against the installed dependencies, its stdin handling and its exit status. The `bin` entry in package.json must name that same file, which is checked here too. The build runs first through turbo.json's `_test` dependency.
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -6,18 +6,18 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const packageJsonPath = fileURLToPath(new URL("../package.json", import.meta.url));
-const binPath = fileURLToPath(new URL("../dist-cli/twindex.mjs", import.meta.url));
+const binPath = fileURLToPath(new URL("../dist-cli/crossmap.mjs", import.meta.url));
 const crosswalkPath = fileURLToPath(new URL("./fixtures/consignment.crosswalk.json", import.meta.url));
 
 function runCli(args: readonly string[], stdin?: string) {
   return spawnSync(process.execPath, [binPath, ...args], { encoding: "utf8", input: stdin });
 }
 
-describe("the twindex command", () => {
+describe("the crossmap command", () => {
   it("is the file package.json's bin names, with a node shebang, and ships in the tarball", () => {
     const manifest: unknown = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 
-    expect(manifest).toMatchObject({ bin: { twindex: "./dist-cli/twindex.mjs" } });
+    expect(manifest).toMatchObject({ bin: { crossmap: "./dist-cli/crossmap.mjs" } });
     expect(typeof manifest === "object" && manifest !== null && "files" in manifest ? manifest.files : undefined).toContain("dist-cli");
     expect(existsSync(binPath)).toBe(true);
     expect(readFileSync(binPath, "utf8").startsWith("#!/usr/bin/env node\n")).toBe(true);

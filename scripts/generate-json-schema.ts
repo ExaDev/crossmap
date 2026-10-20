@@ -1,4 +1,4 @@
-/* Generates schemas/twindex.schema.json from the package's own Zod schemas via z.toJSONSchema() (https://zod.dev/json-schema). Run as part of `pnpm build` (see package.json's build script), so schemas/ is always fresh for a real `npm publish`: prepublishOnly runs the full build, not tsdown alone.
+/* Generates schemas/crossmap.schema.json from the package's own Zod schemas via z.toJSONSchema() (https://zod.dev/json-schema). Run as part of `pnpm build` (see package.json's build script), so schemas/ is always fresh for a real `npm publish`: prepublishOnly runs the full build, not tsdown alone.
 
    Imports from the freshly-built ../dist/index.js: the build script runs tsdown first, so the schema describes exactly what the published dist validates.
 
@@ -21,7 +21,7 @@ import { CrosswalkSchema } from "../dist/index.js";
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, "..");
 const schemasDir = join(repoRoot, "schemas");
-const outputPath = join(schemasDir, "twindex.schema.json");
+const outputPath = join(schemasDir, "crossmap.schema.json");
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -77,7 +77,7 @@ const sharedDefs = schemas["__shared"]?.$defs ?? {};
 // Version-pinned (never "latest"): jsDelivr serves files straight out of a published npm package by version, so this identifies the exact schema shipped in this specific published version.
 const combined: z.core.JSONSchema.JSONSchema = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: `https://cdn.jsdelivr.net/npm/twindex@${packageVersion}/schemas/twindex.schema.json`,
+  $id: `https://cdn.jsdelivr.net/npm/crossmap@${packageVersion}/schemas/crossmap.schema.json`,
   $defs: {
     Crosswalk: crosswalkDef,
     When: {

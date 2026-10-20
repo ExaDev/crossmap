@@ -13,8 +13,8 @@ export interface CrosswalkIssue {
   readonly message: string;
 }
 
-/** The root of this package's error taxonomy: every error twindex throws is a `TwindexError`, so callers can catch the family with one check. */
-export class TwindexError extends Error {
+/** The root of this package's error taxonomy: every error crossmap throws is a `CrossmapError`, so callers can catch the family with one check. */
+export class CrossmapError extends Error {
   constructor(message: string) {
     super(message);
     this.name = new.target.name;
@@ -22,7 +22,7 @@ export class TwindexError extends Error {
 }
 
 /** Thrown when a crosswalk document or a path string fails its schema or grammar: the value is syntactically not a crosswalk. Carries every issue found, not just the first, so one failed parse reports the whole document. */
-export class CrosswalkSyntaxError extends TwindexError {
+export class CrosswalkSyntaxError extends CrossmapError {
   readonly issues: readonly SyntaxIssue[];
 
   constructor(issues: readonly SyntaxIssue[]) {
@@ -32,7 +32,7 @@ export class CrosswalkSyntaxError extends TwindexError {
 }
 
 /** Thrown by encode and decode when validateCrosswalk finds a structural defect: the crosswalk parses but its rule list is not executable as written. Carries every issue, matching validateCrosswalk's report. */
-export class CrosswalkStructureError extends TwindexError {
+export class CrosswalkStructureError extends CrossmapError {
   readonly issues: readonly CrosswalkIssue[];
 
   constructor(issues: readonly CrosswalkIssue[]) {
@@ -42,7 +42,7 @@ export class CrosswalkStructureError extends TwindexError {
 }
 
 /** Thrown when a rule cannot be applied to a concrete document: its `from` path is absent, a value has the wrong shape for the operation, or two destinations conflict. Rule application failures are hard errors by design; an optional native field is expressed with a `when` presence gate, never by skipping the rule. */
-export class RuleApplicationError extends TwindexError {
+export class RuleApplicationError extends CrossmapError {
   readonly ruleIndex: number;
 
   readonly path: string;
@@ -55,7 +55,7 @@ export class RuleApplicationError extends TwindexError {
 }
 
 /** Thrown by assertRoundTrip when decode(encode(sample)) differs from the sample on a path the crosswalk promises to preserve. The path names the first differing location in the sample. */
-export class RoundTripMismatchError extends TwindexError {
+export class RoundTripMismatchError extends CrossmapError {
   readonly sampleIndex: number;
 
   readonly path: string;
