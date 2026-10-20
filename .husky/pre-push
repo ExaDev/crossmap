@@ -1,1 +1,2 @@
-npx pnpm run typecheck && npx pnpm run test && npx pnpm run build
+# Run the same build, typecheck and test gate CI runs, through turbo's _prepush task (see turbo.json): the order lives there, and a push with nothing relevant changed since the last run is a cache hit.
+pnpm run prepush
