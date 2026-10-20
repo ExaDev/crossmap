@@ -152,9 +152,27 @@ npx crossmap validate crosswalk.json
 npx crossmap round-trip crosswalk.json samples.json
 ```
 
-`encode` and `decode` print the translated document as JSON. `validate` and `round-trip` print nothing when they succeed; `samples.json` is a JSON array of source-shape documents. Either file argument can be `-` to read standard input, though not both at once.
+`encode` and `decode` print the translated document as JSON. `validate` and `round-trip` print nothing when they succeed; `samples.json` is a JSON array of source-shape documents. Any file argument can be `-` to read standard input, though not both at once.
 
-The exit status is 0 on success, 1 when the library rejects the crosswalk or the document (the reason is on standard error), and 2 for bad usage or a file that is unreadable or not JSON.
+Any file argument can also be a URL, so a published crosswalk applies to a published document without downloading either, and either one or both can be remote:
+
+```sh
+npx crossmap encode https://example.com/crosswalk.json https://example.com/document.json
+npx crossmap validate https://example.com/crosswalk.json
+```
+
+The readable schemes are `http:`, `https:`, `data:` and `file:`, alongside plain paths and `-`. An argument is a URL when it starts with a scheme of two or more characters and a colon, so a Windows path such as `C:\x.json` stays a path. Redirects are followed. A remote read gives up after a timeout and refuses a body over a size cap, both named constants in `cli/read-source.ts` with the reason for each. Any other scheme (`ftp:`, `s3:` and the like) exits 2 as unsupported, because reading it needs a client or credentials a data-only command should not take on. Fetching a crosswalk is safe in the sense that matters here: a crosswalk is data the codec validates, never code that runs.
+
+The library does not read URLs and imports no Node module, so it runs unchanged in a browser or worker. Where `fetch` exists, the caller does the read:
+
+```ts
+import { decode, parseCrosswalk } from "crossmap";
+
+const crosswalk = parseCrosswalk(await (await fetch("https://example.com/crosswalk.json")).json());
+const native = decode(crosswalk, await (await fetch("https://example.com/shared.json")).json());
+```
+
+The exit status is 0 on success, 1 when the library rejects the crosswalk or the document (the reason is on standard error), and 2 for bad usage or an argument that cannot be read (a missing file, a failed or oversized fetch, an unsupported scheme) or is not JSON.
 
 ## The format
 
