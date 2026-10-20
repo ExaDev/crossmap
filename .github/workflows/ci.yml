@@ -61,9 +61,11 @@ jobs:
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .eslintcache
-          # eslint.config.ts and pnpm-lock.yaml both invalidate the cache: a rule change or a dependency bump can change lint results even for files whose own content did not change.
-          key: eslintcache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.ts') }}
-          restore-keys: eslintcache-${{ runner.os }}-
+          # eslint.config.ts and pnpm-lock.yaml both invalidate the cache: a rule change or a dependency bump can change lint results even for files whose own content did not change. The run id makes every run save its own entry (an existing key is never overwritten, so a fixed key would freeze the first run's cache), and restore-keys picks up the latest. The lint scripts use `--cache-strategy content` because a fresh checkout gives every file a new mtime, which the default metadata strategy reads as a change.
+          key: eslintcache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.ts') }}-${{ github.run_id }}
+          restore-keys: |
+            eslintcache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.ts') }}-
+            eslintcache-${{ runner.os }}-
       # turbo's local task cache, keyed per task. hashFiles(pnpm-lock.yaml, turbo.json) puts the dependency set and the task graph into the key, so either changing starts a fresh cache lineage; the run id makes every run save its own entry, and restore-keys picks up the latest one.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
