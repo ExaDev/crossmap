@@ -136,9 +136,11 @@ describe("the crossmap command reading URLs", () => {
   });
 
   it("decodes, validates and round-trips from URLs too", async () => {
-    const decoded = await runCliAsync(["decode", `${origin}/crosswalk.json`, `${origin}/shared.json`]);
-    const validated = await runCliAsync(["validate", `${origin}/crosswalk.json`]);
-    const roundTripped = await runCliAsync(["round-trip", `${origin}/crosswalk.json`, `${origin}/samples.json`]);
+    const [decoded, validated, roundTripped] = await Promise.all([
+      runCliAsync(["decode", `${origin}/crosswalk.json`, `${origin}/shared.json`]),
+      runCliAsync(["validate", `${origin}/crosswalk.json`]),
+      runCliAsync(["round-trip", `${origin}/crosswalk.json`, `${origin}/samples.json`]),
+    ]);
 
     expect(JSON.parse(decoded.stdout)).toEqual(JSON.parse(documentText));
     expect([decoded.status, validated.status, roundTripped.status]).toEqual([0, 0, 0]);
@@ -146,8 +148,10 @@ describe("the crossmap command reading URLs", () => {
   });
 
   it("reads a data: URL and a file: URL", async () => {
-    const data = await runCliAsync(["encode", crosswalkPath, `data:application/json,${encodeURIComponent(documentText)}`]);
-    const file = await runCliAsync(["validate", pathToFileURL(crosswalkPath).href]);
+    const [data, file] = await Promise.all([
+      runCliAsync(["encode", crosswalkPath, `data:application/json,${encodeURIComponent(documentText)}`]),
+      runCliAsync(["validate", pathToFileURL(crosswalkPath).href]),
+    ]);
 
     expect(JSON.parse(data.stdout)).toEqual(encoded);
     expect(file.status).toBe(0);
