@@ -151,3 +151,25 @@ describe("validateCrosswalk", () => {
     expect(validateCrosswalk(cw).map((issue) => issue.message).join()).toContain("wildcard-free");
   });
 });
+
+describe("validateCrosswalk on per-element when references", () => {
+  const exists = (key: string) => ({ kind: "exists", operand: { kind: "reference", key } });
+  const issuesOf = (rules: readonly unknown[], oneWay: readonly unknown[] = []) => validateCrosswalk(crosswalk({ source: "a", target: "b", rules, oneWay })).map((issue) => issue.message);
+
+  it("accepts a reference into the array the rule iterates, at any depth up to the rule's", () => {
+    expect(issuesOf([{ op: "move", from: "p[].q[].v", to: "n[].m[].v", when: exists("p[].flag") }])).toEqual([]);
+    expect(issuesOf([{ op: "move", from: "p[].q[].v", to: "n[].m[].v", when: exists("p[].q[].flag") }])).toEqual([]);
+  });
+
+  it("rejects a reference into another array", () => {
+    expect(issuesOf([{ op: "move", from: "p[].v", to: "n[].v", when: exists("other[].flag") }])).toEqual(["when reference other[].flag contains a wildcard into other[], which is not the array its rule's from iterates at that depth (p[])"]);
+  });
+
+  it("rejects a reference with more wildcards than the rule", () => {
+    expect(issuesOf([{ op: "move", from: "p[].v", to: "n[].v", when: exists("p[].q[].flag") }])).toEqual(["when reference p[].q[].flag contains 2 wildcards where its rule's from has 1"]);
+  });
+
+  it("rejects a wildcard reference on a one-way rule", () => {
+    expect(issuesOf([], [{ op: "drop", from: "p[].v", direction: "encode", when: exists("p[].flag") }])).toEqual(["when reference p[].flag contains a wildcard, but a one-way rule visits no element to bind it to"]);
+  });
+});

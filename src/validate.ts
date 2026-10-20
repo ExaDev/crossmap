@@ -1,6 +1,7 @@
 import type { Crosswalk, OneWayRule, TwoWayRule } from "./crosswalk";
 import type { CrosswalkIssue } from "./errors";
 import { canonicalPath, formatPath, type Locus, PATH_REGEX, parsePathMemo, wildcardCount } from "./paths";
+import { visitReferences } from "./when";
 
 /**
  * Validates a syntactically parsed crosswalk against the structural rules that make its rule list executable and decode a true inverse of encode. Schema parsing (parseCrosswalk) checks each rule in isolation; these checks are properties of the rule list as a whole, which is why they are reported as a list rather than thrown mid-parse. Each check below returns its issues and the results are concatenated, so a check with nothing to report returns an empty list.
@@ -15,12 +16,12 @@ export function validateCrosswalk(crosswalk: Crosswalk): readonly CrosswalkIssue
   return [
     ...crosswalk.rules.flatMap((rule, index): readonly CrosswalkIssue[] => [
       ...checkWildcardAlignment(rule, index),
-      ...checkWhenPaths(rule.when, index),
+      ...checkWhenPaths(rule.when, index, parsePathMemo(rule.from)),
     ]),
     ...crosswalk.oneWay.flatMap((rule, index): readonly CrosswalkIssue[] => {
       const oneWayIndex = ruleCount + index;
 
-      return rule.op === "default" ? [...checkWhenPaths(rule.when, oneWayIndex), ...checkDefaultTo(rule, oneWayIndex)] : checkWhenPaths(rule.when, oneWayIndex);
+      return rule.op === "default" ? [...checkWhenPaths(rule.when, oneWayIndex, undefined), ...checkDefaultTo(rule, oneWayIndex)] : checkWhenPaths(rule.when, oneWayIndex, undefined);
     }),
     ...checkPathUniqueness(crosswalk),
     ...checkWildcardRoots(crosswalk),
@@ -44,44 +45,43 @@ function checkWildcardAlignment(rule: TwoWayRule, index: number): readonly Cross
   ];
 }
 
-/** Design check (e), plus the same for collection references: a `when` is evaluated against one governing document as a whole, so a wildcard inside it has no element to bind to. The grammar is re-checked too, so an exotic-but-schematic predicate cannot smuggle in a malformed path. */
-function checkWhenPaths(when: unknown, index: number): readonly CrosswalkIssue[] {
+/** Design check (e), plus the same for collection references: every reference must be a well-formed path, and a reference with wildcards names a field of the element a two-way rule is visiting, so it is allowed only on a two-way rule, with no more wildcards than the rule's `from`, and with its part through its last wildcard equal to the `from` path's part through the same wildcard (the array the rule iterates there). That last condition is what lets decode rebase the reference onto the `to` side's array; a wildcard into some other array would have no element to bind to. One-way rules have no visited element, so their references are wildcard-free. */
+function checkWhenPaths(when: unknown, index: number, from: Locus | undefined): readonly CrosswalkIssue[] {
   const issues: CrosswalkIssue[] = [];
-  walkPredicate(when, (reference) => {
-    if (typeof reference !== "string" || !PATH_REGEX.test(reference) || wildcardCount(parsePathMemo(reference)) > 0) {
-      issues.push({
-        ruleIndex: index,
-        message: `when references a path that is malformed or contains a wildcard: ${JSON.stringify(reference)}`,
-      });
+  visitReferences(when, (reference) => {
+    if (typeof reference !== "string" || !PATH_REGEX.test(reference)) {
+      issues.push({ ruleIndex: index, message: `when references a path that is malformed: ${JSON.stringify(reference)}` });
+
+      return;
+    }
+    const problem = elementReferenceProblem(parsePathMemo(reference), from);
+    if (problem !== undefined) {
+      issues.push({ ruleIndex: index, message: `when reference ${reference} ${problem}` });
     }
   });
 
   return issues;
 }
 
-/** Visits every string a predicate tree uses as a reference key or collection name, without enumerating trilean node kinds: the tree has already passed PredicateNodeSchema, so an object with a `key`/`collection` string field in these positions is a reference the resolvers will receive. */
-function walkPredicate(node: unknown, visit: (reference: unknown) => void): void {
-  if (Array.isArray(node)) {
-    node.forEach((element) => {
-      walkPredicate(element, visit);
-    });
+/** Why a reference's wildcards cannot bind to the element its rule visits, or `undefined` when they can (including when it has none). */
+function elementReferenceProblem(reference: Locus, from: Locus | undefined): string | undefined {
+  const wildcards = wildcardCount(reference);
+  if (wildcards === 0) {
+    return undefined;
+  }
+  if (from === undefined) {
+    return "contains a wildcard, but a one-way rule visits no element to bind it to";
+  }
+  if (wildcards > wildcardCount(from)) {
+    return `contains ${String(wildcards)} wildcards where its rule's from has ${String(wildcardCount(from))}`;
+  }
+  const referenceArray = formatPath(reference.slice(0, reference.findLastIndex((step) => step.kind === "wildcard") + 1));
+  const fromArray = wildcardArrays(from)[wildcards - 1];
+  if (referenceArray !== fromArray) {
+    return `contains a wildcard into ${referenceArray}, which is not the array its rule's from iterates at that depth (${String(fromArray)})`;
+  }
 
-    return;
-  }
-  if (!isRecord(node)) {
-    return;
-  }
-  if (typeof node["key"] === "string") {
-    visit(node["key"]);
-  }
-  if (typeof node["collection"] === "string") {
-    visit(node["collection"]);
-  }
-  for (const value of Object.values(node)) {
-    if (typeof value === "object" && value !== null) {
-      walkPredicate(value, visit);
-    }
-  }
+  return undefined;
 }
 
 /** A `default` inserts one value at one place: a wildcard in its `to` would need an array length no rule supplies. */
@@ -209,8 +209,4 @@ function mixedArrays(paths: readonly string[]): readonly string[] {
   }
 
   return [...indexed].filter((array) => iterated.has(array));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

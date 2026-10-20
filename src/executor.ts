@@ -6,10 +6,10 @@ import { moveValue } from "./ops/move";
 import { applyOneWayRule } from "./ops/one-way";
 import { scaleDecode, scaleEncode } from "./ops/scale";
 import { splitDecode, splitEncode } from "./ops/split";
-import { type JsonValue, JsonValueSchema } from "trilean";
-import { bindLocus, ensureArray, findHole, formatPath, parsePathMemo, readLocus, wildcardIndexes, writeMatches } from "./paths";
+import { type JsonValue, JsonValueSchema, type PredicateNode } from "trilean";
+import { bindLocus, type ElementGate, ensureArray, findHole, formatPath, type Locus, parsePathMemo, readLocus, wildcardIndexes, writeMatches } from "./paths";
 import { validateCrosswalk } from "./validate";
-import { evaluateWhen } from "./when";
+import { evaluateWhen, whenArity } from "./when";
 
 /**
  * Encodes a native document into the shared shape. Every rule's `from` is read from `doc` exactly as given and every `to` is written into a fresh output, so the input is never mutated and rule order carries no meaning (validateCrosswalk, run first, enforces the path uniqueness that makes this safe). A rule's `when` is evaluated against `doc`: definite true applies, definite false or indeterminate skips. Two-way rules write first, then the output's absent paths gain any due `default` values.
@@ -45,14 +45,15 @@ function run(crosswalk: Crosswalk, doc: unknown, direction: "encode" | "decode")
   }
   const target: Record<string, unknown> = {};
   crosswalk.rules.forEach((rule, index) => {
-    if (rule.when !== undefined && !evaluateWhen(rule.when, doc)) {
-      return;
-    }
     const fromPath = direction === "encode" ? rule.from : rule.to;
     const toPath = direction === "encode" ? rule.to : rule.from;
     const fromLocus = parsePathMemo(fromPath);
     const toLocus = parsePathMemo(toPath);
-    const reading = readLocus(doc, fromLocus);
+    const gate = rule.when === undefined ? undefined : elementGate(rule.when, doc, fromLocus);
+    if (gate === false) {
+      return;
+    }
+    const reading = readLocus(doc, fromLocus, gate);
     if (reading === undefined) {
       throw new RuleApplicationError(index, fromPath, "the path is absent from the document");
     }
@@ -86,6 +87,27 @@ function run(crosswalk: Crosswalk, doc: unknown, direction: "encode" | "decode")
   }
 
   return parseJsonValue(target);
+}
+
+/**
+ * How a rule's `when` applies: a gate with no wildcard references is decided once for the whole rule (`false` skips it, `undefined` lets it run), and one whose references carry wildcards becomes a per-element gate over the read side, evaluated once per element at the depth its references reach. `governing` is the rule's read-side path in this direction, so the gate's references are rebased onto the arrays it iterates.
+ */
+function elementGate(when: PredicateNode, doc: unknown, governing: Locus): ElementGate | false | undefined {
+  const arity = whenArity(when);
+  if (arity === 0) {
+    return evaluateWhen(when, doc) ? undefined : false;
+  }
+  const wildcardPositions = governing.flatMap((step, position) => (step.kind === "wildcard" ? [position] : []));
+  const arrayAt = (wildcard: number): Locus => {
+    const position = wildcardPositions[wildcard];
+    if (position === undefined) {
+      throw new Error(`the rule's path has no wildcard ${String(wildcard)}: validateCrosswalk bounds a reference's wildcards by the rule's`);
+    }
+
+    return governing.slice(0, position + 1);
+  };
+
+  return { arity, admit: (indexes) => evaluateWhen(when, doc, { indexes, arrayAt }) };
 }
 
 /** Applies one two-way rule's operation to one value in the given direction, turning the operation's own thrown errors into RuleApplicationErrors that name the rule and path. */

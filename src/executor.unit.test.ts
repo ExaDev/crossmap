@@ -239,3 +239,64 @@ describe("paths beyond records and one wildcard", () => {
     }
   });
 });
+
+describe("per-element when", () => {
+  const isCircle = { kind: "textCompare", op: "equals", left: { kind: "reference", key: "items[].kind" }, right: { kind: "textLiteral", value: "circle" } };
+  const shapes = crosswalk({
+    source: "n",
+    target: "s",
+    rules: [
+      { op: "move", from: "items[].kind", to: "shapes[].kind" },
+      { op: "move", from: "items[].radius", to: "shapes[].r", when: isCircle },
+    ],
+    oneWay: [],
+  });
+  const native = { items: [{ kind: "circle", radius: 2 }, { kind: "square" }, { kind: "circle", radius: 1 }] };
+
+  it("applies a rule only to the elements whose own field passes, skipping elements that lack the path", () => {
+    expect(encode(shapes, native)).toEqual({ shapes: [{ kind: "circle", r: 2 }, { kind: "square" }, { kind: "circle", r: 1 }] });
+  });
+
+  it("rebases the reference onto the target array while decoding", () => {
+    expect(decode(shapes, encode(shapes, native))).toEqual(native);
+  });
+
+  it("gates an inner wildcard on a field of the outer element", () => {
+    const priced = { kind: "exists", operand: { kind: "reference", key: "orders[].currency" } };
+    const cw = crosswalk({
+      source: "n",
+      target: "s",
+      rules: [
+        { op: "move", from: "orders[].id", to: "sales[].id" },
+        { op: "move", from: "orders[].currency", to: "sales[].currency", when: priced },
+        { op: "scale", from: "orders[].lines[].pence", to: "sales[].lines[].pounds", factor: 100, when: priced },
+      ],
+      oneWay: [],
+    });
+    const orders = { orders: [{ id: "a", currency: "GBP", lines: [{ pence: 1 }] }, { id: "b" }] };
+    const shared = encode(cw, orders);
+    expect(shared).toEqual({ sales: [{ id: "a", currency: "GBP", lines: [{ pounds: 100 }] }, { id: "b" }] });
+    expect(decode(cw, shared)).toEqual(orders);
+  });
+
+  it("binds a collection reference to the visited element", () => {
+    const anyHeavy = { kind: "some", collection: "boxes[].parts", item: { kind: "compare", op: "gt", left: { kind: "reference", key: "kg" }, right: { kind: "numberLiteral", value: 1 } } };
+    const cw = crosswalk({
+      source: "n",
+      target: "s",
+      rules: [
+        { op: "move", from: "boxes[].parts", to: "crates[].parts" },
+        { op: "move", from: "boxes[].label", to: "crates[].warning", when: anyHeavy },
+      ],
+      oneWay: [],
+    });
+    const boxes = { boxes: [{ parts: [{ kg: 2 }], label: "heavy" }, { parts: [{ kg: 1 }], label: "light" }] };
+    expect(encode(cw, boxes)).toEqual({ crates: [{ parts: [{ kg: 2 }], warning: "heavy" }, { parts: [{ kg: 1 }] }] });
+  });
+
+  it("throws naming the gap when a gated rule is the only writer of an element", () => {
+    const cw = crosswalk({ source: "n", target: "s", rules: [{ op: "move", from: "items[].radius", to: "radii[]", when: isCircle }], oneWay: [] });
+    expect(() => encode(cw, { items: [{ kind: "square" }, { kind: "circle", radius: 1 }] })).toThrow("radii[0]: no rule wrote this array element");
+  });
+
+});
