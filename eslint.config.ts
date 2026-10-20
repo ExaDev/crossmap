@@ -4,7 +4,7 @@ import exadev from '@exadev/eslint-config';
 
 export default defineConfig(
   // schemas/ is generated build output (see scripts/generate-json-schema.ts), not source to lint.
-  { ignores: ['dist', 'coverage', 'node_modules', 'reports', 'schemas'] },
+  { ignores: ['dist', 'dist-cli', 'coverage', 'node_modules', 'reports', 'schemas'] },
   {
     languageOptions: {
       parserOptions: { project: ['./tsconfig.json', './tsconfig.node.json'], tsconfigRootDir: import.meta.dirname },
