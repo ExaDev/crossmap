@@ -1,0 +1,41 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "agentGuidance": false,
+  "globalDependencies": ["pnpm-lock.yaml", "pnpm-workspace.yaml"],
+
+  // Every task name is the underscore-prefixed one the package defines for its real command (`_build` runs tsdown and the schema generation; the package's own `build` script is `turbo run _build`). Running the public names from here instead would make turbo invoke those wrapper scripts, which invoke turbo again: the recursive case Turborepo's own docs warn against.
+  //
+  // `_typecheck` and `_test` depend on this package's own `_build`, and that edge is the reason this file exists: scripts/generate-json-schema.ts imports ../dist/index.js by relative path, so the program in tsconfig.node.json cannot typecheck until dist/ exists, and the JSON Schema suite reads schemas/twindex.schema.json, which the build generates. Encoding the order here means no hook, workflow or person has to remember it.
+  "tasks": {
+    "_build": {
+      // scripts/** covers the schema generation step that runs as part of the build; package.json is an input because the generation reads it.
+      "inputs": ["src/**", "scripts/**", "tsdown.config.ts", "tsconfig.json", "package.json"],
+      // schemas/** is the build's second output, beside tsdown's dist/.
+      "outputs": ["dist/**", "schemas/**"]
+    },
+    "_lint": {
+      "inputs": ["$TURBO_DEFAULT$", "eslint.config.ts"],
+      "outputs": [".eslintcache"]
+    },
+    "_lint:check": {
+      "inputs": ["$TURBO_DEFAULT$", "eslint.config.ts"],
+      // Deliberately empty rather than .eslintcache: `_lint` already claims that file as its output, and two tasks claiming one output means a cache replay of one can overwrite the other's.
+      "outputs": []
+    },
+    // The aggregate the pre-push hook runs: a no-op that exists to depend on the real tasks, so a push with nothing relevant changed since the last run is a cache hit and effectively free, while a genuine change is caught before it reaches CI.
+    "_prepush": {
+      "dependsOn": ["_build", "_typecheck", "_test"],
+      "outputs": []
+    },
+    "_test": {
+      "dependsOn": ["_build"],
+      "inputs": ["$TURBO_DEFAULT$", "vitest.config.ts"],
+      "outputs": []
+    },
+    "_typecheck": {
+      "dependsOn": ["_build"],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json", "tsconfig.node.json"],
+      "outputs": []
+    }
+  }
+}
