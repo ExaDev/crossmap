@@ -100,6 +100,16 @@ jobs:
           restore-keys: |
             turbo-typecheck-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-
             turbo-typecheck-${{ runner.os }}-
+      # tsc's incremental state, at its default locations beside each config (tsconfig.node.json inherits `incremental` from tsconfig.json and writes its own file). tsc rechecks a file when its hash, the compiler version or the options changed, so a stale entry costs work and never correctness; the lockfile hash only starts a fresh lineage when the TypeScript version may have changed. The run id makes every run save its own entry, as above.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            tsconfig.tsbuildinfo
+            tsconfig.node.tsbuildinfo
+          key: tsbuildinfo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.run_id }}
+          restore-keys: |
+            tsbuildinfo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+            tsbuildinfo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
       # No separate build step: turbo.json makes _typecheck and _test depend on _build (the schema generation script's program imports the built dist, and the JSON Schema suite reads the schema the build generates), so both run it first, or replay it from the cache, and publint and attw below find dist/ in place.
       - run: pnpm typecheck
