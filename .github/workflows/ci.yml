@@ -267,6 +267,10 @@ jobs:
           }
           EOF
           node check.mjs
+          # The installed `twindex` command, resolved from the scratch project's node_modules/.bin the way `npx` does: it must validate the crosswalk and print the same shared document the library produced.
+          npx --no-install twindex validate crosswalk.json
+          npx --no-install twindex encode crosswalk.json sample.json > encoded.json
+          node -e "require('node:assert/strict').deepEqual(JSON.parse(require('node:fs').readFileSync('encoded.json', 'utf8')), JSON.parse(require('node:fs').readFileSync('shared.json', 'utf8')))"
 
   required-checks:
     name: Required Checks
