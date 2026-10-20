@@ -190,7 +190,7 @@ Every `from` path and every `to` path is unique across the crosswalk, compared i
 
 ### Two-way rules
 
-Each derives both directions from one declaration. Decode swaps `from` and `to` and applies the inverse.
+Each derives both directions from one declaration. Decode swaps `from` and `to` and applies the inverse. A `template` reads several fields and a `copy` writes several places; all of a rule's paths have the same number of wildcards, a template's fields come from the same element, and each path counts towards the uniqueness of `from` and `to` paths.
 
 | op | fields | encode | decode | inverse holds when |
 | --- | --- | --- | --- | --- |
@@ -199,6 +199,15 @@ Each derives both directions from one declaration. Decode swaps `from` and `to` 
 | `enum` | `map`, `mapBack` | `map[value]` | `mapBack[value]` | always: `mapBack` must be exactly the inverse of an injective `map`, checked when the crosswalk is parsed, and an unmapped value is an error |
 | `format` | `kind`: `isoDateTime` or `numberText` | parses the text: an ISO-8601 date or timestamp to epoch milliseconds, a decimal string to a number | renders the canonical text: `toISOString`, or `String(number)` | the input is already in the canonical spelling |
 | `split` | `separator`: non-empty | cuts the string at every separator | joins the parts with it | no part contains the separator; decode throws otherwise |
+| `template` | `from`: a record of field names to paths, `template`: text with `{name}` placeholders | renders the string fields into the template | splits the text back into the fields | always: every field is used exactly once and a literal separates every two placeholders, checked when the crosswalk is parsed, and encode throws for a value containing the literal that follows its placeholder |
+| `copy` | `from`, `to`: two or more paths | writes the one value at every `to` | reads every copy and writes the value back | always: decode throws when the copies disagree |
+
+For example (a template writes a literal brace as `{{` or `}}`):
+
+```ts
+{ op: "template", from: { given: "people[].given", family: "people[].family" }, to: "names[]", template: "{family}, {given}" }
+{ op: "copy", from: "items[].id", to: ["nodes[].id", "labels[].text"] }
+```
 
 ### One-way rules
 
@@ -251,12 +260,10 @@ The crosswalk format is published as a JSON Schema 2020-12 document, generated f
 Each of these is a deliberate omission, listed so it is not mistaken for an oversight:
 
 - `nest` and `unnest`: a `move` whose `to` is deeper nests, one whose `to` is shallower flattens, and a `move` of a whole record carries every field in it, so a dedicated operation would add nothing the format cannot already say.
-- Templates or concatenation of several fields into one.
 - Lookup against external tables.
 - Aggregates and folds over arrays.
 - Array filter and sort.
 - Regex split.
-- One rule writing several targets.
 - Further `format` kinds.
 - A streaming executor.
 
