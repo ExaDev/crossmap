@@ -211,7 +211,20 @@ These are the declared lossy remainder, each applying in one named direction.
 
 ### Gating with `when`
 
-Every rule may carry `when`, a trilean predicate tree, evaluated against the governing document: the source while encoding and the target while decoding. References are paths in the same grammar, without wildcards. A definite `true` applies the rule. A definite `false` skips it. An indeterminate result, where the data needed to decide is absent, also skips it: that is the one deliberate non-throwing branch in the format. Gating a rule on a presence or value predicate is how an optional native field is expressed.
+Every rule may carry `when`, a trilean predicate tree, evaluated against the governing document: the source while encoding and the target while decoding. References are paths in the same grammar. A definite `true` applies the rule. A definite `false` skips it. An indeterminate result, where the data needed to decide is absent, also skips it: that is the one deliberate non-throwing branch in the format. Gating a rule on a presence or value predicate is how an optional native field is expressed.
+
+A two-way rule that iterates an array can be gated per element. A reference with wildcards names a field of the element the rule is visiting, written against the rule's `from` side: on a rule over `items[].radius`, `items[].kind` is the `kind` of the same item. The reference's part through its last wildcard must be the array the rule's `from` iterates at that depth, and it may have fewer wildcards than the rule, gating every inner element on a field of the outer one. While decoding, that part is rebased onto the `to` side's array, so `items[].kind` reads `shapes[i].kind` when the rule maps `items[]` to `shapes[]`; the field below it has to keep its name in both shapes, as with any gate. A gated element is skipped before anything below it is read, so an element that lacks the rule's path is skipped rather than absent. Collection references bind the same way. One-way rules visit no element, so their references have no wildcards.
+
+```ts
+{
+  op: "move",
+  from: "items[].radius",
+  to: "shapes[].r",
+  when: { kind: "textCompare", op: "equals", left: { kind: "reference", key: "items[].kind" }, right: { kind: "textLiteral", value: "circle" } },
+}
+```
+
+An element that every rule writing into it skips leaves a gap in the output array, which is a `RuleApplicationError` naming the element: map at least one field of every element unconditionally.
 
 ### Execution
 
@@ -242,7 +255,6 @@ Each of these is a deliberate omission, listed so it is not mistaken for an over
 - Lookup against external tables.
 - Aggregates and folds over arrays.
 - Array filter and sort.
-- Per-element `when` gating inside a wildcard.
 - Regex split.
 - One rule writing several targets.
 - Further `format` kinds.
