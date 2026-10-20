@@ -14,7 +14,7 @@ const whenQtyIsBig: When = { kind: "compare", op: "gt", left: { kind: "reference
 /**
  * Samples carry only mapped fields (the crosswalk is a total mapping: an unmapped field does not survive encode, so a sample carrying one would fail its own round trip) and use the canonical ISO form decode emits, since any other ISO spelling names the same instant but not the same string.
  *
- * The deterministic corpus: one cell per op-table row (move, scale, enum, format isoDateTime, format numberText, split, drop, default encode-direction, default decode-direction), plus a wildcard-arity-one cell, a when-applied cell and a when-skipped cell. Scale factors are integers by design: multiply-then-divide is bit-identical for them (a non-integer factor is a documented round-trip caveat, not a corpus case).
+ * The deterministic corpus: one cell per op-table row (move, scale, enum, format isoDateTime, format numberText, split, drop, default encode-direction, default decode-direction), plus a wildcard-arity-one cell, a when-applied cell, a when-skipped cell, and one cell per path shape beyond records and one wildcard (nesting and flattening, an array of arrays, fixed indices, quoted keys). Scale factors are integers by design: multiply-then-divide is bit-identical for them (a non-integer factor is a documented round-trip caveat, not a corpus case).
  */
 export const CORPUS: readonly CorpusCell[] = [
   {
@@ -125,6 +125,43 @@ export const CORPUS: readonly CorpusCell[] = [
     },
     samples: [{ qty: 1 }],
   },
+  {
+    name: "nest and flatten",
+    crosswalk: {
+      source: "native",
+      target: "shared",
+      rules: [
+        { op: "move", from: "street", to: "address.street" },
+        { op: "move", from: "meta.owner.name", to: "ownerName" },
+      ],
+      oneWay: [],
+    },
+    samples: [{ street: "High St", meta: { owner: { name: "Ann" } } }],
+  },
+  {
+    name: "array of arrays",
+    crosswalk: { source: "native", target: "shared", rules: [{ op: "move", from: "grid[][]", to: "cells[][]" }], oneWay: [] },
+    samples: [{ grid: [["a", "b"], [], ["c"]] }, { grid: [] }, { grid: [[]] }],
+  },
+  {
+    name: "fixed index",
+    crosswalk: {
+      source: "native",
+      target: "shared",
+      rules: [
+        { op: "move", from: "point[0]", to: "lat" },
+        { op: "move", from: "point[1]", to: "lon" },
+        { op: "move", from: "rows[][0]", to: "items[].name" },
+      ],
+      oneWay: [],
+    },
+    samples: [{ point: ["52.2N", "0.1E"], rows: [["a"], ["b"]] }],
+  },
+  {
+    name: "quoted key",
+    crosswalk: { source: "native", target: "shared", rules: [{ op: "move", from: '["dc:title"]', to: '["a.b"]["[x]"]' }], oneWay: [] },
+    samples: [{ "dc:title": "Maps" }],
+  },
 ];
 
 /** Every op-table row the corpus must cover; the round-trip meta-test asserts one cell per name, so a deleted cell fails the suite rather than silently narrowing coverage. */
@@ -141,4 +178,8 @@ export const REQUIRED_ROWS: readonly string[] = [
   "wildcard arity one",
   "when applied",
   "when skipped",
+  "nest and flatten",
+  "array of arrays",
+  "fixed index",
+  "quoted key",
 ];

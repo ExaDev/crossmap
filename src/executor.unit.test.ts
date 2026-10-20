@@ -134,3 +134,108 @@ describe("decode", () => {
     expect(() => decode(cw, {})).toThrow(RuleApplicationError);
   });
 });
+
+describe("paths beyond records and one wildcard", () => {
+  const roundTrip = (rules: readonly unknown[], native: unknown) => {
+    const cw = crosswalk({ source: "n", target: "s", rules, oneWay: [] });
+    const shared = encode(cw, native);
+
+    return { shared, back: decode(cw, shared) };
+  };
+
+  it("nests and flattens with move rules", () => {
+    const { shared, back } = roundTrip(
+      [
+        { op: "move", from: "street", to: "address.street" },
+        { op: "move", from: "meta.owner.name", to: "ownerName" },
+      ],
+      { street: "High St", meta: { owner: { name: "Ann" } } },
+    );
+    expect(shared).toEqual({ address: { street: "High St" }, ownerName: "Ann" });
+    expect(back).toEqual({ street: "High St", meta: { owner: { name: "Ann" } } });
+  });
+
+  it("maps an array of arrays index-aligned at both levels", () => {
+    const native = { grid: [[1, 2], [], [1]] };
+    const { shared, back } = roundTrip([{ op: "scale", from: "grid[][]", to: "cells[][]", factor: 2 }], native);
+    expect(shared).toEqual({ cells: [[2, 2 * 2], [], [2]] });
+    expect(back).toEqual(native);
+  });
+
+  it("keeps an inner empty array, trailing or not, so the outer array keeps its length", () => {
+    const native = { p: [{ t: [] }, { t: ["x"] }, { t: [] }] };
+    const { shared, back } = roundTrip([{ op: "move", from: "p[].t[]", to: "n[].l[]" }], native);
+    expect(shared).toEqual({ n: [{ l: [] }, { l: ["x"] }, { l: [] }] });
+    expect(back).toEqual(native);
+  });
+
+  it("treats a key spelled as a digit as a record key", () => {
+    const { shared, back } = roundTrip([{ op: "move", from: "x.y", to: "a.0" }], { x: { y: "v" } });
+    expect(shared).toEqual({ a: { "0": "v" } });
+    expect(back).toEqual({ x: { y: "v" } });
+  });
+
+  it("reads and writes keys that need quoting", () => {
+    const native = { "dc:title": "Maps", "a.b": { "[x]": 1 } };
+    const { shared, back } = roundTrip(
+      [
+        { op: "move", from: '["dc:title"]', to: "title" },
+        { op: "move", from: '["a.b"]["[x]"]', to: '["c d"]' },
+      ],
+      native,
+    );
+    expect(shared).toEqual({ title: "Maps", "c d": 1 });
+    expect(back).toEqual(native);
+  });
+
+  it("maps fixed positions of a tuple", () => {
+    const { shared, back } = roundTrip(
+      [
+        { op: "move", from: "point[0]", to: "lat" },
+        { op: "move", from: "point[1]", to: "lon" },
+      ],
+      { point: ["52.2N", "0.1E"] },
+    );
+    expect(shared).toEqual({ lat: "52.2N", lon: "0.1E" });
+    expect(back).toEqual({ point: ["52.2N", "0.1E"] });
+  });
+
+  it("maps a fixed index under a wildcard", () => {
+    const native = { rows: [["a", 1], ["b", 2]] };
+    const { shared, back } = roundTrip(
+      [
+        { op: "move", from: "rows[][0]", to: "items[].name" },
+        { op: "move", from: "rows[][1]", to: "items[].count" },
+      ],
+      native,
+    );
+    expect(shared).toEqual({ items: [{ name: "a", count: 1 }, { name: "b", count: 2 }] });
+    expect(back).toEqual(native);
+  });
+
+  it("throws RuleApplicationError when the array is shorter than a fixed index", () => {
+    const cw = crosswalk({ source: "n", target: "s", rules: [{ op: "move", from: "point[1]", to: "lon" }], oneWay: [] });
+    expect(() => encode(cw, { point: [1] })).toThrow(RuleApplicationError);
+  });
+
+  it("throws RuleApplicationError naming the gap when no rule writes an earlier element", () => {
+    const cw = crosswalk({ source: "n", target: "s", rules: [{ op: "move", from: "lon", to: "point[1]" }], oneWay: [] });
+    expect(() => encode(cw, { lon: 1 })).toThrow("point[0]: no rule wrote this array element, so the array would have a gap");
+    try {
+      encode(cw, { lon: 1 });
+      expect.unreachable();
+    } catch (error) {
+      expect(error).toBeInstanceOf(RuleApplicationError);
+      expect(error instanceof RuleApplicationError ? error.ruleIndex : undefined).toBe(-1);
+    }
+  });
+
+  it("throws for two rules claiming one location whichever comes first", () => {
+    const whole = { op: "move", from: "a", to: "x" };
+    const part = { op: "move", from: "b", to: "x.y" };
+    for (const rules of [[whole, part], [part, whole]]) {
+      const cw = crosswalk({ source: "n", target: "s", rules, oneWay: [] });
+      expect(() => encode(cw, { a: { z: 1 }, b: 2 })).toThrow(RuleApplicationError);
+    }
+  });
+});

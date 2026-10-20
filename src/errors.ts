@@ -41,14 +41,14 @@ export class CrosswalkStructureError extends CrossmapError {
   }
 }
 
-/** Thrown when a rule cannot be applied to a concrete document: its `from` path is absent, a value has the wrong shape for the operation, or two destinations conflict. Rule application failures are hard errors by design; an optional native field is expressed with a `when` presence gate, never by skipping the rule. */
+/** Thrown when a rule cannot be applied to a concrete document: its `from` path is absent, a value has the wrong shape for the operation, or two destinations conflict. `ruleIndex` numbers two-way rules first, then one-way rules, and is negative when the failure belongs to no single rule (an output array element that no rule wrote). Rule application failures are hard errors by design; an optional native field is expressed with a `when` presence gate, never by skipping the rule. */
 export class RuleApplicationError extends CrossmapError {
   readonly ruleIndex: number;
 
   readonly path: string;
 
   constructor(ruleIndex: number, path: string, message: string) {
-    super(`rule ${String(ruleIndex)} (${path}): ${message}`);
+    super(ruleIndex < 0 ? `${path}: ${message}` : `rule ${String(ruleIndex)} (${path}): ${message}`);
     this.ruleIndex = ruleIndex;
     this.path = path;
   }
