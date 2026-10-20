@@ -1,3 +1,15 @@
+# [0.2.0](https://github.com/ExaDev/crossmap/compare/v0.1.5...v0.2.0) (2026-10-20)
+
+
+### Bug Fixes
+
+* **errors:** leave a between-rule structure issue unnumbered instead of printing rule -1 ([3747091](https://github.com/ExaDev/crossmap/commit/37470917cba5dae5fc4256cf193085f35431ac60))
+
+
+### Features
+
+* **cli:** add the twindex command for encode, decode, validate and round-trip ([22b0d3d](https://github.com/ExaDev/crossmap/commit/22b0d3d8913bad2a6d9cffe4945647d9eddc78ad))
+
 ## [0.1.5](https://github.com/ExaDev/twindex/compare/v0.1.4...v0.1.5) (2026-10-20)
 
 ## [0.1.4](https://github.com/ExaDev/twindex/compare/v0.1.3...v0.1.4) (2026-10-19)
