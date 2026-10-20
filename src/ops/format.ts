@@ -32,20 +32,131 @@ function parseNumberText(value: string): number {
   return parsed;
 }
 
-/** The encode half of `format`: parses the native textual form into the shared machine form (an ISO-8601 timestamp to epoch milliseconds; a decimal string to a number). */
-export function formatEncode(rule: FormatRule, value: unknown): number {
+/** The length of a UTC day in milliseconds: epoch milliseconds denote a calendar date only at a multiple of it (ECMAScript time has no leap seconds). */
+const MILLISECONDS_PER_DAY = 86_400_000;
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/u;
+
+function parseIsoDate(value: string): number {
+  if (!ISO_DATE.test(value)) {
+    throw new Error(`value is not an ISO-8601 calendar date (YYYY-MM-DD): ${JSON.stringify(value)}`);
+  }
+
+  return parseIsoDateTime(value);
+}
+
+function renderIsoDate(value: number): string {
+  if (!Number.isInteger(value / MILLISECONDS_PER_DAY)) {
+    throw new Error(`value is not a UTC midnight, so it names no calendar date: ${String(value)}`);
+  }
+  const text = new Date(value).toISOString().slice(0, "YYYY-MM-DD".length);
+  if (!ISO_DATE.test(text)) {
+    throw new Error(`value is outside the four-digit years an ISO calendar date can spell: ${String(value)}`);
+  }
+
+  return text;
+}
+
+function parseBooleanText(value: string): boolean {
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
+  throw new Error(`value is not "true" or "false": ${JSON.stringify(value)}`);
+}
+
+/**
+ * Parses JSON text. A parsed `__proto__` key is refused: JSON.parse makes it an ordinary own key, but the output's JSON value check drops it without a word, so the value would silently lose it (the reason the path grammar refuses that key too).
+ */
+function parseJsonText(value: string): unknown {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch (error) {
+    throw new Error(`value is not JSON text: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+  }
+  if (holdsProtoKey(parsed)) {
+    throw new Error(`JSON text holds a __proto__ key, which the output cannot carry: ${JSON.stringify(value)}`);
+  }
+
+  return parsed;
+}
+
+function holdsProtoKey(value: unknown): boolean {
+  if (Array.isArray(value)) {
+    return value.some((element: unknown) => holdsProtoKey(element));
+  }
+  if (typeof value === "object" && value !== null) {
+    return Object.entries(value).some(([key, child]) => key === "__proto__" || holdsProtoKey(child));
+  }
+
+  return false;
+}
+
+/** The encode half of `format`: parses the native textual form into the shared machine form (an ISO-8601 timestamp or calendar date to epoch milliseconds, a decimal string to a number, `"true"` or `"false"` to a boolean, JSON text to the value it denotes). */
+export function formatEncode(rule: FormatRule, value: unknown): unknown {
   if (typeof value !== "string") {
     throw new Error(`format (${rule.kind}) applies to strings, found: ${JSON.stringify(value)}`);
   }
-
-  return rule.kind === "isoDateTime" ? parseIsoDateTime(value) : parseNumberText(value);
+  switch (rule.kind) {
+    case "isoDateTime":
+      return parseIsoDateTime(value);
+    case "isoDate":
+      return parseIsoDate(value);
+    case "numberText":
+      return parseNumberText(value);
+    case "booleanText":
+      return parseBooleanText(value);
+    case "jsonText":
+      return parseJsonText(value);
+    default:
+      return unhandledKind();
+  }
 }
 
-/** The decode half of `format`: renders the shared machine form back into the native textual form. */
+/** The decode half of `format`: renders the shared machine form back into the canonical textual form (`toISOString`, its date part, `String(number)`, `"true"` or `"false"`, `JSON.stringify`). */
 export function formatDecode(rule: FormatRule, value: unknown): string {
+  switch (rule.kind) {
+    case "isoDateTime":
+      return new Date(finiteNumber(rule, value)).toISOString();
+    case "isoDate":
+      return renderIsoDate(finiteNumber(rule, value));
+    case "numberText":
+      return String(finiteNumber(rule, value));
+    case "booleanText":
+      if (typeof value !== "boolean") {
+        throw new Error(`format (booleanText) decode applies to booleans, found: ${JSON.stringify(value)}`);
+      }
+
+      return String(value);
+    case "jsonText":
+      return renderJsonText(value);
+    default:
+      return unhandledKind();
+  }
+}
+
+/** JSON.stringify returns `undefined`, not text, for a value JSON cannot express (`undefined` or a function at the top level), so that case is an error here rather than a non-string leaking out. */
+function renderJsonText(value: unknown): string {
+  const text: unknown = JSON.stringify(value);
+  if (typeof text !== "string") {
+    throw new Error("format (jsonText) decode applies to JSON values, found a value JSON cannot express");
+  }
+
+  return text;
+}
+
+function finiteNumber(rule: FormatRule, value: unknown): number {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new Error(`format (${rule.kind}) decode applies to finite numbers, found: ${JSON.stringify(value)}`);
   }
 
-  return rule.kind === "isoDateTime" ? new Date(value).toISOString() : String(value);
+  return value;
+}
+
+/** Unreachable for any rule that passed the schema: the default arm exists so the switch is total. */
+function unhandledKind(): never {
+  throw new Error("no format handler for the rule's kind: the schema and the format op disagree");
 }

@@ -61,3 +61,53 @@ describe("format numberText", () => {
     expect(() => formatEncode(rule, "")).toThrow(/decimal number/);
   });
 });
+
+describe("format isoDate", () => {
+  const rule: FormatRule = { op: "format", from: "on", to: "onMs", kind: "isoDate" };
+
+  it("parses a calendar date to its UTC midnight and renders the date back", () => {
+    expect(formatEncode(rule, data.octoberDateOnly)).toBe(epochOf(data.octoberDateOnly));
+    expect(formatDecode(rule, epochOf(data.octoberDateOnly))).toBe(data.octoberDateOnly);
+  });
+
+  it.each(["2026-10-18T10:15:00Z", "2026-02-30", "18/10/2026", "2026-1-8"])("refuses %s on encode", (text) => {
+    expect(() => formatEncode(rule, text)).toThrow(Error);
+  });
+
+  it("refuses an instant that is not a UTC midnight on decode", () => {
+    expect(() => formatDecode(rule, epochOf(data.octoberInstant))).toThrow(/UTC midnight/);
+  });
+});
+
+describe("format booleanText", () => {
+  const rule: FormatRule = { op: "format", from: "flag", to: "isSet", kind: "booleanText" };
+
+  it("converts both spellings and refuses others", () => {
+    expect(formatEncode(rule, "true")).toBe(true);
+    expect(formatEncode(rule, "false")).toBe(false);
+    expect(formatDecode(rule, true)).toBe("true");
+    expect(formatDecode(rule, false)).toBe("false");
+    expect(() => formatEncode(rule, "True")).toThrow(Error);
+    expect(() => formatEncode(rule, "1")).toThrow(Error);
+    expect(() => formatDecode(rule, "true")).toThrow(Error);
+  });
+});
+
+describe("format jsonText", () => {
+  const rule: FormatRule = { op: "format", from: "raw", to: "value", kind: "jsonText" };
+
+  it("parses JSON text and renders it back canonically", () => {
+    const text = '{"a":[1,null,"x"],"b":{"c":true}}';
+    expect(formatEncode(rule, text)).toEqual({ a: [1, null, "x"], b: { c: true } });
+    expect(formatDecode(rule, formatEncode(rule, text))).toBe(text);
+  });
+
+  it("refuses text that is not JSON, and JSON holding a __proto__ key anywhere", () => {
+    expect(() => formatEncode(rule, "{a:1}")).toThrow(/not JSON text/);
+    expect(() => formatEncode(rule, '{"x":[{"__proto__":1}]}')).toThrow(/__proto__/);
+  });
+
+  it("refuses a decode value JSON cannot express", () => {
+    expect(() => formatDecode(rule, undefined)).toThrow(/JSON cannot express/);
+  });
+});
