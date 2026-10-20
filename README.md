@@ -217,6 +217,7 @@ These are the declared lossy remainder, each applying in one named direction.
 | --- | --- | --- |
 | `drop` | `from`, `direction: "encode"` | states that `from` is deliberately not carried across. Nothing is written, so the path is simply absent from the output |
 | `default` | `to`, `value`, `direction`: `"encode"` or `"decode"` | inserts `value` at `to` when running in that direction and `to` is still absent from the output. `to` has no wildcard |
+| `aggregate` | `fn`: `count`, `sum`, `min` or `max`; `from`, `to`, `direction` | when running in that direction, reads the elements `from` reaches in the input and writes their count, or the sum, minimum or maximum of their numbers, at `to`. `to` has fewer wildcards than `from`, and the elements are grouped by the indexes at the wildcards `to` keeps, so `orders[].lines[].qty` into `sales[].units` writes one total per order. An empty group counts and sums to 0; `min` and `max` of an empty group throw |
 
 ### Gating with `when`
 
@@ -243,7 +244,7 @@ The errors crossmap defines all extend `CrossmapError`: `CrosswalkSyntaxError` f
 
 ## Round trips
 
-`assertRoundTrip(crosswalk, samples)` encodes and decodes each sample and deep-compares the result with it, leaving out the paths one-way rules touch: a dropped path cannot survive, and a decode-side default inserts a path the sample never had. It throws on the first difference. Its limits follow from the format:
+`assertRoundTrip(crosswalk, samples)` encodes and decodes each sample and deep-compares the result with it, leaving out the paths one-way rules touch: a dropped path cannot survive, and a decode-direction default or aggregate inserts a path the sample never had. It throws on the first difference. Its limits follow from the format:
 
 - A crosswalk is a total mapping over the document. A field no rule maps does not survive encode, so a sample carrying one fails its own round trip.
 - A `scale` with a non-integer factor can fail bit-identity: multiplying and then dividing is exact for integers and powers of two, and can differ in the last bit for factors such as `0.1`. Decode divides and does not multiply by a reciprocal, which is the more accurate route.
@@ -261,7 +262,6 @@ Each of these is a deliberate omission, listed so it is not mistaken for an over
 
 - `nest` and `unnest`: a `move` whose `to` is deeper nests, one whose `to` is shallower flattens, and a `move` of a whole record carries every field in it, so a dedicated operation would add nothing the format cannot already say.
 - Lookup against external tables.
-- Aggregates and folds over arrays.
 - Array filter and sort.
 - Regex split.
 - Further `format` kinds.
