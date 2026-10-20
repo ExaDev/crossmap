@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/ExaDev/crossmap/compare/v0.2.0...v0.3.0) (2026-10-20)
+
+
+### Features
+
+* **cli:** read http, https, data and file URLs for the crosswalk, document and samples arguments ([11e8228](https://github.com/ExaDev/crossmap/commit/11e822853d39b3e93f4be4fa3891772fc2e6cc83))
+
 # [0.2.0](https://github.com/ExaDev/crossmap/compare/v0.1.5...v0.2.0) (2026-10-20)
 
 
