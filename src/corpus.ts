@@ -14,7 +14,7 @@ const whenQtyIsBig: When = { kind: "compare", op: "gt", left: { kind: "reference
 /**
  * Samples carry only mapped fields (the crosswalk is a total mapping: an unmapped field does not survive encode, so a sample carrying one would fail its own round trip) and use the canonical ISO form decode emits, since any other ISO spelling names the same instant but not the same string.
  *
- * The deterministic corpus: one cell per op-table row (move, scale, enum, format isoDateTime, format numberText, split, drop, default encode-direction, default decode-direction), plus a wildcard-arity-one cell, a when-applied cell, a when-skipped cell, and one cell per path shape beyond records and one wildcard (nesting and flattening, an array of arrays, fixed indices, quoted keys). Scale factors are integers by design: multiply-then-divide is bit-identical for them (a non-integer factor is a documented round-trip caveat, not a corpus case).
+ * The deterministic corpus: one cell per op-table row (move, scale, enum, format isoDateTime, format numberText, split, drop, default encode-direction, default decode-direction), plus a wildcard-arity-one cell, a when-applied cell, a when-skipped cell, a per-element when cell, and one cell per path shape beyond records and one wildcard (nesting and flattening, an array of arrays, fixed indices, quoted keys). Scale factors are integers by design: multiply-then-divide is bit-identical for them (a non-integer factor is a documented round-trip caveat, not a corpus case).
  */
 export const CORPUS: readonly CorpusCell[] = [
   {
@@ -126,6 +126,24 @@ export const CORPUS: readonly CorpusCell[] = [
     samples: [{ qty: 1 }],
   },
   {
+    name: "when per element",
+    crosswalk: {
+      source: "native",
+      target: "shared",
+      rules: [
+        { op: "move", from: "items[].kind", to: "shapes[].kind" },
+        {
+          op: "move",
+          from: "items[].radius",
+          to: "shapes[].r",
+          when: { kind: "textCompare", op: "equals", left: { kind: "reference", key: "items[].kind" }, right: { kind: "textLiteral", value: "circle" } },
+        },
+      ],
+      oneWay: [],
+    },
+    samples: [{ items: [{ kind: "circle", radius: 2 }, { kind: "square" }] }, { items: [] }],
+  },
+  {
     name: "nest and flatten",
     crosswalk: {
       source: "native",
@@ -178,6 +196,7 @@ export const REQUIRED_ROWS: readonly string[] = [
   "wildcard arity one",
   "when applied",
   "when skipped",
+  "when per element",
   "nest and flatten",
   "array of arrays",
   "fixed index",

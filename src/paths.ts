@@ -173,6 +173,12 @@ export interface EmptySite {
   readonly wildcard: number;
 }
 
+/** A per-element filter for {@link readLocus}: which elements, identified by their indexes at the first `arity` wildcards, a gated rule visits. */
+export interface ElementGate {
+  readonly arity: number;
+  readonly admit: (indexes: readonly number[]) => boolean;
+}
+
 /** Everything one locus addresses in a document: the matches in index order, and every empty array a wildcard step met on the way. */
 export interface LocusReading {
   readonly matches: readonly PathMatch[];
@@ -183,9 +189,10 @@ export interface LocusReading {
  * Reads every location a locus addresses in a document. A wildcard step yields one match per element of the array it reaches, so a locus with wildcard arity `a` yields exactly one match per `a`-dimensional index combination of the arrays it traverses; a fixed index step addresses one element.
  * @param root - The document to read from.
  * @param locus - The parsed path to read.
+ * @param gate - Optional per-element admission: once the first `arity` wildcards are expanded, each element is kept only if `admit` returns true for its indexes at those wildcards, and nothing below a refused element is read (so an element that lacks the rest of the path is skipped, not absent). Empty arrays met at or above that depth are still reported.
  * @returns The reading, or `undefined` when any step of the path is absent from the document: a missing key, a key step meeting a non-record, an index step meeting a non-array or an index past the array's end, or a wildcard meeting a non-array (a wildcard over a missing array is absence too, not an empty list).
  */
-export function readLocus(root: unknown, locus: Locus): LocusReading | undefined {
+export function readLocus(root: unknown, locus: Locus, gate?: ElementGate): LocusReading | undefined {
   let frontier: readonly PathMatch[] = [{ trail: [], value: root }];
   const empties: EmptySite[] = [];
   let wildcardOrdinal = 0;
@@ -220,7 +227,7 @@ export function readLocus(root: unknown, locus: Locus): LocusReading | undefined
     if (step.kind === "wildcard") {
       wildcardOrdinal += 1;
     }
-    frontier = next;
+    frontier = gate !== undefined && step.kind === "wildcard" && wildcardOrdinal === gate.arity ? next.filter((site) => gate.admit(wildcardIndexes(locus, site.trail))) : next;
   }
 
   return { matches: frontier, empties };
