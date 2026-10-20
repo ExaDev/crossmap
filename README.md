@@ -197,7 +197,7 @@ Each derives both directions from one declaration. Decode swaps `from` and `to` 
 | `move` | `from`, `to` | carries any JSON value across | carries it back | always |
 | `scale` | `factor`: finite, non-zero | `value * factor` | `value / factor` | the factor is an integer or a power of two; other factors can lose the last bit |
 | `enum` | `map`, `mapBack` | `map[value]` | `mapBack[value]` | always: `mapBack` must be exactly the inverse of an injective `map`, checked when the crosswalk is parsed, and an unmapped value is an error |
-| `format` | `kind`: `isoDateTime` or `numberText` | parses the text: an ISO-8601 date or timestamp to epoch milliseconds, a decimal string to a number | renders the canonical text: `toISOString`, or `String(number)` | the input is already in the canonical spelling |
+| `format` | `kind`: `isoDateTime`, `isoDate`, `numberText`, `booleanText` or `jsonText` | parses the text: an ISO-8601 date or timestamp to epoch milliseconds, a calendar date (`YYYY-MM-DD`) to its UTC midnight, a decimal string to a number, `"true"` or `"false"` to a boolean, JSON text to the value it denotes | renders the canonical text: `toISOString`, its date part, `String(number)`, `"true"` or `"false"`, `JSON.stringify` | the input is already in the canonical spelling (for `jsonText`, no whitespace outside strings; a `__proto__` key is refused, since the output cannot carry it) |
 | `split` | `separator`: non-empty | cuts the string at every separator | joins the parts with it | no part contains the separator; decode throws otherwise |
 | `template` | `from`: a record of field names to paths, `template`: text with `{name}` placeholders | renders the string fields into the template | splits the text back into the fields | always: every field is used exactly once and a literal separates every two placeholders, checked when the crosswalk is parsed, and encode throws for a value containing the literal that follows its placeholder |
 | `copy` | `from`, `to`: two or more paths | writes the one value at every `to` | reads every copy and writes the value back | always: decode throws when the copies disagree |
@@ -261,11 +261,10 @@ The crosswalk format is published as a JSON Schema 2020-12 document, generated f
 Each of these is a deliberate omission, listed so it is not mistaken for an oversight:
 
 - `nest` and `unnest`: a `move` whose `to` is deeper nests, one whose `to` is shallower flattens, and a `move` of a whole record carries every field in it, so a dedicated operation would add nothing the format cannot already say.
-- Lookup against external tables.
-- Array filter and sort.
-- Regex split.
-- Further `format` kinds.
-- A streaming executor.
+- Lookup against external tables: the crosswalk would stop defining both directions on its own, since decode inverts encode only if the caller supplies the identical table both times. An injective table belongs in an `enum` rule (build `map` from it and `mapBack` from its inverse), where the bijection is checked and travels with the document.
+- Array filter and sort: wildcards are index-aligned, and moving elements away from their positions would break every rule that decodes from them. Per-element `when` gating applies a rule to some elements without moving any.
+- Regex split: nothing records which text a pattern matched, so the join is undetermined, and a backtracking pattern in a crosswalk read from anywhere would let its author make encoding arbitrarily expensive.
+- A streaming executor: `encode` and `decode` take parsed values, so the document is already in memory, and a `when` can read any path of it. A sequence of records streams by calling `encode` per record.
 
 ## Development
 
