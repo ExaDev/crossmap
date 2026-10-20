@@ -18,6 +18,7 @@ function readJsonc(name: string): unknown {
 const TurboSchema = z.object({
   tasks: z.record(z.string(), z.object({ dependsOn: z.array(z.string()).optional() }).loose()),
 });
+const TsconfigSchema = z.object({ compilerOptions: z.object({ incremental: z.boolean().optional() }).loose() }).loose();
 const PackageSchema = z.object({ scripts: z.record(z.string(), z.string()) });
 
 const turbo = TurboSchema.parse(readJsonc('turbo.json'));
@@ -57,5 +58,22 @@ describe('the pre-push hook', () => {
       .filter((line) => line.trim() !== '' && !line.startsWith('#'));
     expect(hook).toEqual(['pnpm run prepush']);
     expect(scripts['prepush']).toBe('turbo run _prepush');
+  });
+});
+
+describe('the incremental caches', () => {
+  it('has both lint scripts cache by content, because a fresh checkout gives every file a new mtime and the default strategy would never hit', () => {
+    for (const name of ['_lint', '_lint:check']) {
+      expect(scripts[name], `${name} should use the content strategy`).toContain('--cache-strategy content');
+    }
+  });
+
+  it('has tsc keep incremental state and the typecheck job cache the file each program writes beside its config, because an uncached build info is lost with the runner', () => {
+    expect(TsconfigSchema.parse(readJsonc('tsconfig.json')).compilerOptions.incremental).toBe(true);
+    const workflow = readFileSync(join(root, '.github/workflows/ci.yml'), 'utf8');
+    for (const config of ['tsconfig.json', 'tsconfig.node.json']) {
+      const buildInfo = config.replace(/\.json$/, '.tsbuildinfo');
+      expect(workflow, `${buildInfo} is not cached in ci.yml`).toContain(buildInfo);
+    }
   });
 });
