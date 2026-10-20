@@ -147,8 +147,24 @@ export const DefaultRuleSchema = z
   .strict();
 export type DefaultRule = z.infer<typeof DefaultRuleSchema>;
 
+export const AggregateFunctionSchema = z.enum(["count", "sum", "min", "max"]);
+export type AggregateFunction = z.infer<typeof AggregateFunctionSchema>;
+
+/** A value derived from the elements a wildcard path reaches, written in one direction: `count` of the matches, or their `sum`, `min` or `max` (numbers). The elements it combines cannot be recovered from it, which is why it is one-way. `to` has fewer wildcards than `from`; with `k` of them, the matches are grouped by their first `k` indexes, one result per group (a total per order, say). */
+export const AggregateRuleSchema = z
+  .object({
+    op: z.literal("aggregate"),
+    fn: AggregateFunctionSchema,
+    from: PathField,
+    to: PathField,
+    direction: z.enum(["encode", "decode"]),
+    when: PredicateNodeSchema.optional(),
+  })
+  .strict();
+export type AggregateRule = z.infer<typeof AggregateRuleSchema>;
+
 /** A one-way rule: explicitly lossy, applying in one direction only. */
-export const OneWayRuleSchema = z.discriminatedUnion("op", [DropRuleSchema, DefaultRuleSchema]);
+export const OneWayRuleSchema = z.discriminatedUnion("op", [DropRuleSchema, DefaultRuleSchema, AggregateRuleSchema]);
 export type OneWayRule = z.infer<typeof OneWayRuleSchema>;
 
 /**

@@ -187,6 +187,23 @@ describe("validateCrosswalk on multi-path rules", () => {
   });
 
   it("counts every template field as a read", () => {
-    expect(issuesOf([{ op: "template", from: { a: "a", b: "b" }, to: "t", template: "{a}/{b}" }, { op: "move", from: "b", to: "u" }])).toEqual(["two rules read the same from path: b"]);
+    expect(issuesOf([{ op: "template", from: { a: "a", b: "b" }, to: "t", template: "{a}/{b}" }, { op: "move", from: "b", to: "u" }])).toEqual(["two rules use the same from path: b"]);
+  });
+});
+
+describe("validateCrosswalk on aggregates", () => {
+  const issuesOf = (rules: readonly unknown[], oneWay: readonly unknown[]) => validateCrosswalk(crosswalk({ source: "a", target: "b", rules, oneWay })).map((issue) => issue.message);
+
+  it("needs more wildcards in from than in to", () => {
+    expect(issuesOf([], [{ op: "aggregate", fn: "count", from: "n", to: "c", direction: "encode" }])).toEqual(["an aggregate's from (n) needs more wildcards than its to (c): it combines the elements of the wildcards to drops"]);
+  });
+
+  it("rejects grouping into a target array another source array feeds", () => {
+    expect(issuesOf([{ op: "move", from: "orders[].id", to: "sales[].id" }], [{ op: "aggregate", fn: "count", from: "refunds[].x[]", to: "sales[].n", direction: "encode" }])).toEqual(["an aggregate groups refunds[] into sales[], which orders[] feeds: the results would land in the wrong elements"]);
+  });
+
+  it("compares a decode-direction write with the source-side paths, not the target-side ones", () => {
+    expect(issuesOf([{ op: "move", from: "a", to: "total" }], [{ op: "aggregate", fn: "count", from: "xs[]", to: "total", direction: "decode" }])).toEqual([]);
+    expect(issuesOf([{ op: "move", from: "total", to: "t" }], [{ op: "default", to: "total", value: 0, direction: "decode" }])).toEqual(["two rules use the same from path: total"]);
   });
 });

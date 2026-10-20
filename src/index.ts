@@ -1,5 +1,7 @@
-export { CrosswalkSchema, FormatKindSchema, parseCrosswalk } from "./crosswalk";
+export { AggregateFunctionSchema, CrosswalkSchema, FormatKindSchema, parseCrosswalk } from "./crosswalk";
 export type {
+  AggregateFunction,
+  AggregateRule,
   CopyRule,
   Crosswalk,
   DefaultRule,

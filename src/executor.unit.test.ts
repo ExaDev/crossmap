@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { type Crosswalk, parseCrosswalk } from "./crosswalk";
 import { CrosswalkStructureError, RuleApplicationError } from "./errors";
 import { decode, encode } from "./executor";
+import { assertRoundTrip } from "./roundtrip";
 
 const crosswalk = (doc: unknown): Crosswalk => parseCrosswalk(doc);
 
@@ -337,5 +338,40 @@ describe("template and copy", () => {
     const cw = crosswalk({ source: "n", target: "s", rules: [{ op: "copy", from: "items[].id", to: ["nodes[].id", "labels[].text"] }], oneWay: [] });
     expect(() => decode(cw, { nodes: [{ id: "a" }], labels: [{ text: "b" }] })).toThrow(/the copies disagree/);
     expect(() => decode(cw, { nodes: [{ id: "a" }], labels: [] })).toThrow(/addresses different elements/);
+  });
+});
+
+describe("aggregate", () => {
+  it("adds derived totals on encode and leaves them out of decode", () => {
+    const cw = crosswalk({
+      source: "n",
+      target: "s",
+      rules: [{ op: "move", from: "orders[].lines[].qty", to: "sales[].lines[].qty" }],
+      oneWay: [
+        { op: "aggregate", fn: "sum", from: "orders[].lines[].qty", to: "sales[].units", direction: "encode" },
+        { op: "aggregate", fn: "count", from: "orders[]", to: "orderCount", direction: "encode" },
+      ],
+    });
+    const native = { orders: [{ lines: [{ qty: 1 }, { qty: 2 }] }, { lines: [] }] };
+    const shared = encode(cw, native);
+    expect(shared).toEqual({ sales: [{ lines: [{ qty: 1 }, { qty: 2 }], units: 3 }, { lines: [], units: 0 }], orderCount: 2 });
+    expect(decode(cw, shared)).toEqual(native);
+    assertRoundTrip(cw, [native]);
+  });
+
+  it("writes a decode-direction aggregate into the source shape, excluded from the round trip", () => {
+    const cw = crosswalk({
+      source: "n",
+      target: "s",
+      rules: [{ op: "move", from: "tags[]", to: "labels[]" }],
+      oneWay: [{ op: "aggregate", fn: "count", from: "labels[]", to: "tagCount", direction: "decode" }],
+    });
+    expect(decode(cw, { labels: ["a", "b"] })).toEqual({ tags: ["a", "b"], tagCount: 2 });
+    assertRoundTrip(cw, [{ tags: ["a"] }]);
+  });
+
+  it("throws RuleApplicationError for a value that does not fit", () => {
+    const cw = crosswalk({ source: "n", target: "s", rules: [], oneWay: [{ op: "aggregate", fn: "sum", from: "xs[]", to: "total", direction: "encode" }] });
+    expect(() => encode(cw, { xs: ["1"] })).toThrow(RuleApplicationError);
   });
 });
