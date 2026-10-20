@@ -3,7 +3,7 @@ import { join } from "node:path";
 import canonicalize from "canonicalize";
 import { describe, expect, it } from "vitest";
 
-const schemaPath = join(import.meta.dirname, "../schemas/twindex.schema.json");
+const schemaPath = join(import.meta.dirname, "../schemas/crossmap.schema.json");
 
 describe("the built JSON Schema", () => {
   const file = readFileSync(schemaPath, "utf8");

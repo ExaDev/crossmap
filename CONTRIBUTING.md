@@ -17,7 +17,7 @@
 - **Paths are data, not code.** A document or crosswalk must never reach `Object.prototype`. Read with own-property checks and write through `setOwn` in `src/own.ts`, never `record[key]`, and keep `__proto__` out of the path grammar.
 - **One schema defines the format.** The Zod schemas in `src/crosswalk.ts` are the single definition, and the JSON Schema is generated from them. Predicates are trilean's `PredicateNodeSchema`, referenced rather than copied.
 - **Task order and caching live in `turbo.json`.** Each task is an underscore-prefixed leaf script (`_build`, `_typecheck`, `_test`, `_lint`) and the public script of the same name is `turbo run _<task>`. Ordering is a `dependsOn` edge, never a sequence of commands in a hook, a workflow or a script, so every entry point (hook, CI, a developer's shell) gets the same order and the same cache. `src/turbo.unit.test.ts` fails when a script, task or hook drifts from this. Incremental state that lives outside turbo's task cache is restored by its own CI cache step: the lint scripts cache by file content (mtimes do not survive a checkout) and `tsc` writes its build info beside each tsconfig, which the CI typecheck job caches.
-- **Generated files are never hand-edited or committed.** `schemas/twindex.schema.json` and `dist/` come from `pnpm build` and are gitignored. If the generated schema looks wrong, fix the Zod schema or `scripts/generate-json-schema.ts`.
+- **Generated files are never hand-edited or committed.** `schemas/crossmap.schema.json` and `dist/` come from `pnpm build` and are gitignored. If the generated schema looks wrong, fix the Zod schema or `scripts/generate-json-schema.ts`.
 - **No wall-clock figures in tests or docs.** Assert structure and counts of work.
 
 ## Releases

@@ -1,6 +1,6 @@
 import { parseArgs } from "node:util";
 import type { Crosswalk } from "../src/index";
-import { assertRoundTrip, CrosswalkStructureError, decode, encode, parseCrosswalk, TwindexError, validateCrosswalk } from "../src/index";
+import { assertRoundTrip, CrosswalkStructureError, decode, encode, parseCrosswalk, CrossmapError, validateCrosswalk } from "../src/index";
 
 /** Everything the command touches outside its own arguments, injected so the command runs the same under test as under Node. */
 export interface CliIo {
@@ -21,12 +21,12 @@ export const EXIT_REJECTED = 1;
 /** The command could not run: bad usage, or a file that is unreadable or not JSON. */
 export const EXIT_USAGE = 2;
 
-const usage = `Usage: twindex encode     <crosswalk.json> <document.json>
-       twindex decode     <crosswalk.json> <document.json>
-       twindex validate   <crosswalk.json>
-       twindex round-trip <crosswalk.json> <samples.json>
+const usage = `Usage: crossmap encode     <crosswalk.json> <document.json>
+       crossmap decode     <crosswalk.json> <document.json>
+       crossmap validate   <crosswalk.json>
+       crossmap round-trip <crosswalk.json> <samples.json>
 
-Applies a twindex crosswalk to JSON documents.
+Applies a crossmap crosswalk to JSON documents.
 
   encode      prints the document translated from the crosswalk's source shape
               to its target shape
@@ -154,7 +154,7 @@ export function run(args: readonly string[], io: Readonly<CliIo>): number {
   try {
     return handlers[command](io, parseCrosswalk(crosswalkDocument), document);
   } catch (error) {
-    if (error instanceof TwindexError) return fail(io, EXIT_REJECTED, [error.message]);
+    if (error instanceof CrossmapError) return fail(io, EXIT_REJECTED, [error.message]);
     throw error;
   }
 }

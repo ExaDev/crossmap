@@ -5,7 +5,7 @@
 
   // Every task name is the underscore-prefixed one the package defines for its real command (`_build` runs tsdown and the schema generation; the package's own `build` script is `turbo run _build`). Running the public names from here instead would make turbo invoke those wrapper scripts, which invoke turbo again: the recursive case Turborepo's own docs warn against.
   //
-  // `_typecheck` and `_test` depend on this package's own `_build`, and that edge is the reason this file exists: scripts/generate-json-schema.ts imports ../dist/index.js by relative path, so the program in tsconfig.node.json cannot typecheck until dist/ exists, and the JSON Schema suite reads schemas/twindex.schema.json, which the build generates. Encoding the order here means no hook, workflow or person has to remember it.
+  // `_typecheck` and `_test` depend on this package's own `_build`, and that edge is the reason this file exists: scripts/generate-json-schema.ts imports ../dist/index.js by relative path, so the program in tsconfig.node.json cannot typecheck until dist/ exists, and the JSON Schema suite reads schemas/crossmap.schema.json, which the build generates. Encoding the order here means no hook, workflow or person has to remember it.
   "tasks": {
     "_build": {
       // scripts/** covers the schema generation step that runs as part of the build; package.json is an input because the generation reads it.

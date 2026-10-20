@@ -1,9 +1,9 @@
 {
-  "name": "twindex",
+  "name": "crossmap",
   "description": "Bidirectional crosswalk codec: one rule document derives both encode and decode between two JSON shapes",
   "version": "0.1.5",
   "bin": {
-    "twindex": "./dist-cli/twindex.mjs"
+    "crossmap": "./dist-cli/crossmap.mjs"
   },
   "dependencies": {
     "trilean": "1.9.0",
@@ -67,7 +67,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ExaDev/twindex.git"
+    "url": "git+https://github.com/ExaDev/crossmap.git"
   },
   "scripts": {
     "_build": "tsdown && tsx scripts/generate-json-schema.ts",

@@ -1,6 +1,6 @@
-# twindex
+# crossmap
 
-[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/ExaDev/twindex) [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/twindex) [![Release](https://img.shields.io/github/v/release/ExaDev/twindex)](https://github.com/ExaDev/twindex/releases/latest) [![CI](https://img.shields.io/github/actions/workflow/status/ExaDev/twindex/ci.yml?branch=main)](https://github.com/ExaDev/twindex/actions)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/ExaDev/crossmap) [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/crossmap) [![Release](https://img.shields.io/github/v/release/ExaDev/crossmap)](https://github.com/ExaDev/crossmap/releases/latest) [![CI](https://img.shields.io/github/actions/workflow/status/ExaDev/crossmap/ci.yml?branch=main)](https://github.com/ExaDev/crossmap/actions)
 
 A bidirectional crosswalk codec. One crosswalk document describes how to map between a dataset's native JSON shape and a shared target shape, and that one document derives both directions: every two-way operation knows its own inverse, so `decode` undoes `encode` over the paths the crosswalk maps. What cannot be undone is declared as one-way rules rather than hidden. Rules are gated with [trilean](https://github.com/ExaDev/trilean) predicate trees, and the whole format is defined by one Zod schema with a generated JSON Schema shipped in the package.
 
@@ -13,7 +13,7 @@ A crosswalk does not depend on what the dataset is about. The three examples bel
 Sensor readings, such as a CSV read into JSON, with text numbers, a unit and a flag column:
 
 ```ts
-import { assertRoundTrip, decode, encode, parseCrosswalk } from "twindex";
+import { assertRoundTrip, decode, encode, parseCrosswalk } from "crossmap";
 
 const readings = parseCrosswalk({
   source: "field-sensors/reading",
@@ -143,13 +143,13 @@ assertRoundTrip(catalogue, [record, printOnly]);
 
 ## Command line
 
-The package installs a `twindex` command, so a crosswalk can be applied without writing code:
+The package installs a `crossmap` command, so a crosswalk can be applied without writing code:
 
 ```sh
-npx twindex encode crosswalk.json document.json
-npx twindex decode crosswalk.json shared.json
-npx twindex validate crosswalk.json
-npx twindex round-trip crosswalk.json samples.json
+npx crossmap encode crosswalk.json document.json
+npx crossmap decode crosswalk.json shared.json
+npx crossmap validate crosswalk.json
+npx crossmap round-trip crosswalk.json samples.json
 ```
 
 `encode` and `decode` print the translated document as JSON. `validate` and `round-trip` print nothing when they succeed; `samples.json` is a JSON array of source-shape documents. Either file argument can be `-` to read standard input, though not both at once.
@@ -193,7 +193,7 @@ Every rule may carry `when`, a trilean predicate tree, evaluated against the gov
 
 The executor is pure and synchronous. Encode reads every `from` from the input as given and writes every `to` into a fresh output, so the input is never mutated. A `from` that is absent from the document is a `RuleApplicationError`, never a silent skip. The output is checked to be valid JSON throughout, so an input value that is not JSON (an `undefined` property, say) fails that check with a Zod error rather than reaching a caller.
 
-The errors twindex defines all extend `TwindexError`: `CrosswalkSyntaxError` for a document that is not a crosswalk, `CrosswalkStructureError` for a rule list that parses but cannot execute, `RuleApplicationError` naming the rule and path that failed, and `RoundTripMismatchError` naming the sample and path.
+The errors crossmap defines all extend `CrossmapError`: `CrosswalkSyntaxError` for a document that is not a crosswalk, `CrosswalkStructureError` for a rule list that parses but cannot execute, `RuleApplicationError` naming the rule and path that failed, and `RoundTripMismatchError` naming the sample and path.
 
 ## Round trips
 
@@ -207,7 +207,7 @@ The errors twindex defines all extend `TwindexError`: `CrosswalkSyntaxError` for
 
 ## JSON Schema
 
-The crosswalk format is published as a JSON Schema 2020-12 document, generated from the Zod definitions as part of the build and canonicalised per RFC 8785. It is exposed through the package exports map as `twindex/schemas/twindex.schema.json`. The `when` field is a `$ref` to trilean's published predicate schema, pinned to the trilean version this package depends on, so the predicate grammar has one source of truth.
+The crosswalk format is published as a JSON Schema 2020-12 document, generated from the Zod definitions as part of the build and canonicalised per RFC 8785. It is exposed through the package exports map as `crossmap/schemas/crossmap.schema.json`. The `when` field is a `$ref` to trilean's published predicate schema, pinned to the trilean version this package depends on, so the predicate grammar has one source of truth.
 
 ## Not in this version
 
