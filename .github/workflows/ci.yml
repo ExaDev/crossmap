@@ -64,6 +64,14 @@ jobs:
           # eslint.config.ts and pnpm-lock.yaml both invalidate the cache: a rule change or a dependency bump can change lint results even for files whose own content did not change.
           key: eslintcache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.ts') }}
           restore-keys: eslintcache-${{ runner.os }}-
+      # turbo's local task cache, keyed per task. hashFiles(pnpm-lock.yaml, turbo.json) puts the dependency set and the task graph into the key, so either changing starts a fresh cache lineage; the run id makes every run save its own entry, and restore-keys picks up the latest one.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo
+          key: turbo-lint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-${{ github.run_id }}
+          restore-keys: |
+            turbo-lint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-
+            turbo-lint-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
       # The check-only script: `pnpm lint` fixes in place, so it would exit 0 on a fixable violation that never reaches the commit.
       - run: pnpm lint:check
@@ -82,9 +90,16 @@ jobs:
         with:
           node-version: '22'
           cache: pnpm
+      # turbo's local task cache, keyed per task. hashFiles(pnpm-lock.yaml, turbo.json) puts the dependency set and the task graph into the key, so either changing starts a fresh cache lineage; the run id makes every run save its own entry, and restore-keys picks up the latest one.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo
+          key: turbo-typecheck-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-${{ github.run_id }}
+          restore-keys: |
+            turbo-typecheck-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-
+            turbo-typecheck-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
-      # Build before both typecheck and test: the schema generation script's program (tsconfig.node.json) imports the built dist, and the JSON Schema suite reads schemas/twindex.schema.json, which the build generates.
-      - run: pnpm build
+      # No separate build step: turbo.json makes _typecheck and _test depend on _build (the schema generation script's program imports the built dist, and the JSON Schema suite reads the schema the build generates), so both run it first, or replay it from the cache, and publint and attw below find dist/ in place.
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm exec publint
