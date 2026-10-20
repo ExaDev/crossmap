@@ -6,7 +6,7 @@ export interface SyntaxIssue {
 }
 
 /**
- * One structural defect of an otherwise syntactically valid crosswalk: which rule (two-way rules first, then one-way rules, continuing the count) and what is wrong. Structural checks are properties of the rule list as a whole (wildcard correlation, path uniqueness), which is why they are collected rather than thrown mid-parse.
+ * One structural defect of an otherwise syntactically valid crosswalk: which rule (two-way rules first, then one-way rules, continuing the count; negative when the defect lies between rules, not in one) and what is wrong. Structural checks are properties of the rule list as a whole (wildcard correlation, path uniqueness), which is why they are collected rather than thrown mid-parse.
  */
 export interface CrosswalkIssue {
   readonly ruleIndex: number;
@@ -36,7 +36,7 @@ export class CrosswalkStructureError extends TwindexError {
   readonly issues: readonly CrosswalkIssue[];
 
   constructor(issues: readonly CrosswalkIssue[]) {
-    super(`crosswalk structure error: ${issues.map((issue) => `rule ${String(issue.ruleIndex)}: ${issue.message}`).join("; ")}`);
+    super(`crosswalk structure error: ${issues.map((issue) => (issue.ruleIndex < 0 ? issue.message : `rule ${String(issue.ruleIndex)}: ${issue.message}`)).join("; ")}`);
     this.issues = issues;
   }
 }
