@@ -1,24 +1,22 @@
 import { parseArgs } from "node:util";
 import type { Crosswalk } from "../src/index";
+import { STDIN } from "./read-source";
 import { assertRoundTrip, CrosswalkStructureError, decode, encode, parseCrosswalk, CrossmapError, validateCrosswalk } from "../src/index";
 
 /** Everything the command touches outside its own arguments, injected so the command runs the same under test as under Node. */
 export interface CliIo {
-  /** The text of a file, or of standard input for `-`. */
-  readText: (path: string) => string;
+  /** The text an argument names: a file, standard input for `-`, or a URL. Rejects when the source cannot be read; the message says why, and the command names the argument. */
+  readText: (source: string) => Promise<string>;
   writeStdout: (text: string) => void;
   writeStderr: (text: string) => void;
   version: string;
 }
 
-/** The path that stands for standard input. */
-const STDIN = "-";
-
 /** The command did what was asked: a document was translated, or a crosswalk or round trip checked out. */
 export const EXIT_OK = 0;
 /** The inputs were readable but the library rejected them: a crosswalk that fails its schema or its structural checks, a rule that cannot apply to the document, or a round trip that does not reproduce its sample. The reason is on standard error. */
 export const EXIT_REJECTED = 1;
-/** The command could not run: bad usage, or a file that is unreadable or not JSON. */
+/** The command could not run: bad usage, or an argument that is unreadable (a missing file, a failed or oversized fetch, an unsupported scheme) or not JSON. */
 export const EXIT_USAGE = 2;
 
 const usage = `Usage: crossmap encode     <crosswalk.json> <document.json>
@@ -37,25 +35,29 @@ Applies a crossmap crosswalk to JSON documents.
               on the paths the crosswalk preserves; <samples.json> is a JSON
               array of source-shape documents. Prints nothing on success
 
-  <crosswalk.json>  the crosswalk, or - to read it from standard input
-  <document.json>   the document, or - to read it from standard input
+  <crosswalk.json>  the crosswalk: a path, a URL, or - to read it from standard
+                    input
+  <document.json>   the document: a path, a URL, or - to read it from standard
+                    input
   -h, --help        show this text
   -v, --version     show the version
 
-Only one argument may be -. Output is JSON on standard output.
+A URL is an http:, https:, data: or file: address; any other scheme is
+unsupported. Only one argument may be -. Output is JSON on standard output.
 
 Exit status: 0 on success, 1 when the library rejected the crosswalk or the
-document (the reason is on standard error), 2 for bad usage or a file that is
-unreadable or not JSON.
+document (the reason is on standard error), 2 for bad usage or an argument that
+cannot be read (a missing file, a failed fetch, an unsupported scheme) or is
+not JSON.
 `;
 
 type Json = { ok: true; value: unknown } | { ok: false; message: string };
 
-function readJson(io: Readonly<CliIo>, path: string): Json {
+async function readJson(io: Readonly<CliIo>, path: string): Promise<Json> {
   const name = path === STDIN ? "standard input" : path;
   let text: string;
   try {
-    text = io.readText(path);
+    text = await io.readText(path);
   } catch (error) {
     return { ok: false, message: `cannot read ${name}: ${error instanceof Error ? error.message : String(error)}` };
   }
@@ -117,9 +119,9 @@ const handlers: Record<Command, Handler> = {
  * Runs the command and returns its exit status. Every error the library defines is reported on standard error as a status; anything else thrown is a defect in the library, so it propagates instead of being worded as bad input.
  * @param args - The arguments after the executable.
  * @param io - Files, output streams and the version.
- * @returns The exit status.
+ * @returns The exit status, once every argument has been read.
  */
-export function run(args: readonly string[], io: Readonly<CliIo>): number {
+export async function run(args: readonly string[], io: Readonly<CliIo>): Promise<number> {
   let parsed: ReturnType<typeof parseCommandLine>;
   try {
     parsed = parseCommandLine(args);
@@ -143,9 +145,10 @@ export function run(args: readonly string[], io: Readonly<CliIo>): number {
   if (operands.filter((operand) => operand === STDIN).length > 1) {
     return fail(io, EXIT_USAGE, ["only one argument can be read from standard input"]);
   }
+  // Read together so two remote arguments are fetched concurrently; the first failure in argument order is the one reported.
+  const read = await Promise.all(operands.map(async (operand) => readJson(io, operand)));
   const files: unknown[] = [];
-  for (const operand of operands) {
-    const file = readJson(io, operand);
+  for (const file of read) {
     if (!file.ok) return fail(io, EXIT_USAGE, [file.message]);
     files.push(file.value);
   }
