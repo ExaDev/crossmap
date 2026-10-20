@@ -1,4 +1,4 @@
-import type { Crosswalk, OneWayRule } from "./crosswalk";
+import type { AggregateRule, Crosswalk, OneWayRule } from "./crosswalk";
 import type { CrosswalkIssue } from "./errors";
 import { canonicalPath, formatPath, type Locus, PATH_REGEX, parsePathMemo, wildcardCount } from "./paths";
 import { type RuleSides, ruleSides } from "./sides";
@@ -23,7 +23,17 @@ export function validateCrosswalk(crosswalk: Crosswalk): readonly CrosswalkIssue
     ...crosswalk.oneWay.flatMap((rule, index): readonly CrosswalkIssue[] => {
       const oneWayIndex = ruleCount + index;
 
-      return rule.op === "default" ? [...checkWhenPaths(rule.when, oneWayIndex, undefined), ...checkDefaultTo(rule, oneWayIndex)] : checkWhenPaths(rule.when, oneWayIndex, undefined);
+      const when = checkWhenPaths(rule.when, oneWayIndex, undefined);
+      switch (rule.op) {
+        case "default":
+          return [...when, ...checkDefaultTo(rule, oneWayIndex)];
+        case "aggregate":
+          return [...when, ...checkAggregateWildcards(rule, oneWayIndex)];
+        case "drop":
+          return when;
+        default:
+          return unhandledOneWay();
+      }
     }),
     ...checkPathUniqueness(crosswalk),
     ...checkWildcardRoots(crosswalk),
@@ -124,6 +134,22 @@ function checkDefaultTo(rule: OneWayRule & { op: "default" }, index: number): re
   ];
 }
 
+/** An aggregate combines the elements a wildcard reaches, so its `from` has at least one wildcard, and its `to` has fewer: one result per group of elements sharing their indexes at the wildcards `to` keeps. */
+function checkAggregateWildcards(rule: AggregateRule, index: number): readonly CrosswalkIssue[] {
+  const fromWildcards = wildcardCount(parsePathMemo(rule.from));
+  const toWildcards = wildcardCount(parsePathMemo(rule.to));
+  if (fromWildcards > toWildcards) {
+    return [];
+  }
+
+  return [{ ruleIndex: index, message: `an aggregate's from (${rule.from}) needs more wildcards than its to (${rule.to}): it combines the elements of the wildcards to drops` }];
+}
+
+/** Unreachable for any rule that passed the schema: the default arm exists so the switch is total. */
+function unhandledOneWay(): never {
+  throw new Error("no structural checks for the one-way rule's op: the schema and validateCrosswalk disagree");
+}
+
 /** The issue index of a defect that lies between rules rather than in one (CrosswalkIssue's documented negative index). */
 const BETWEEN_RULES = -1;
 
@@ -147,9 +173,11 @@ function checkPathUniqueness(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
   crosswalk.oneWay.forEach((rule, index) => {
     if (rule.op === "drop") {
       notePath(fromPaths, rule.from, ruleCount + index);
-    } else {
-      notePath(toPaths, rule.to, ruleCount + index);
+
+      return;
     }
+    // A decode-direction write lands in the source-shape document, where the two-way rules' from paths live, so it collides with those rather than with to paths.
+    notePath(rule.direction === "encode" ? toPaths : fromPaths, rule.to, ruleCount + index);
   });
   const issues: CrosswalkIssue[] = [];
   for (const [path, index] of toPaths) {
@@ -159,7 +187,7 @@ function checkPathUniqueness(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
   }
   for (const [path, index] of fromPaths) {
     if (index === DUPLICATE) {
-      issues.push({ ruleIndex: BETWEEN_RULES, message: `two rules read the same from path: ${path}` });
+      issues.push({ ruleIndex: BETWEEN_RULES, message: `two rules use the same from path: ${path}` });
     }
   }
 
@@ -197,6 +225,22 @@ function checkWildcardRoots(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
       feeders.set(toArray, fromArray);
     });
   });
+  crosswalk.oneWay.forEach((rule, oneWayPosition) => {
+    if (rule.op !== "aggregate") {
+      return;
+    }
+    // An aggregate writes its results into the arrays `to` keeps, which must be the counterparts of the arrays `from` groups by. Encoding, `to` is on the target side; decoding, `from` is, so the pair is read the other way round.
+    const toArrays = wildcardArrays(parsePathMemo(rule.to));
+    const fromArrays = wildcardArrays(parsePathMemo(rule.from)).slice(0, toArrays.length);
+    const [targetArrays, sourceArrays] = rule.direction === "encode" ? [toArrays, fromArrays] : [fromArrays, toArrays];
+    targetArrays.forEach((targetArray, depth) => {
+      const sourceArray = sourceArrays[depth];
+      const existing = feeders.get(targetArray);
+      if (sourceArray !== undefined && existing !== undefined && existing !== sourceArray) {
+        issues.push({ ruleIndex: crosswalk.rules.length + oneWayPosition, message: `an aggregate groups ${sourceArray} into ${targetArray}, which ${existing} feeds: the results would land in the wrong elements` });
+      }
+    });
+  });
 
   return issues;
 }
@@ -215,8 +259,9 @@ function wildcardArrays(locus: Locus): readonly string[] {
 
 /** An array is addressed by position or by wildcard on one side, never both: a fixed index into an array that a wildcard also iterates makes the array's length depend on two rules, so an empty source array would encode to a one-element target that decode cannot read back, and reading one element both ways would write it twice on the way back. Each side (every `from` path, and every `to` path including a default's) is checked on its own, since the two sides are different documents. */
 function checkIndexWildcardMix(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
-  const fromSide = crosswalk.rules.flatMap((rule) => ruleSides(rule).from);
-  const toSide = [...crosswalk.rules.flatMap((rule) => ruleSides(rule).to), ...crosswalk.oneWay.flatMap((rule) => (rule.op === "default" ? [rule.to] : []))];
+  const oneWayWrites = (direction: "encode" | "decode"): readonly string[] => crosswalk.oneWay.flatMap((rule) => (rule.op !== "drop" && rule.direction === direction ? [rule.to] : []));
+  const fromSide = [...crosswalk.rules.flatMap((rule) => ruleSides(rule).from), ...oneWayWrites("decode")];
+  const toSide = [...crosswalk.rules.flatMap((rule) => ruleSides(rule).to), ...oneWayWrites("encode")];
 
   return [...mixedArrays(fromSide), ...mixedArrays(toSide)].map((array) => ({
     ruleIndex: BETWEEN_RULES,

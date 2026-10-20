@@ -55,9 +55,9 @@ function run(crosswalk: Crosswalk, doc: unknown, direction: "encode" | "decode")
       return;
     }
     try {
-      applyOneWayRule(rule, direction, target);
+      applyOneWayRule(rule, direction, doc, target);
     } catch (error) {
-      throw new RuleApplicationError(crosswalk.rules.length + index, rule.op === "drop" ? rule.from : rule.to, errorMessage(error));
+      throw new RuleApplicationError(crosswalk.rules.length + index, rule.op === "default" ? rule.to : rule.from, errorMessage(error));
     }
   });
   const hole = findHole(target);

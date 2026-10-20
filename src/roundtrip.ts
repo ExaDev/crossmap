@@ -6,7 +6,7 @@ import { setOwn } from "./own";
 import { validateCrosswalk } from "./validate";
 
 /**
- * Checks that decode inverts encode over every sample, on the paths the crosswalk promises to preserve. The paths one-way rules touch are excluded by construction (a dropped path cannot survive; a decode-side default inserts a path the sample never had), then each sample's round trip is deep-compared with Object.is at the leaves; the first difference throws.
+ * Checks that decode inverts encode over every sample, on the paths the crosswalk promises to preserve. The paths one-way rules touch are excluded by construction (a dropped path cannot survive; a decode-direction default or aggregate inserts a path the sample never had), then each sample's round trip is deep-compared with Object.is at the leaves; the first difference throws.
  *
  * What it proves and what it cannot: a `scale` rule with a non-integer factor may fail bit-identity under multiply-then-divide (integer or power-of-two factors are exact), a `when` must be written against fields the rule does not itself move (this check is the empirical test of that, static validation cannot decide it), and a sample that populates an encode-side default's `to` path will differ from its round trip (the default only inserts into an absent target), so samples leave those paths unset.
  * @param crosswalk - The parsed crosswalk.
