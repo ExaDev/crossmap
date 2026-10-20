@@ -14,7 +14,7 @@ const whenQtyIsBig: When = { kind: "compare", op: "gt", left: { kind: "reference
 /**
  * Samples carry only mapped fields (the crosswalk is a total mapping: an unmapped field does not survive encode, so a sample carrying one would fail its own round trip) and use the canonical ISO form decode emits, since any other ISO spelling names the same instant but not the same string.
  *
- * The deterministic corpus: one cell per op-table row (move, scale, enum, format isoDateTime, format numberText, split, template, copy, drop, default encode-direction, default decode-direction, aggregate), plus a wildcard-arity-one cell, a when-applied cell, a when-skipped cell, a per-element when cell, and one cell per path shape beyond records and one wildcard (nesting and flattening, an array of arrays, fixed indices, quoted keys). Scale factors are integers by design: multiply-then-divide is bit-identical for them (a non-integer factor is a documented round-trip caveat, not a corpus case).
+ * The deterministic corpus: one cell per op-table row (move, scale, enum, format isoDateTime, format numberText, format isoDate, format booleanText, format jsonText, split, template, copy, drop, default encode-direction, default decode-direction, aggregate), plus a wildcard-arity-one cell, a when-applied cell, a when-skipped cell, a per-element when cell, and one cell per path shape beyond records and one wildcard (nesting and flattening, an array of arrays, fixed indices, quoted keys). Scale factors are integers by design: multiply-then-divide is bit-identical for them (a non-integer factor is a documented round-trip caveat, not a corpus case).
  */
 export const CORPUS: readonly CorpusCell[] = [
   {
@@ -46,6 +46,21 @@ export const CORPUS: readonly CorpusCell[] = [
     name: "format numberText",
     crosswalk: { source: "native", target: "shared", rules: [{ op: "format", from: "count", to: "countText", kind: "numberText" }], oneWay: [] },
     samples: [{ count: "1234" }, { count: "-7.5" }],
+  },
+  {
+    name: "format isoDate",
+    crosswalk: { source: "native", target: "shared", rules: [{ op: "format", from: "on", to: "onMs", kind: "isoDate" }], oneWay: [] },
+    samples: [{ on: "2026-10-18" }, { on: "2024-02-29" }, { on: "1969-12-31" }],
+  },
+  {
+    name: "format booleanText",
+    crosswalk: { source: "native", target: "shared", rules: [{ op: "format", from: "flag", to: "isSet", kind: "booleanText" }], oneWay: [] },
+    samples: [{ flag: "true" }, { flag: "false" }],
+  },
+  {
+    name: "format jsonText",
+    crosswalk: { source: "native", target: "shared", rules: [{ op: "format", from: "raw", to: "value", kind: "jsonText" }], oneWay: [] },
+    samples: [{ raw: '{"a":[1,null,"x"]}' }, { raw: '"text"' }, { raw: "[]" }],
   },
   {
     name: "split",
@@ -217,6 +232,9 @@ export const REQUIRED_ROWS: readonly string[] = [
   "enum",
   "format isoDateTime",
   "format numberText",
+  "format isoDate",
+  "format booleanText",
+  "format jsonText",
   "split",
   "template",
   "copy",

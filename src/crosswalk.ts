@@ -63,7 +63,8 @@ export const EnumRuleSchema = z
   });
 export type EnumRule = z.infer<typeof EnumRuleSchema>;
 
-export const FormatKindSchema = z.enum(["isoDateTime", "numberText"]);
+/** The textual forms `format` converts: each is a bijection between its canonical text and a machine value, which is what makes the round trip hold for canonical input. */
+export const FormatKindSchema = z.enum(["isoDateTime", "isoDate", "numberText", "booleanText", "jsonText"]);
 export type FormatKind = z.infer<typeof FormatKindSchema>;
 
 export const FormatRuleSchema = z
