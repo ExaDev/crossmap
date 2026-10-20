@@ -1,12 +1,13 @@
-import type { Crosswalk, OneWayRule, TwoWayRule } from "./crosswalk";
+import type { Crosswalk, OneWayRule } from "./crosswalk";
 import type { CrosswalkIssue } from "./errors";
 import { canonicalPath, formatPath, type Locus, PATH_REGEX, parsePathMemo, wildcardCount } from "./paths";
+import { type RuleSides, ruleSides } from "./sides";
 import { visitReferences } from "./when";
 
 /**
  * Validates a syntactically parsed crosswalk against the structural rules that make its rule list executable and decode a true inverse of encode. Schema parsing (parseCrosswalk) checks each rule in isolation; these checks are properties of the rule list as a whole, which is why they are reported as a list rather than thrown mid-parse. Each check below returns its issues and the results are concatenated, so a check with nothing to report returns an empty list.
  *
- * Checked here: per two-way rule, the `to` path has as many wildcards as the `from` path (key and index steps around them may differ, which is how a rule nests or flattens); across rules, every `to`-side array a wildcard iterates, at every depth, is fed by exactly one `from`-side array; every `to` path and every `from` path is unique, compared in canonical spelling; no array is addressed both by a fixed index and by a wildcard on the same side; `when` reference paths (references and collection references alike) are well-formed and contain no wildcards; a `default` rule's `to` is wildcard-free (a default has no source array to size a materialisation from).
+ * Checked here: per two-way rule, every `to` path has as many wildcards as the `from` path (key and index steps around them may differ, which is how a rule nests or flattens), and a rule's several `from` paths iterate the same arrays; across rules, every `to`-side array a wildcard iterates, at every depth, is fed by exactly one `from`-side array; every `to` path and every `from` path is unique, compared in canonical spelling; no array is addressed both by a fixed index and by a wildcard on the same side; `when` reference paths (references and collection references alike) are well-formed and contain no wildcards; a `default` rule's `to` is wildcard-free (a default has no source array to size a materialisation from).
  * @param crosswalk - The parsed crosswalk.
  * @returns Every issue found (empty means valid). Issue indices number the two-way rules first, then the one-way rules.
  */
@@ -14,10 +15,11 @@ export function validateCrosswalk(crosswalk: Crosswalk): readonly CrosswalkIssue
   const ruleCount = crosswalk.rules.length;
 
   return [
-    ...crosswalk.rules.flatMap((rule, index): readonly CrosswalkIssue[] => [
-      ...checkWildcardAlignment(rule, index),
-      ...checkWhenPaths(rule.when, index, parsePathMemo(rule.from)),
-    ]),
+    ...crosswalk.rules.flatMap((rule, index): readonly CrosswalkIssue[] => {
+      const sides = ruleSides(rule);
+
+      return [...checkWildcardAlignment(sides, index), ...checkSharedArrays(sides, index), ...checkWhenPaths(rule.when, index, firstFrom(sides))];
+    }),
     ...crosswalk.oneWay.flatMap((rule, index): readonly CrosswalkIssue[] => {
       const oneWayIndex = ruleCount + index;
 
@@ -30,19 +32,43 @@ export function validateCrosswalk(crosswalk: Crosswalk): readonly CrosswalkIssue
 }
 
 /** Design check (a): the `to` path must have as many wildcards as the `from` path, because runtime mapping is index-aligned (the n-th wildcard of `from` pairs with the n-th of `to`, so `papers[3].id` maps to `nodes[3].ref`) and carrying every index across is what makes decode a true inverse. The key and index steps between wildcards are free: `a` to `b.a` nests and `a[].b.c` to `x[].c` flattens, and decode reverses either by the same pairing. */
-function checkWildcardAlignment(rule: TwoWayRule, index: number): readonly CrosswalkIssue[] {
-  const fromWildcards = wildcardCount(parsePathMemo(rule.from));
-  const toWildcards = wildcardCount(parsePathMemo(rule.to));
-  if (fromWildcards === toWildcards) {
-    return [];
+function checkWildcardAlignment(sides: RuleSides, index: number): readonly CrosswalkIssue[] {
+  const fromWildcards = wildcardCount(firstFrom(sides));
+
+  const sided = [...sides.from.map((path) => ({ side: "from", path })), ...sides.to.map((path) => ({ side: "to", path }))];
+
+  return sided.flatMap(({ side, path }): readonly CrosswalkIssue[] => {
+    const wildcards = wildcardCount(parsePathMemo(path));
+    if (wildcards === fromWildcards) {
+      return [];
+    }
+
+    return [
+      {
+        ruleIndex: index,
+        message: `${side} path ${path} has ${String(wildcards)} wildcards where the first from has ${String(fromWildcards)}: mapping is index-aligned, one wildcard to one`,
+      },
+    ];
+  });
+}
+
+/** A rule's first `from` path, parsed: the read side every per-element gate and every array pairing is measured against. */
+function firstFrom(sides: RuleSides): Locus {
+  const [first] = sides.from;
+  if (first === undefined) {
+    throw new Error("a rule with no from path: ruleSides always returns at least one");
   }
 
-  return [
-    {
-      ruleIndex: index,
-      message: `to has ${String(toWildcards)} wildcards where from has ${String(fromWildcards)}: mapping is index-aligned, one wildcard to one`,
-    },
-  ];
+  return parsePathMemo(first);
+}
+
+/** A rule reading several `from` paths (a `template`) pairs their values element by element, so every one of them must iterate the same arrays: fields of one element, never of two unrelated arrays whose lengths need not agree. */
+function checkSharedArrays(sides: RuleSides, index: number): readonly CrosswalkIssue[] {
+  const arrays = wildcardArrays(firstFrom(sides)).join(" ");
+
+  return sides.from.flatMap((path): readonly CrosswalkIssue[] =>
+    wildcardArrays(parsePathMemo(path)).join(" ") === arrays ? [] : [{ ruleIndex: index, message: `from path ${path} iterates different arrays from the rule's other from paths: the fields of one element must come from one element` }],
+  );
 }
 
 /** Design check (e), plus the same for collection references: every reference must be a well-formed path, and a reference with wildcards names a field of the element a two-way rule is visiting, so it is allowed only on a two-way rule, with no more wildcards than the rule's `from`, and with its part through its last wildcard equal to the `from` path's part through the same wildcard (the array the rule iterates there). That last condition is what lets decode rebase the reference onto the `to` side's array; a wildcard into some other array would have no element to bind to. One-way rules have no visited element, so their references are wildcard-free. */
@@ -110,8 +136,13 @@ function checkPathUniqueness(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
   const toPaths = new Map<string, number>();
   const fromPaths = new Map<string, number>();
   crosswalk.rules.forEach((rule, index) => {
-    notePath(toPaths, rule.to, index);
-    notePath(fromPaths, rule.from, index);
+    const sides = ruleSides(rule);
+    for (const path of sides.to) {
+      notePath(toPaths, path, index);
+    }
+    for (const path of sides.from) {
+      notePath(fromPaths, path, index);
+    }
   });
   crosswalk.oneWay.forEach((rule, index) => {
     if (rule.op === "drop") {
@@ -146,9 +177,9 @@ function checkWildcardRoots(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
   const issues: CrosswalkIssue[] = [];
   const feeders = new Map<string, string>();
   crosswalk.rules.forEach((rule, index) => {
-    const fromArrays = wildcardArrays(parsePathMemo(rule.from));
-    const toArrays = wildcardArrays(parsePathMemo(rule.to));
-    toArrays.forEach((toArray, depth) => {
+    const sides = ruleSides(rule);
+    const fromArrays = wildcardArrays(firstFrom(sides));
+    sides.to.flatMap((path) => wildcardArrays(parsePathMemo(path)).map((toArray, depth) => ({ toArray, depth }))).forEach(({ toArray, depth }) => {
       const fromArray = fromArrays[depth];
       if (fromArray === undefined) {
         // Check (a) reports the unequal wildcard count; there is no array at this depth to pair.
@@ -184,8 +215,8 @@ function wildcardArrays(locus: Locus): readonly string[] {
 
 /** An array is addressed by position or by wildcard on one side, never both: a fixed index into an array that a wildcard also iterates makes the array's length depend on two rules, so an empty source array would encode to a one-element target that decode cannot read back, and reading one element both ways would write it twice on the way back. Each side (every `from` path, and every `to` path including a default's) is checked on its own, since the two sides are different documents. */
 function checkIndexWildcardMix(crosswalk: Crosswalk): readonly CrosswalkIssue[] {
-  const fromSide = crosswalk.rules.map((rule) => rule.from);
-  const toSide = [...crosswalk.rules.map((rule) => rule.to), ...crosswalk.oneWay.flatMap((rule) => (rule.op === "default" ? [rule.to] : []))];
+  const fromSide = crosswalk.rules.flatMap((rule) => ruleSides(rule).from);
+  const toSide = [...crosswalk.rules.flatMap((rule) => ruleSides(rule).to), ...crosswalk.oneWay.flatMap((rule) => (rule.op === "default" ? [rule.to] : []))];
 
   return [...mixedArrays(fromSide), ...mixedArrays(toSide)].map((array) => ({
     ruleIndex: BETWEEN_RULES,

@@ -25,7 +25,7 @@ describe("validateCrosswalk", () => {
 
   it("rejects a to path with more wildcards than its from path", () => {
     const cw = crosswalk({ source: "a", target: "b", rules: [{ op: "move", from: "grid[].row", to: "cells[][]" }], oneWay: [] });
-    expect(validateCrosswalk(cw).map((issue) => issue.message)).toEqual(["to has 2 wildcards where from has 1: mapping is index-aligned, one wildcard to one"]);
+    expect(validateCrosswalk(cw).map((issue) => issue.message)).toEqual(["to path cells[][] has 2 wildcards where the first from has 1: mapping is index-aligned, one wildcard to one"]);
   });
 
   it.each([
@@ -171,5 +171,22 @@ describe("validateCrosswalk on per-element when references", () => {
 
   it("rejects a wildcard reference on a one-way rule", () => {
     expect(issuesOf([], [{ op: "drop", from: "p[].v", direction: "encode", when: exists("p[].flag") }])).toEqual(["when reference p[].flag contains a wildcard, but a one-way rule visits no element to bind it to"]);
+  });
+});
+
+describe("validateCrosswalk on multi-path rules", () => {
+  const issuesOf = (rules: readonly unknown[]) => validateCrosswalk(crosswalk({ source: "a", target: "b", rules, oneWay: [] })).map((issue) => issue.message);
+
+  it("rejects template fields from different arrays", () => {
+    expect(issuesOf([{ op: "template", from: { a: "p[].a", b: "q[].b" }, to: "t[]", template: "{a}/{b}" }])).toEqual(["from path q[].b iterates different arrays from the rule's other from paths: the fields of one element must come from one element"]);
+  });
+
+  it("checks every copy target's wildcards and uniqueness", () => {
+    expect(issuesOf([{ op: "copy", from: "p[].a", to: ["n[].a", "flat"] }])).toEqual(["to path flat has 0 wildcards where the first from has 1: mapping is index-aligned, one wildcard to one"]);
+    expect(issuesOf([{ op: "copy", from: "a", to: ["x", "y"] }, { op: "move", from: "b", to: "y" }])).toEqual(["two rules write the same to path: y"]);
+  });
+
+  it("counts every template field as a read", () => {
+    expect(issuesOf([{ op: "template", from: { a: "a", b: "b" }, to: "t", template: "{a}/{b}" }, { op: "move", from: "b", to: "u" }])).toEqual(["two rules read the same from path: b"]);
   });
 });

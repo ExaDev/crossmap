@@ -14,7 +14,7 @@ const whenQtyIsBig: When = { kind: "compare", op: "gt", left: { kind: "reference
 /**
  * Samples carry only mapped fields (the crosswalk is a total mapping: an unmapped field does not survive encode, so a sample carrying one would fail its own round trip) and use the canonical ISO form decode emits, since any other ISO spelling names the same instant but not the same string.
  *
- * The deterministic corpus: one cell per op-table row (move, scale, enum, format isoDateTime, format numberText, split, drop, default encode-direction, default decode-direction), plus a wildcard-arity-one cell, a when-applied cell, a when-skipped cell, a per-element when cell, and one cell per path shape beyond records and one wildcard (nesting and flattening, an array of arrays, fixed indices, quoted keys). Scale factors are integers by design: multiply-then-divide is bit-identical for them (a non-integer factor is a documented round-trip caveat, not a corpus case).
+ * The deterministic corpus: one cell per op-table row (move, scale, enum, format isoDateTime, format numberText, split, template, copy, drop, default encode-direction, default decode-direction), plus a wildcard-arity-one cell, a when-applied cell, a when-skipped cell, a per-element when cell, and one cell per path shape beyond records and one wildcard (nesting and flattening, an array of arrays, fixed indices, quoted keys). Scale factors are integers by design: multiply-then-divide is bit-identical for them (a non-integer factor is a documented round-trip caveat, not a corpus case).
  */
 export const CORPUS: readonly CorpusCell[] = [
   {
@@ -98,6 +98,21 @@ export const CORPUS: readonly CorpusCell[] = [
       { papers: [{ id: "only", citations: 0 }] },
       { papers: [] },
     ],
+  },
+  {
+    name: "template",
+    crosswalk: {
+      source: "native",
+      target: "shared",
+      rules: [{ op: "template", from: { given: "people[].given", family: "people[].family" }, to: "names[]", template: "{family}, {given} {{verified}}" }],
+      oneWay: [],
+    },
+    samples: [{ people: [{ given: "Ada", family: "Lovelace" }, { given: "Alan, OBE", family: "" }] }, { people: [] }],
+  },
+  {
+    name: "copy",
+    crosswalk: { source: "native", target: "shared", rules: [{ op: "copy", from: "items[].id", to: ["nodes[].id", "labels[].text"] }], oneWay: [] },
+    samples: [{ items: [{ id: "a" }, { id: { nested: [1] } }] }, { items: [] }],
   },
   {
     name: "when applied",
@@ -190,6 +205,8 @@ export const REQUIRED_ROWS: readonly string[] = [
   "format isoDateTime",
   "format numberText",
   "split",
+  "template",
+  "copy",
   "drop",
   "default encode-direction",
   "default decode-direction",

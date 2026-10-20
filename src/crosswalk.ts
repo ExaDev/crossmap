@@ -3,6 +3,7 @@ import { JsonValueSchema, PredicateNodeSchema } from "trilean";
 import { CrosswalkSyntaxError, type SyntaxIssue } from "./errors";
 import { define } from "./define";
 import { PATH_REGEX } from "./paths";
+import { parseTemplate, PLACEHOLDER_NAME, templateProblems } from "./ops/template";
 
 /** A path string as the crosswalk format accepts it: syntax only (the structural checks over sets of paths live in validateCrosswalk, which sees the whole rule list). */
 const PathField = z.string().regex(PATH_REGEX, {
@@ -87,8 +88,42 @@ export const SplitRuleSchema = z
   .strict();
 export type SplitRule = z.infer<typeof SplitRuleSchema>;
 
+/** Several fields rendered into one text through a template, and split back out of it. `from` maps each placeholder name to the path of its field; the template is validated as having a unique inverse (every field used exactly once, a literal between every two placeholders), and encode refuses a value that contains the literal after its placeholder, so decode always recovers the fields encode rendered. */
+export const TemplateRuleSchema = z
+  .object({
+    op: z.literal("template"),
+    from: z.record(z.string().regex(PLACEHOLDER_NAME, { message: "a template field name is [A-Za-z0-9_]+ other than __proto__" }), PathField),
+    to: PathField,
+    template: z.string(),
+    when: PredicateNodeSchema.optional(),
+  })
+  .strict()
+  .superRefine((rule, ctx) => {
+    let problems: readonly string[];
+    try {
+      problems = templateProblems(parseTemplate(rule.template), Object.keys(rule.from));
+    } catch (error) {
+      problems = [error instanceof Error ? error.message : String(error)];
+    }
+    for (const message of problems) {
+      ctx.addIssue({ code: "custom", path: ["template"], message });
+    }
+  });
+export type TemplateRule = z.infer<typeof TemplateRuleSchema>;
+
+/** One value written to several places. Decode reads every copy and requires them to agree, so the inverse is the one value they share; at least two `to` paths, since one is a `move`. */
+export const CopyRuleSchema = z
+  .object({
+    op: z.literal("copy"),
+    from: PathField,
+    to: z.array(PathField).min(2, "a copy writes at least two paths: one is a move"),
+    when: PredicateNodeSchema.optional(),
+  })
+  .strict();
+export type CopyRule = z.infer<typeof CopyRuleSchema>;
+
 /** A two-way rule: closed under inversion, so encode and decode both derive from it. */
-export const TwoWayRuleSchema = z.discriminatedUnion("op", [MoveRuleSchema, ScaleRuleSchema, EnumRuleSchema, FormatRuleSchema, SplitRuleSchema]);
+export const TwoWayRuleSchema = z.discriminatedUnion("op", [MoveRuleSchema, ScaleRuleSchema, EnumRuleSchema, FormatRuleSchema, SplitRuleSchema, TemplateRuleSchema, CopyRuleSchema]);
 export type TwoWayRule = z.infer<typeof TwoWayRuleSchema>;
 
 export const DropRuleSchema = z

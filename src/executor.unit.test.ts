@@ -300,3 +300,42 @@ describe("per-element when", () => {
   });
 
 });
+
+describe("template and copy", () => {
+  it("renders several fields into one and splits them back, per element", () => {
+    const cw = crosswalk({
+      source: "n",
+      target: "s",
+      rules: [{ op: "template", from: { given: "people[].given", family: "people[].family" }, to: "names[]", template: "{family}, {given}" }],
+      oneWay: [],
+    });
+    const native = { people: [{ given: "Ada", family: "Lovelace" }, { given: "Alan", family: "Turing" }] };
+    expect(encode(cw, native)).toEqual({ names: ["Lovelace, Ada", "Turing, Alan"] });
+    expect(decode(cw, encode(cw, native))).toEqual(native);
+    expect(encode(cw, { people: [] })).toEqual({ names: [] });
+  });
+
+  it("throws RuleApplicationError when a template value holds its boundary", () => {
+    const cw = crosswalk({ source: "n", target: "s", rules: [{ op: "template", from: { a: "a", b: "b" }, to: "t", template: "{a}/{b}" }], oneWay: [] });
+    expect(() => encode(cw, { a: "x/y", b: "z" })).toThrow(RuleApplicationError);
+  });
+
+  it("throws RuleApplicationError when template fields sit in different elements", () => {
+    const cw = crosswalk({ source: "n", target: "s", rules: [{ op: "template", from: { a: "p[].a", b: "p[].b" }, to: "t[]", template: "{a}/{b}" }], oneWay: [] });
+    expect(() => encode(cw, { p: [{ a: "x", b: "y" }, { a: "x" }] })).toThrow("the path is absent from the document");
+  });
+
+  it("writes one value to several places and reads it back when the copies agree", () => {
+    const cw = crosswalk({ source: "n", target: "s", rules: [{ op: "copy", from: "items[].id", to: ["nodes[].id", "labels[].text"] }], oneWay: [] });
+    const native = { items: [{ id: "a" }, { id: "b" }] };
+    const shared = encode(cw, native);
+    expect(shared).toEqual({ nodes: [{ id: "a" }, { id: "b" }], labels: [{ text: "a" }, { text: "b" }] });
+    expect(decode(cw, shared)).toEqual(native);
+  });
+
+  it("throws RuleApplicationError when the copies disagree or no longer pair up", () => {
+    const cw = crosswalk({ source: "n", target: "s", rules: [{ op: "copy", from: "items[].id", to: ["nodes[].id", "labels[].text"] }], oneWay: [] });
+    expect(() => decode(cw, { nodes: [{ id: "a" }], labels: [{ text: "b" }] })).toThrow(/the copies disagree/);
+    expect(() => decode(cw, { nodes: [{ id: "a" }], labels: [] })).toThrow(/addresses different elements/);
+  });
+});

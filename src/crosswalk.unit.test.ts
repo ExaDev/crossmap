@@ -11,6 +11,8 @@ const validCrosswalk = {
     { op: "enum", from: "status", to: "state", map: { open: "OPEN" }, mapBack: { OPEN: "open" } },
     { op: "format", from: "when", to: "whenIso", kind: "isoDateTime" },
     { op: "split", from: "names", to: "nameParts", separator: "," },
+    { op: "template", from: { given: "given", family: "family" }, to: "display", template: "{family}, {given}" },
+    { op: "copy", from: "id", to: ["ref", "meta.ref"] },
   ],
   oneWay: [
     { op: "drop", from: "internal", direction: "encode" },
@@ -67,6 +69,23 @@ describe("CrosswalkSchema", () => {
 
   it("rejects an unknown format kind", () => {
     expect(CrosswalkSchema.is({ ...validCrosswalk, rules: [{ op: "format", from: "a", to: "b", kind: "upperCase" }] })).toBe(false);
+  });
+
+  it.each([
+    ["an unused field", { given: "g", family: "f" }, "{given}", "from field family appears in no placeholder, so encode would lose it"],
+    ["an unknown placeholder", { given: "g" }, "{given} {nick}", "placeholder {nick} names no from field"],
+    ["a repeated placeholder", { given: "g" }, "{given} {given}", "placeholder {given} appears twice: decode could not tell which occurrence holds the value"],
+    ["adjacent placeholders", { given: "g", family: "f" }, "{given}{family}", "placeholders {given} and {family} are adjacent: with no literal between them, decode cannot tell where one ends"],
+    ["no placeholder", {}, "fixed", "a template needs at least one placeholder"],
+    ["a lone closing brace", { given: "g" }, "{given} }", "a lone } at position 8: write }} for a literal brace"],
+  ])("rejects a template with %s", (_name, from, template, message) => {
+    expect(() => parseCrosswalk({ ...validCrosswalk, rules: [{ op: "template", from, to: "t", template }] })).toThrow(message);
+  });
+
+  it("rejects a template field named __proto__ and a copy to one path", () => {
+    const protoFrom: unknown = JSON.parse('{"__proto__": "a"}');
+    expect(CrosswalkSchema.is({ ...validCrosswalk, rules: [{ op: "template", from: protoFrom, to: "t", template: "<{__proto__}>" }] })).toBe(false);
+    expect(CrosswalkSchema.is({ ...validCrosswalk, rules: [{ op: "copy", from: "a", to: ["b"] }] })).toBe(false);
   });
 
   it("rejects an empty separator", () => {

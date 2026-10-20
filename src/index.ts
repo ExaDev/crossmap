@@ -1,5 +1,6 @@
 export { CrosswalkSchema, FormatKindSchema, parseCrosswalk } from "./crosswalk";
 export type {
+  CopyRule,
   Crosswalk,
   DefaultRule,
   DropRule,
@@ -10,6 +11,7 @@ export type {
   OneWayRule,
   ScaleRule,
   SplitRule,
+  TemplateRule,
   TwoWayRule,
   When,
 } from "./crosswalk";
