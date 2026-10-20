@@ -141,6 +141,21 @@ const printOnly = { recordId: "BL-1043", subjects: "maps", copies: [{ barcode: "
 assertRoundTrip(catalogue, [record, printOnly]);
 ```
 
+## Command line
+
+The package installs a `twindex` command, so a crosswalk can be applied without writing code:
+
+```sh
+npx twindex encode crosswalk.json document.json
+npx twindex decode crosswalk.json shared.json
+npx twindex validate crosswalk.json
+npx twindex round-trip crosswalk.json samples.json
+```
+
+`encode` and `decode` print the translated document as JSON. `validate` and `round-trip` print nothing when they succeed; `samples.json` is a JSON array of source-shape documents. Either file argument can be `-` to read standard input, though not both at once.
+
+The exit status is 0 on success, 1 when the library rejects the crosswalk or the document (the reason is on standard error), and 2 for bad usage or a file that is unreadable or not JSON.
+
 ## The format
 
 A crosswalk is `{ source, target, rules, oneWay }`: two labels naming the shapes, a list of two-way rules and a list of one-way rules. `parseCrosswalk` validates the syntax and throws one error carrying every issue. `validateCrosswalk` checks the properties of the rule list as a whole, and `encode`, `decode` and `assertRoundTrip` run it first.
