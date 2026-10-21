@@ -1,3 +1,10 @@
+# [0.7.0](https://github.com/ExaDev/crossmap/compare/v0.6.0...v0.7.0) (2026-10-21)
+
+
+### Features
+
+* **rules:** add a one-way aggregate rule ([eede091](https://github.com/ExaDev/crossmap/commit/eede0916821b8d38ae05033000a9cbc46da478ae))
+
 # [0.6.0](https://github.com/ExaDev/crossmap/compare/v0.5.0...v0.6.0) (2026-10-21)
 
 
