@@ -7,7 +7,7 @@ import { applyOneWayRule } from "./ops/one-way";
 import { scaleDecode, scaleEncode } from "./ops/scale";
 import { splitDecode, splitEncode } from "./ops/split";
 import { type JsonValue, JsonValueSchema, type PredicateNode } from "trilean";
-import { bindLocus, type ElementGate, ensureArray, findHole, formatPath, type Locus, type LocusReading, parsePathMemo, readLocus, wildcardIndexes, writeMatches } from "./paths";
+import { bindLocus, type ElementGate, type EmptySite, ensureArray, findHole, formatPath, type Locus, parsePathMemo, readTrail, walkLocus, wildcardIndexes, writeMatches } from "./paths";
 import { ruleSides } from "./sides";
 import { copyDecode, copyEncode } from "./ops/copy";
 import { parseTemplateMemo, renderTemplate, splitTemplate } from "./ops/template";
@@ -90,7 +90,7 @@ function elementGate(when: PredicateNode, doc: unknown, governing: Locus): Eleme
 }
 
 /**
- * Applies one two-way rule: reads every read-side path (index-aligned, one tuple of values per element), transforms each tuple with the operation in this direction, and writes the results to the write-side paths at the same indexes. Empty arrays met on the read side are materialised on every write-side path.
+ * Applies one two-way rule: walks the governing read path one element at a time, reads the other read paths at the same indexes, transforms each element's values with the operation in this direction, and writes the results to the write-side paths at those indexes as it goes, so nothing per element outlives the element. Empty arrays met on any read side are materialised on every write-side path.
  * @throws RuleApplicationError when a read path is absent, two read paths address different elements, the operation rejects a value, or a write conflicts.
  */
 function applyTwoWayRule(rule: TwoWayRule, index: number, context: RunContext): void {
@@ -106,33 +106,65 @@ function applyTwoWayRule(rule: TwoWayRule, index: number, context: RunContext): 
   if (gate === false) {
     return;
   }
-  const read = (path: string): ReadSide => {
+  const writeLoci = writes.map((path) => parsePathMemo(path));
+  const readPath = (direction === "encode" ? sides.from : sides.to).join(", ");
+  const empties: { readonly locus: Locus; readonly empty: EmptySite }[] = [];
+  let governingCount = 0;
+  const countWalk = (locus: Locus): { readonly empties: readonly EmptySite[] | undefined; readonly count: number } => {
+    let count = 0;
+    const walked = walkLocus(doc, locus, gate, () => {
+      count += 1;
+    });
+
+    return { empties: walked, count };
+  };
+  const governingWalk = countWalk(governing);
+  if (governingWalk.empties === undefined) {
+    throw new RuleApplicationError(index, governingPath, "the path is absent from the document");
+  }
+  governingCount = governingWalk.count;
+  for (const empty of governingWalk.empties) {
+    empties.push({ locus: governing, empty });
+  }
+  const otherWalks = otherReads.map((path) => {
     const locus = parsePathMemo(path);
-    const reading = readLocus(doc, locus, gate);
-    if (reading === undefined) {
+    const walked = countWalk(locus);
+    if (walked.empties === undefined) {
       throw new RuleApplicationError(index, path, "the path is absent from the document");
     }
+    if (walked.count !== governingCount) {
+      throw new RuleApplicationError(index, path, `addresses different elements from ${governingPath}, so the paths cannot be paired element by element`);
+    }
+    for (const empty of walked.empties) {
+      empties.push({ locus, empty });
+    }
 
-    return { path, locus, reading };
-  };
-  const first = read(governingPath);
-  const others = otherReads.map(read);
-  const writeLoci = writes.map((path) => parsePathMemo(path));
-  const readPath = [first, ...others].map((side) => side.path).join(", ");
-  const outputs = alignReadings(first, others, index).flatMap(({ indexes, values }) => {
+    return locus;
+  });
+  walkLocus(doc, governing, gate, (trail, value) => {
+    const indexes = wildcardIndexes(governing, trail);
+    const values = [value, ...otherWalks.map((locus, position) => {
+      const found = readTrail(doc, bindLocus(locus, indexes));
+      if (!found.found) {
+        throw new RuleApplicationError(index, otherReads[position] ?? governingPath, `addresses different elements from ${governingPath}, so the paths cannot be paired element by element`);
+      }
+
+      return found.value;
+    })];
     const results = transform(rule, direction, values, { index, path: readPath });
-
-    return writeLoci.map((locus, position) => ({ trail: bindLocus(locus, indexes), value: results[position] }));
+    const outputs = writeLoci.map((locus, position) => ({ trail: bindLocus(locus, indexes), value: results[position] }));
+    try {
+      writeMatches(target, outputs);
+    } catch (error) {
+      throw new RuleApplicationError(index, writes.join(", "), errorMessage(error));
+    }
   });
   try {
-    writeMatches(target, outputs);
-    for (const side of [first, ...others]) {
-      for (const empty of side.reading.empties) {
-        // An existing empty source array yields no matches, so without this its counterpart would never come into being: decode would find the path absent, or an inner array would leave a gap or a shorter outer array.
-        const emptyIndexes = wildcardIndexes(side.locus, empty.trail);
-        for (const writeLocus of writeLoci) {
-          ensureArray(target, bindLocus(writeLocus, emptyIndexes, empty.wildcard));
-        }
+    for (const { locus, empty } of empties) {
+      // An existing empty source array yields no matches, so without this its counterpart would never come into being: decode would find the path absent, or an inner array would leave a gap or a shorter outer array.
+      const emptyIndexes = wildcardIndexes(locus, empty.trail);
+      for (const writeLocus of writeLoci) {
+        ensureArray(target, bindLocus(writeLocus, emptyIndexes, empty.wildcard));
       }
     }
   } catch (error) {
@@ -145,37 +177,6 @@ interface RunContext {
   readonly direction: "encode" | "decode";
   readonly doc: unknown;
   readonly target: Record<string, unknown>;
-}
-
-/** One read-side path of a rule, parsed and read. */
-interface ReadSide {
-  readonly path: string;
-  readonly locus: Locus;
-  readonly reading: LocusReading;
-}
-
-/**
- * Pairs the matches of a rule's read paths element by element: the first path's matches fix the order, and every other path must address exactly the same index tuples (a `template` whose fields sit in elements that lack some of them, or copies of an array that no longer agree in length, have no element-wise pairing).
- * @returns One entry per element: its index tuple and the value each read path holds there, first path first.
- * @throws RuleApplicationError naming the first other path whose elements differ from the first path's.
- */
-function alignReadings(first: ReadSide, others: readonly ReadSide[], index: number): readonly { readonly indexes: readonly number[]; readonly values: readonly unknown[] }[] {
-  const keyed = others.map((side) => {
-    const byTuple = new Map<string, unknown>();
-    for (const match of side.reading.matches) {
-      byTuple.set(wildcardIndexes(side.locus, match.trail).join(","), match.value);
-    }
-
-    return { side, byTuple };
-  });
-  const tuples = first.reading.matches.map((match) => ({ match, indexes: wildcardIndexes(first.locus, match.trail) }));
-  for (const { side, byTuple } of keyed) {
-    if (byTuple.size !== tuples.length || tuples.some(({ indexes }) => !byTuple.has(indexes.join(",")))) {
-      throw new RuleApplicationError(index, side.path, `addresses different elements from ${first.path}, so the paths cannot be paired element by element`);
-    }
-  }
-
-  return tuples.map(({ match, indexes }) => ({ indexes, values: [match.value, ...keyed.map(({ byTuple }) => byTuple.get(indexes.join(",")))] }));
 }
 
 /** Applies one two-way rule's operation to one element's values in the given direction (one value per read path in, one per write path out), turning the operation's own thrown errors into RuleApplicationErrors that name the rule and path. */
