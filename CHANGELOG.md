@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/ExaDev/crossmap/compare/v0.3.0...v0.4.0) (2026-10-21)
+
+
+### Features
+
+* **paths:** add quoted keys, fixed indices and correct arrays of arrays ([c2c75dd](https://github.com/ExaDev/crossmap/commit/c2c75dd309889b16cd85d9c088875898ead32e2a))
+
 # [0.3.0](https://github.com/ExaDev/crossmap/compare/v0.2.0...v0.3.0) (2026-10-20)
 
 
