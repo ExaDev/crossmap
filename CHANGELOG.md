@@ -1,3 +1,5 @@
+## [0.7.1](https://github.com/ExaDev/crossmap/compare/v0.7.0...v0.7.1) (2026-10-21)
+
 # [0.1.0](https://github.com/ExaDev/crossmap/compare/v0.0.0...v0.1.0) (2026-10-18)
 
 
