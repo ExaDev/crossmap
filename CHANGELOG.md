@@ -1,3 +1,10 @@
+# [0.5.0](https://github.com/ExaDev/crossmap/compare/v0.4.0...v0.5.0) (2026-10-21)
+
+
+### Features
+
+* **when:** gate a wildcard rule per element ([7799680](https://github.com/ExaDev/crossmap/commit/7799680a52ffa62383711cbcdfaba3a87181184e))
+
 # [0.4.0](https://github.com/ExaDev/crossmap/compare/v0.3.0...v0.4.0) (2026-10-21)
 
 

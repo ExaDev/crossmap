@@ -1,7 +1,7 @@
 {
   "name": "crossmap",
   "description": "Bidirectional crosswalk codec: one rule document derives both encode and decode between two JSON shapes",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "bin": {
     "crossmap": "./dist-cli/crossmap.mjs"
   },
