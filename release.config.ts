@@ -5,23 +5,25 @@ type ReleaseLevel = 'major' | 'minor' | 'patch' | false;
 interface CommitType {
   readonly type: string;
   readonly release: ReleaseLevel;
+  /** The changelog and GitHub release notes section commits of this type render under. */
+  readonly section: string;
 }
 
 /**
- * Single source of truth for the conventional-commit types this project uses. commitlint's allowed type-enum (commitlint.config.ts imports this) and commit-analyzer's releaseRules below both derive from it, so a type cannot trigger a release without also being accepted by commit-msg validation, or the reverse.
+ * Single source of truth for the conventional-commit types this project uses. commitlint's allowed type-enum (commitlint.config.ts imports this), commit-analyzer's releaseRules below and the notes generator's sections all derive from it, so a type cannot trigger a release without also being accepted by commit-msg validation, or the reverse, and no type can release without its commits appearing in the notes: the early releases whose only commits were docs and chore entries shipped as empty sections because the notes preset hid them.
  */
 export const commitTypes: readonly CommitType[] = [
-  { type: 'feat', release: 'minor' },
-  { type: 'fix', release: 'patch' },
-  { type: 'perf', release: 'patch' },
-  { type: 'revert', release: 'patch' },
-  { type: 'refactor', release: 'patch' },
-  { type: 'docs', release: 'patch' },
-  { type: 'style', release: 'patch' },
-  { type: 'test', release: 'patch' },
-  { type: 'build', release: 'patch' },
-  { type: 'ci', release: 'patch' },
-  { type: 'chore', release: 'patch' },
+  { type: 'feat', release: 'minor', section: 'Features' },
+  { type: 'fix', release: 'patch', section: 'Bug Fixes' },
+  { type: 'perf', release: 'patch', section: 'Performance Improvements' },
+  { type: 'revert', release: 'patch', section: 'Reverts' },
+  { type: 'refactor', release: 'patch', section: 'Code Refactoring' },
+  { type: 'docs', release: 'patch', section: 'Documentation' },
+  { type: 'style', release: 'patch', section: 'Styles' },
+  { type: 'test', release: 'patch', section: 'Tests' },
+  { type: 'build', release: 'patch', section: 'Build System' },
+  { type: 'ci', release: 'patch', section: 'Continuous Integration' },
+  { type: 'chore', release: 'patch', section: 'Chores' },
 ];
 
 /**
@@ -42,6 +44,7 @@ const config: Options = {
       {
         // Deliberately angular, not conventionalcommits: conventional-changelog-writer's bundled commit partial does not match the conventionalcommits preset's function-based partial signature, producing a changelog with a version header and nothing under it.
         preset: 'angular',
+        types: commitTypes.map((t) => ({ type: t.type, section: t.section, hidden: false })),
       },
     ],
     '@semantic-release/changelog',
