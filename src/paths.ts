@@ -234,6 +234,103 @@ export function readLocus(root: unknown, locus: Locus, gate?: ElementGate): Locu
 }
 
 /**
+ * Visits every location a locus addresses without holding a record per element: the trail buffer is reused across visits, so a caller that walks a wildcard over millions of elements pays only the output it writes. Semantics match {@link readLocus} exactly: the same absence rules, the same empty-array reporting, the same gate behaviour, and visits in the same index order.
+ * @param root - The document to read from.
+ * @param locus - The parsed path to read.
+ * @param gate - Optional per-element admission, as {@link readLocus} takes it.
+ * @param visit - Called for each match with the trail (valid only until the next visit; copy it to keep it) and the value found.
+ * @returns The empty arrays a wildcard step met, or `undefined` under the same conditions {@link readLocus} returns `undefined`.
+ */
+export function walkLocus(root: unknown, locus: Locus, gate: ElementGate | undefined, visit: (trail: Trail, value: unknown) => void): readonly EmptySite[] | undefined {
+  const empties: EmptySite[] = [];
+  const trail: TrailStep[] = [];
+
+  /**
+   * Walks one step of the locus over one value.
+   * @param position - The step's position in the locus.
+   * @param value - The value the steps so far reached.
+   * @returns False when the locus is absent from the document.
+   */
+  const walk = (position: number, value: unknown): boolean => {
+    const step = locus[position];
+    if (step === undefined) {
+      visit(trail, value);
+
+      return true;
+    }
+    if (step.kind === "key") {
+      if (!isRecord(value) || !Object.hasOwn(value, step.key)) {
+        return false;
+      }
+      trail.push(step);
+      const deeper = walk(position + 1, getOwn(value, step.key));
+      trail.pop();
+
+      return deeper;
+    }
+    if (!Array.isArray(value)) {
+      return false;
+    }
+    if (step.kind === "index") {
+      if (step.index >= value.length) {
+        return false;
+      }
+      trail.push(step);
+      const deeper = walk(position + 1, value[step.index]);
+      trail.pop();
+
+      return deeper;
+    }
+    if (gate?.arity === countWildcards(locus, position) + 1) {
+      if (value.length === 0) {
+        empties.push({ trail: [...trail], wildcard: countWildcards(locus, position) });
+      }
+      for (let index = 0; index < value.length; index += 1) {
+        trail.push({ kind: "index", index });
+        if (Object.hasOwn(value, index) && gate.admit(wildcardIndexes(locus, trail))) {
+          if (!walk(position + 1, value[index])) {
+            return false;
+          }
+        }
+        trail.pop();
+      }
+
+      return true;
+    }
+    if (value.length === 0) {
+      empties.push({ trail: [...trail], wildcard: countWildcards(locus, position) });
+    }
+    for (let index = 0; index < value.length; index += 1) {
+      if (!Object.hasOwn(value, index)) {
+        continue;
+      }
+      trail.push({ kind: "index", index });
+      const deeper = walk(position + 1, value[index]);
+      trail.pop();
+      if (!deeper) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  return walk(0, root) ? empties : undefined;
+}
+
+/** How many wildcard steps a locus holds before a position (the position's own step excluded). */
+function countWildcards(locus: Locus, position: number): number {
+  let count = 0;
+  for (let at = 0; at < position; at += 1) {
+    if (locus[at]?.kind === "wildcard") {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+/**
  * The array indexes a trail took at a locus's wildcard steps, in order: the index tuple of one match. The trail was produced by {@link readLocus} over this locus (or a prefix of it), so its step at each wildcard position is an index.
  * @param locus - The locus the trail was read through.
  * @param trail - The trail (or a prefix of it, for an empty site).

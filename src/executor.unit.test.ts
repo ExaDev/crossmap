@@ -375,3 +375,63 @@ describe("aggregate", () => {
     expect(() => encode(cw, { xs: ["1"] })).toThrow(RuleApplicationError);
   });
 });
+
+describe("encode over a large wildcard array", () => {
+  /** The elements of the shape under test: enough that a per-element overhead of a few hundred bytes shows as hundreds of megabytes, and small enough that the test fits a loaded runner. */
+  const ELEMENTS = 400_000;
+  /** How much retained growth per element the assertion refuses: the written output and its validated copy need a few hundred, the frontier-and-map design this replaces held about 800 in total. */
+  const BYTES_PER_ELEMENT_BOUND = 600;
+  /** Young-generation sweeps before each measurement, so what the assertion reads is what the run retains rather than what the collector has not swept yet. */
+  const SWEEPS = 40;
+  const SWEEP_SIZE = 250_000;
+  /** The base of the per-element timestamps, so the input carries a field of each kind the crosswalk reads. */
+  const BASE_TIMESTAMP = 1_700_000_000;
+  /** How many distinct weights the input cycles through. */
+  const WEIGHTS = 5;
+  /** The memory test's own budget: the sweeps and one encode over ELEMENTS, on a runner that may be loaded. */
+  const TEST_TIMEOUT_MILLISECONDS = 60_000;
+  /** The element count of the small correctness check beside the memory one. */
+  const SMALL_ELEMENTS = 3;
+
+  const cw = crosswalk({
+    source: "n",
+    target: "s",
+    rules: [
+      { op: "move", from: "meta.id", to: "id" },
+      { op: "move", from: "edges[].source", to: "links[].src" },
+      { op: "move", from: "edges[].target", to: "links[].dst" },
+      { op: "move", from: "edges[].type", to: "links[].rel" },
+      { op: "move", from: "edges[].weight", to: "links[].w" },
+      { op: "move", from: "edges[].timestamp", to: "links[].at" },
+    ],
+    oneWay: [],
+  });
+  const edges = (count: number) => Array.from({ length: count }, (_, index) => ({ source: `n${String(index)}`, target: `n${String((index + 1) % count)}`, type: "cites", weight: index % WEIGHTS, timestamp: BASE_TIMESTAMP + index }));
+  const sweep = (): void => {
+    for (let at = 0; at < SWEEPS; at += 1) {
+      new Array(SWEEP_SIZE).fill(at);
+    }
+  };
+
+  it("writes the same result over a small array", () => {
+    expect(encode(cw, { meta: { id: "g" }, edges: edges(SMALL_ELEMENTS) })).toEqual({
+      id: "g",
+      links: [
+        { src: "n0", dst: "n1", rel: "cites", w: 0, at: BASE_TIMESTAMP },
+        { src: "n1", dst: "n2", rel: "cites", w: 1, at: BASE_TIMESTAMP + 1 },
+        { src: "n2", dst: "n0", rel: "cites", w: 2, at: BASE_TIMESTAMP + 2 },
+      ],
+    });
+  });
+
+  it("holds only the output beyond the input, not a record per element per rule", () => {
+    const input = { meta: { id: "g" }, edges: edges(ELEMENTS) };
+    sweep();
+    const before = process.memoryUsage().heapUsed;
+    const shared = encode(cw, input);
+    expect(shared).toBeTypeOf("object");
+    sweep();
+    const growthPerEdge = (process.memoryUsage().heapUsed - before) / ELEMENTS;
+    expect(growthPerEdge).toBeLessThan(BYTES_PER_ELEMENT_BOUND);
+  }, TEST_TIMEOUT_MILLISECONDS);
+});
