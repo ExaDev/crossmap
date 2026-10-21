@@ -1,3 +1,10 @@
+# [0.8.0](https://github.com/ExaDev/crossmap/compare/v0.7.1...v0.8.0) (2026-10-21)
+
+
+### Features
+
+* **format:** add isoDate, booleanText and jsonText kinds ([39e374f](https://github.com/ExaDev/crossmap/commit/39e374f68e6b3fd3690b13d9529457c817d9dd99))
+
 ## [0.7.1](https://github.com/ExaDev/crossmap/compare/v0.7.0...v0.7.1) (2026-10-21)
 
 # [0.1.0](https://github.com/ExaDev/crossmap/compare/v0.0.0...v0.1.0) (2026-10-18)
