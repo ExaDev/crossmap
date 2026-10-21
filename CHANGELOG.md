@@ -1,3 +1,10 @@
+# [0.6.0](https://github.com/ExaDev/crossmap/compare/v0.5.0...v0.6.0) (2026-10-21)
+
+
+### Features
+
+* **rules:** add template and copy rules over several paths ([7657eb8](https://github.com/ExaDev/crossmap/commit/7657eb862aed6f69f15a995c25148b898314bdba))
+
 # [0.5.0](https://github.com/ExaDev/crossmap/compare/v0.4.0...v0.5.0) (2026-10-21)
 
 
