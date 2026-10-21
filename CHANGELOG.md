@@ -1,3 +1,10 @@
+## [0.8.1](https://github.com/ExaDev/crossmap/compare/v0.8.0...v0.8.1) (2026-10-21)
+
+
+### Performance Improvements
+
+* **executor:** write each wildcard element as it is walked ([8d9c544](https://github.com/ExaDev/crossmap/commit/8d9c5448674bc74706874a7b2b9b8b93df957775))
+
 # [0.8.0](https://github.com/ExaDev/crossmap/compare/v0.7.1...v0.8.0) (2026-10-21)
 
 
