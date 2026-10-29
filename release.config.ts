@@ -42,9 +42,9 @@ const config: Options = {
     [
       '@semantic-release/release-notes-generator',
       {
-        // Deliberately angular, not conventionalcommits: conventional-changelog-writer's bundled commit partial does not match the conventionalcommits preset's function-based partial signature, producing a changelog with a version header and nothing under it.
-        preset: 'angular',
-        types: commitTypes.map((t) => ({ type: t.type, section: t.section, hidden: false })),
+        // conventional-changelog-conventionalcommits is a direct dependency pinned to 9.x, not left to resolve through @commitlint/config-conventional: release-notes-generator loads conventional-changelog-writer 8, and the 10.x preset needs writer 9, so it renders a bare version header instead of notes. With 9.x, presetConfig.types lists every type in commitTypes under its section, which the angular preset cannot (it lists only feat, fix, perf and revert, and ignores a `types` option), so a release cut by a docs, ci or chore commit had a version header and nothing under it. The version header is always H2, so the file's only H1 stays the changelog title.
+        preset: 'conventionalcommits',
+        presetConfig: { types: commitTypes.map((t) => ({ type: t.type, section: t.section })) },
       },
     ],
     '@semantic-release/changelog',
