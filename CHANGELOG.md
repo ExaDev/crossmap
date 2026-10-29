@@ -1,3 +1,13 @@
+## [0.8.2](https://github.com/ExaDev/crossmap/compare/v0.8.1...v0.8.2) (2026-10-29)
+
+### Bug Fixes
+
+* list every commit type in the release notes ([8edf0e6](https://github.com/ExaDev/crossmap/commit/8edf0e610e0b78c42d195ba7a6b09b64d46d65d1))
+
+### Documentation
+
+* list the commits behind each release that had an empty changelog entry ([dc5c6cc](https://github.com/ExaDev/crossmap/commit/dc5c6cc7bbc54e9119098de909ffe53913e1d20f))
+
 ## [0.8.1](https://github.com/ExaDev/crossmap/compare/v0.8.0...v0.8.1) (2026-10-21)
 
 
