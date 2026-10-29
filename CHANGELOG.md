@@ -14,6 +14,14 @@
 
 ## [0.7.1](https://github.com/ExaDev/crossmap/compare/v0.7.0...v0.7.1) (2026-10-21)
 
+### Documentation
+
+* **changelog:** backfill every release section with all its commits ([b32b173](https://github.com/ExaDev/crossmap/commit/b32b1739f02a8bc23da4abda46028d705ce2422f))
+
+### Chores
+
+* **release:** render every commit type in the release notes ([a95189d](https://github.com/ExaDev/crossmap/commit/a95189da839004ab545ec091bbc35beaa44da165))
+
 # [0.1.0](https://github.com/ExaDev/crossmap/compare/v0.0.0...v0.1.0) (2026-10-18)
 
 
