@@ -53,7 +53,9 @@ const registry = z.registry<z.core.JSONSchemaMeta>();
 registry.add(CrosswalkSchema, { id: "Crosswalk" });
 registry.add(PredicateNodeSchema, { id: "When" });
 
+// The input side of each schema: the published schema describes the documents a crosswalk may be written as, so a field the parse fills in (a defaulted rule list, a single-path rule's `to`) is optional in it, as parseCrosswalk accepts it.
 const { schemas } = z.toJSONSchema(registry, {
+  io: "input",
   uri: (id) => (id === "__shared" ? "" : `#/$defs/${id}`),
 });
 

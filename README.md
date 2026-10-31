@@ -190,7 +190,7 @@ Every `from` path and every `to` path is unique across the crosswalk, compared i
 
 ### Two-way rules
 
-Each derives both directions from one declaration. Decode swaps `from` and `to` and applies the inverse. A `template` reads several fields and a `copy` writes several places; all of a rule's paths have the same number of wildcards, a template's fields come from the same element, and each path counts towards the uniqueness of `from` and `to` paths.
+Each derives both directions from one declaration. Decode swaps `from` and `to` and applies the inverse. A `template` reads several fields and a `copy` writes several places; all of a rule's paths have the same number of wildcards, a template's fields come from the same element, and each path counts towards the uniqueness of `from` and `to` paths. A rule with one path on each side (`move`, `scale`, `enum`, `format` and `split`) may leave out `to` when it keeps the field at the same path, so `{ op: "move", from: "nodes[].id" }` means `{ op: "move", from: "nodes[].id", to: "nodes[].id" }`; parsing fills it in, so a parsed crosswalk always carries `to`, and the published JSON Schema leaves it optional for those ops.
 
 | op | fields | encode | decode | inverse holds when |
 | --- | --- | --- | --- | --- |
@@ -264,7 +264,7 @@ The errors crossmap defines all extend `CrossmapError`: `CrosswalkSyntaxError` f
 
 ## JSON Schema
 
-The crosswalk format is published as a JSON Schema 2020-12 document, generated from the Zod definitions as part of the build and canonicalised per RFC 8785. It is exposed through the package exports map as `crossmap/schemas/crossmap.schema.json`. The `when` field is a `$ref` to trilean's published predicate schema, pinned to the trilean version this package depends on, so the predicate grammar has one source of truth.
+The crosswalk format is published as a JSON Schema 2020-12 document, generated from the Zod definitions as part of the build and canonicalised per RFC 8785. It is exposed through the package exports map as `crossmap/schemas/crossmap.schema.json`. It describes a crosswalk as a document may be written, so what `parseCrosswalk` fills in (the `rules` and `oneWay` lists, a single-path rule's `to`) is optional in it. The `when` field is a `$ref` to trilean's published predicate schema, pinned to the trilean version this package depends on, so the predicate grammar has one source of truth.
 
 ## Not in this version
 
