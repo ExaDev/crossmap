@@ -412,6 +412,14 @@ export function readTrail(root: unknown, trail: Trail): { readonly found: true; 
 const placedValues = new WeakSet<object>();
 
 /**
+ * Records that a container was stored in an output as a value by a writer other than {@link writeMatches}, so that later writes through {@link writeMatches} treat it as the leaf it is rather than as structure to merge into.
+ * @param value - The object or array stored.
+ */
+export function markPlaced(value: object): void {
+  placedValues.add(value);
+}
+
+/**
  * Writes values into a target document, creating every intermediate record and array the trails need (materialising an array to the highest index written into it). An index step creates or enters an array and a key step a record, so the two never stand in for each other.
  * @param target - The mutable output document; records and arrays along each trail are created in it as needed.
  * @param writes - The locations to write, each with its trail and its value.
