@@ -176,7 +176,7 @@ The exit status is 0 on success, 1 when the library rejects the crosswalk or the
 
 ## The format
 
-A crosswalk is `{ source, target, rules, oneWay }`: two labels naming the shapes, a list of two-way rules and a list of one-way rules. `parseCrosswalk` validates the syntax and throws one error carrying every issue. `validateCrosswalk` checks the properties of the rule list as a whole, and `compileCrosswalk`, `encode`, `decode` and `assertRoundTrip` run it before anything executes (once per crosswalk object, see [Execution](#execution)).
+A crosswalk is `{ source, target, rules, keep, oneWay }`: two labels naming the shapes, a list of two-way rules, a list of paths carried through unchanged and a list of one-way rules. Only `source` and `target` are required; each list defaults to empty. `parseCrosswalk` validates the syntax and throws one error carrying every issue. `validateCrosswalk` checks the properties of the rule list as a whole, and `compileCrosswalk`, `encode`, `decode` and `assertRoundTrip` run it before anything executes (once per crosswalk object, see [Execution](#execution)).
 
 ### Paths
 
@@ -208,6 +208,17 @@ For example (a template writes a literal brace as `{{` or `}}`):
 { op: "template", from: { given: "people[].given", family: "people[].family" }, to: "names[]", template: "{family}, {given}" }
 { op: "copy", from: "items[].id", to: ["nodes[].id", "labels[].text"] }
 ```
+
+### Kept paths
+
+`keep` lists paths whose value goes across unchanged, at the same path, in both directions. Each one means exactly the identity `move` from that path to itself, so these two crosswalks are the same crosswalk:
+
+```ts
+{ source: "export", target: "graph/v1", keep: ["meta", "nodes[].id", "nodes[].label"] }
+{ source: "export", target: "graph/v1", rules: [{ op: "move", from: "meta" }, { op: "move", from: "nodes[].id" }, { op: "move", from: "nodes[].label" }] }
+```
+
+A kept path is any path a `from` may be, wildcards included, and carries no `when`. `parseCrosswalk` turns each one into its `move`, appended after `rules` in the order listed, so a parsed crosswalk has no `keep` and everything else (validation, execution, round trips) sees only rules. Errors number a kept path as that rule: the n-th kept path is rule `rules.length + n`, counting from zero, and one-way rules are numbered after it. A path kept twice, or kept and also named by a rule, is a repeated path like any other. `keep` names each path it carries: a field that neither a rule nor `keep` names still does not survive encode.
 
 ### One-way rules
 
@@ -264,7 +275,7 @@ The errors crossmap defines all extend `CrossmapError`: `CrosswalkSyntaxError` f
 
 ## JSON Schema
 
-The crosswalk format is published as a JSON Schema 2020-12 document, generated from the Zod definitions as part of the build and canonicalised per RFC 8785. It is exposed through the package exports map as `crossmap/schemas/crossmap.schema.json`. It describes a crosswalk as a document may be written, so what `parseCrosswalk` fills in (the `rules` and `oneWay` lists, a single-path rule's `to`) is optional in it. The `when` field is a `$ref` to trilean's published predicate schema, pinned to the trilean version this package depends on, so the predicate grammar has one source of truth.
+The crosswalk format is published as a JSON Schema 2020-12 document, generated from the Zod definitions as part of the build and canonicalised per RFC 8785. It is exposed through the package exports map as `crossmap/schemas/crossmap.schema.json`. It describes a crosswalk as a document may be written, so what `parseCrosswalk` fills in (the `rules`, `keep` and `oneWay` lists, a single-path rule's `to`) is optional in it. The `when` field is a `$ref` to trilean's published predicate schema, pinned to the trilean version this package depends on, so the predicate grammar has one source of truth.
 
 ## Not in this version
 

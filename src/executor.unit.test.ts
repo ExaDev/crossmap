@@ -452,3 +452,17 @@ describe("a rule whose to is left out", () => {
     assertRoundTrip(cw, [doc]);
   });
 });
+
+describe("kept paths", () => {
+  it("carry the paths they name through unchanged both ways, and nothing else", () => {
+    const cw = crosswalk({ source: "n", target: "s", keep: ["meta", "nodes[].id"] });
+    const doc = { meta: { name: "g" }, nodes: [{ id: "a", unnamed: 1 }] };
+    expect(encode(cw, doc)).toEqual({ meta: { name: "g" }, nodes: [{ id: "a" }] });
+    assertRoundTrip(cw, [{ meta: { name: "g" }, nodes: [{ id: "a" }] }]);
+  });
+
+  it("are numbered after the written rules in the errors they raise", () => {
+    const cw = crosswalk({ source: "n", target: "s", rules: [{ op: "move", from: "a", to: "x" }], keep: ["b", "c"] });
+    expect(() => encode(cw, { a: 1, b: 2 })).toThrow(new RuleApplicationError(2, "c", "the path is absent from the document"));
+  });
+});

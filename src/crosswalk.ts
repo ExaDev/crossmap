@@ -194,6 +194,8 @@ export type OneWayRule = z.infer<typeof OneWayRuleSchema>;
 
 /**
  * The crosswalk document's schema: the rule list that derives both encode and decode. Schema-attached guard per the house pattern (`CrosswalkSchema.is(x)` narrows without a separate hand-written guard). The explicit annotation names the validation surface for declaration emit (the bare schema's inferred type is deeper than the compiler will serialise into a .d.ts); runtime validation is the full strict object below.
+ *
+ * `keep` lists paths carried through unchanged: each is read as the two-way rule `{ op: "move", from: path, to: path }`, appended after `rules` in its order, so the parsed crosswalk holds only `rules` and everything past parsing (validation, execution, round trips, error messages, rule numbering) treats a kept path exactly as that rule. A kept path is numbered after every written two-way rule, and a path kept twice, or kept and also named by a rule, is reported by validateCrosswalk's path-uniqueness check like any other repeated path.
  */
 export const CrosswalkSchema: z.ZodType<Crosswalk> & { is: (value: unknown) => value is Crosswalk } = define(
   z
@@ -201,10 +203,21 @@ export const CrosswalkSchema: z.ZodType<Crosswalk> & { is: (value: unknown) => v
       source: z.string(),
       target: z.string(),
       rules: z.array(TwoWayRuleSchema).default([]),
+      keep: z.array(PathField).default([]),
       oneWay: z.array(OneWayRuleSchema).default([]),
     })
-    .strict(),
+    .strict()
+    .transform(({ keep, rules, ...crosswalk }): Crosswalk => ({ ...crosswalk, rules: [...rules, ...keep.map((path) => keptPath(path))] })),
 );
+
+/**
+ * The two-way rule a `keep` path stands for.
+ * @param path - A path from the crosswalk's `keep` list.
+ * @returns The identity move from that path to itself.
+ */
+function keptPath(path: string): MoveRule {
+  return { op: "move", from: path, to: path };
+}
 export interface Crosswalk {
   readonly source: string;
   readonly target: string;
