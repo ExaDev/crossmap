@@ -70,11 +70,13 @@
     "url": "git+https://github.com/ExaDev/crossmap.git"
   },
   "scripts": {
+    "_bench": "tsx bench/encode.ts",
     "_build": "tsdown && tsx scripts/generate-json-schema.ts",
     "_lint": "eslint . --fix --cache --cache-strategy content --max-warnings 0",
     "_lint:check": "eslint . --cache --cache-strategy content --max-warnings 0",
     "_test": "vitest run",
     "_typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "bench": "turbo run _bench",
     "build": "turbo run _build",
     "lint": "turbo run _lint",
     "lint:check": "turbo run _lint:check",

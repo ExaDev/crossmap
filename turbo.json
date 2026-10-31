@@ -7,6 +7,10 @@
   //
   // `_typecheck` and `_test` depend on this package's own `_build`, and that edge is the reason this file exists: scripts/generate-json-schema.ts imports ../dist/index.js by relative path, so the program in tsconfig.node.json cannot typecheck until dist/ exists, and the JSON Schema suite reads schemas/crossmap.schema.json, which the build generates. Encoding the order here means no hook, workflow or person has to remember it.
   "tasks": {
+    // A measurement, not a build step: its output is the ratios of this run on this machine, so a cached replay would report another run's figures.
+    "_bench": {
+      "cache": false
+    },
     "_build": {
       // scripts/** covers the schema generation step that runs as part of the build; package.json is an input because the generation reads it.
       "inputs": ["src/**", "cli/**", "scripts/**", "tsdown.config.ts", "tsconfig.json", "package.json"],

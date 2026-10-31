@@ -276,6 +276,7 @@ Node 22 or later, pnpm, ESM only. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
 | `pnpm typecheck` | `tsc` over both tsconfig programs |
 | `pnpm test` | Vitest, tests colocated as `*.unit.test.ts` |
 | `pnpm build` | tsdown into `dist`, then the JSON Schema generation script |
+| `pnpm bench` | Encode and decode against a hand-written copy of the same fields: the ratio of the two on this machine in this run, and the input reads each makes per node |
 
 `CLAUDE.md` and `AGENTS.md` are symlinks to this file.
 
