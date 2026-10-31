@@ -19,7 +19,8 @@ export type {
 } from "./crosswalk";
 export { CrosswalkStructureError, CrosswalkSyntaxError, RuleApplicationError, RoundTripMismatchError, CrossmapError } from "./errors";
 export type { CrosswalkIssue, SyntaxIssue } from "./errors";
-export { decode, encode } from "./executor";
+export { compileCrosswalk, decode, encode } from "./executor";
+export type { CompiledCrosswalk } from "./executor";
 export { assertRoundTrip } from "./roundtrip";
 export { validateCrosswalk } from "./validate";
 export type { JsonValue } from "trilean";

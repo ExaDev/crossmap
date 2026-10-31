@@ -176,7 +176,7 @@ The exit status is 0 on success, 1 when the library rejects the crosswalk or the
 
 ## The format
 
-A crosswalk is `{ source, target, rules, oneWay }`: two labels naming the shapes, a list of two-way rules and a list of one-way rules. `parseCrosswalk` validates the syntax and throws one error carrying every issue. `validateCrosswalk` checks the properties of the rule list as a whole, and `encode`, `decode` and `assertRoundTrip` run it first.
+A crosswalk is `{ source, target, rules, oneWay }`: two labels naming the shapes, a list of two-way rules and a list of one-way rules. `parseCrosswalk` validates the syntax and throws one error carrying every issue. `validateCrosswalk` checks the properties of the rule list as a whole, and `compileCrosswalk`, `encode`, `decode` and `assertRoundTrip` run it before anything executes (once per crosswalk object, see [Execution](#execution)).
 
 ### Paths
 
@@ -239,6 +239,16 @@ An element that every rule writing into it skips leaves a gap in the output arra
 ### Execution
 
 The executor is pure and synchronous. Encode reads every `from` from the input as given and writes every `to` into a fresh output, so the input is never mutated. A `from` that is absent from the document is a `RuleApplicationError`, never a silent skip. The output is checked to be valid JSON throughout, so an input value that is not JSON (an `undefined` property, say) fails that check with a Zod error rather than reaching a caller.
+
+A crosswalk is validated and prepared once, the first time it is used: `encode` and `decode` keep the prepared form for each crosswalk object, so running one crosswalk over many documents (every instance of a collection, both halves of a round trip) validates it once. `compileCrosswalk(crosswalk)` does the same step explicitly, throwing `CrosswalkStructureError` there rather than on the first run, and returns `{ encode, decode }` taking only the document. The crosswalk is read when it is prepared, so changing a crosswalk object after it has been used has no effect on it; parse a new one instead.
+
+```ts
+import { compileCrosswalk } from "crossmap";
+
+const codec = compileCrosswalk(network);
+const shared = codec.encode(exported);
+codec.decode(shared);
+```
 
 The errors crossmap defines all extend `CrossmapError`: `CrosswalkSyntaxError` for a document that is not a crosswalk, `CrosswalkStructureError` for a rule list that parses but cannot execute, `RuleApplicationError` naming the rule and path that failed, and `RoundTripMismatchError` naming the sample and path.
 

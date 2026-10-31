@@ -1,9 +1,8 @@
 import { type Crosswalk } from "./crosswalk";
-import { CrosswalkStructureError, RoundTripMismatchError } from "./errors";
+import { RoundTripMismatchError } from "./errors";
 import { formatPath, type Locus, type PathStep, parsePathMemo, type TrailStep } from "./paths";
-import { decode, encode } from "./executor";
+import { compileCrosswalk } from "./executor";
 import { setOwn } from "./own";
-import { validateCrosswalk } from "./validate";
 
 /**
  * Checks that decode inverts encode over every sample, on the paths the crosswalk promises to preserve. The paths one-way rules touch are excluded by construction (a dropped path cannot survive; a decode-direction default or aggregate inserts a path the sample never had), then each sample's round trip is deep-compared with Object.is at the leaves; the first difference throws.
@@ -15,10 +14,7 @@ import { validateCrosswalk } from "./validate";
  * @throws RoundTripMismatchError naming the sample and path of the first difference.
  */
 export function assertRoundTrip(crosswalk: Crosswalk, samples: readonly unknown[]): void {
-  const issues = validateCrosswalk(crosswalk);
-  if (issues.length > 0) {
-    throw new CrosswalkStructureError(issues);
-  }
+  const codec = compileCrosswalk(crosswalk);
   const excluded = crosswalk.oneWay.flatMap((rule): readonly string[] => {
     if (rule.op === "drop") {
       return [rule.from];
@@ -28,7 +24,7 @@ export function assertRoundTrip(crosswalk: Crosswalk, samples: readonly unknown[
   });
   const excludedLoci = excluded.map(parsePathMemo);
   samples.forEach((sample, sampleIndex) => {
-    const roundTripped = decode(crosswalk, encode(crosswalk, sample));
+    const roundTripped = codec.decode(codec.encode(sample));
     const left = prunePaths(sample, excludedLoci);
     const right = prunePaths(roundTripped, excludedLoci);
     compare(left, right, [], sampleIndex);
