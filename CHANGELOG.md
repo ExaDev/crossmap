@@ -1,3 +1,9 @@
+## [0.8.3](https://github.com/ExaDev/crossmap/compare/v0.8.2...v0.8.3) (2026-10-31)
+
+### Continuous Integration
+
+* push the release over SSH with a deploy key ([e8ba6d6](https://github.com/ExaDev/crossmap/commit/e8ba6d6e052b65ae36826c33ad14989482fe8c3b))
+
 ## [0.8.2](https://github.com/ExaDev/crossmap/compare/v0.8.1...v0.8.2) (2026-10-29)
 
 ### Bug Fixes
