@@ -450,14 +450,14 @@ function writeOne(target: Record<string, unknown>, trail: Trail, value: unknown,
     }
     const child: Record<string, unknown> | unknown[] = existing ?? (nextStep.kind === "index" ? [] : {});
     if (existing === undefined) {
-      placeInto(node, step, child, formatPath(trail.slice(0, depth + 1)));
+      placeInto(node, child, trail, depth);
     }
     node = child;
   }
   if (childOf(node, last, trail, trail.length - 1) !== undefined) {
     throw new RangeError(`two destinations write the one location ${formatPath(trail)}`);
   }
-  placeInto(node, last, value, formatPath(trail));
+  placeInto(node, value, trail, trail.length - 1);
   if (asValue && isContainer(value)) {
     placedValues.add(value);
   }
@@ -497,8 +497,12 @@ function childOf(node: Record<string, unknown> | readonly unknown[], step: Trail
   return getOwn(node, step.key);
 }
 
-/** Stores a value one step down from a container. The step's kind has already been checked against the container by {@link childOf}, so the final throw is unreachable for any caller in this module. */
-function placeInto(node: Record<string, unknown> | readonly unknown[], step: TrailStep, value: unknown, location: string): void {
+/** Stores a value one step down from a container, by the step at `depth` of `trail`. The step's kind has already been checked against the container by {@link childOf}, so the final throw is unreachable for any caller in this module, and the location it names is formatted only there. */
+function placeInto(node: Record<string, unknown> | readonly unknown[], value: unknown, trail: Trail, depth: number): void {
+  const step = trail[depth];
+  if (step === undefined) {
+    throw new RangeError("a trail step is missing inside the trail's own length");
+  }
   if (Array.isArray(node) && step.kind === "index") {
     Reflect.set(node, step.index, value);
 
@@ -509,41 +513,59 @@ function placeInto(node: Record<string, unknown> | readonly unknown[], step: Tra
 
     return;
   }
-  throw new RangeError(`path step ${location} does not fit the container it meets`);
+  throw new RangeError(`path step ${formatPath(trail.slice(0, depth + 1))} does not fit the container it meets`);
 }
 
 /**
- * Finds the first array element nothing wrote: a hole left when a rule wrote a later index of an array (a fixed index past the next free one, or a gated rule skipping an element no other rule wrote). Holes are counted before any array is walked, so a large sparse array costs one key listing rather than a pass over its length.
+ * Finds the first array element nothing wrote: a hole left when a rule wrote a later index of an array (a fixed index past the next free one, or a gated rule skipping an element no other rule wrote). Holes are counted before any array is walked, so a large sparse array costs one key listing rather than a pass over its length; an array whose own keys outnumber or fall short of its length is reported at the first index it lacks, or at -1 when it lacks none. The search keeps one trail for the whole walk and copies it only for the hole it returns.
  * @param value - The output document under construction.
- * @param trail - The location of `value` in the document, prefixed to the returned trail; the root call omits it.
  * @returns The trail of the first hole in depth-first order, or `undefined` when there is none.
  */
-export function findHole(value: unknown, trail: Trail = []): Trail | undefined {
-  if (Array.isArray(value)) {
-    if (Object.keys(value).length !== value.length) {
-      const index = value.findIndex((_element: unknown, position) => !Object.hasOwn(value, position));
+export function findHole(value: unknown): Trail | undefined {
+  const trail: TrailStep[] = [];
 
-      return [...trail, { kind: "index", index }];
+  /** Searches one value depth first, leaving the steps to a hole pushed onto the trail when it finds one and the trail as it was otherwise. */
+  function holeBelow(node: unknown): boolean {
+    if (Array.isArray(node)) {
+      if (Object.keys(node).length !== node.length) {
+        trail.push({ kind: "index", index: node.findIndex((_element: unknown, position) => !Object.hasOwn(node, position)) });
+
+        return true;
+      }
+      for (let index = 0; index < node.length; index += 1) {
+        if (holeBelowStep(node[index], { kind: "index", index })) {
+          return true;
+        }
+      }
+
+      return false;
     }
-    for (const [index, element] of value.entries()) {
-      const hole = findHole(element, [...trail, { kind: "index", index }]);
-      if (hole !== undefined) {
-        return hole;
+    if (isRecord(node)) {
+      for (const key of Object.keys(node)) {
+        if (holeBelowStep(node[key], { kind: "key", key })) {
+          return true;
+        }
       }
     }
 
-    return undefined;
-  }
-  if (isRecord(value)) {
-    for (const [key, child] of Object.entries(value)) {
-      const hole = findHole(child, [...trail, { kind: "key", key }]);
-      if (hole !== undefined) {
-        return hole;
-      }
-    }
+    return false;
   }
 
-  return undefined;
+  /** Searches one child: a scalar holds no array, so only a record or array is entered, with its step pushed for the search and popped unless a hole was found. */
+  function holeBelowStep(child: unknown, step: TrailStep): boolean {
+    if (typeof child !== "object" || child === null) {
+      return false;
+    }
+    trail.push(step);
+    if (holeBelow(child)) {
+      return true;
+    }
+    trail.pop();
+
+    return false;
+  }
+
+  return holeBelow(value) ? trail : undefined;
 }
 
 function isContainer(value: unknown): value is Record<string, unknown> | unknown[] {
