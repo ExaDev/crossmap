@@ -34,7 +34,10 @@ describe("isExactJson", () => {
     const hidden = Object.defineProperty({ a: 1 }, "b", { value: 2, enumerable: false });
     const named = Object.defineProperty([1], "extra", { value: true, enumerable: true });
     const proto: unknown = JSON.parse('{"__proto__":{"a":1},"b":2}');
-    for (const value of [holed, bare, hidden, named, proto]) {
+    /** An array of a subclass, which the schema copies into an ordinary array. */
+    class Rows extends Array<number> {}
+    const rows = Rows.from([1]);
+    for (const value of [holed, bare, hidden, named, proto, rows]) {
       expect(isExactJson(value)).toBe(false);
     }
   });
