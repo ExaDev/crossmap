@@ -1,4 +1,4 @@
-import { type Crosswalk, type TwoWayRule } from "./crosswalk";
+import { type Crosswalk, type OneWayRule, type TwoWayRule } from "./crosswalk";
 import { CrosswalkStructureError, RuleApplicationError } from "./errors";
 import { enumDecode, enumEncode } from "./ops/enum";
 import { formatDecode, formatEncode } from "./ops/format";
@@ -14,8 +14,59 @@ import { parseTemplateMemo, renderTemplate, splitTemplate } from "./ops/template
 import { validateCrosswalk } from "./validate";
 import { evaluateWhen, whenArity } from "./when";
 
+/** The two directions a crosswalk runs in. */
+type Direction = "encode" | "decode";
+
 /**
- * Encodes a native document into the shared shape. Every rule's `from` is read from `doc` exactly as given and every `to` is written into a fresh output, so the input is never mutated and rule order carries no meaning (validateCrosswalk, run first, enforces the path uniqueness that makes this safe). A rule's `when` is evaluated against `doc`: definite true applies, definite false or indeterminate skips. Two-way rules write first, then the output's absent paths gain any due `default` values.
+ * A crosswalk validated and prepared once, for running any number of times: every path parsed, every rule's sides and operation resolved for each direction. Running it has exactly the semantics of {@link encode} and {@link decode} on the crosswalk it was compiled from.
+ */
+export interface CompiledCrosswalk {
+  /** The crosswalk this was compiled from. */
+  readonly crosswalk: Crosswalk;
+  /**
+   * Encodes a native document into the shared shape, as {@link encode} does.
+   * @throws RuleApplicationError as {@link encode} does.
+   */
+  readonly encode: (doc: unknown) => JsonValue;
+  /**
+   * Decodes a shared document back into the native shape, as {@link decode} does.
+   * @throws RuleApplicationError as {@link decode} does.
+   */
+  readonly decode: (doc: unknown) => JsonValue;
+}
+
+/** Every crosswalk compiled so far, keyed by the crosswalk object, so a caller passing the same crosswalk again pays for validation and preparation once. Weakly held, so a crosswalk no longer in use is not kept alive by its compiled form. */
+const compiledCrosswalks = new WeakMap<Crosswalk, CompiledCrosswalk>();
+
+/**
+ * Validates and prepares a crosswalk once, for encoding and decoding any number of documents. The result is kept for the crosswalk object, so compiling the same object again (as {@link encode} and {@link decode} do on every call) returns it at no cost; a crosswalk is read when it is first compiled, so an object changed afterwards keeps the behaviour it was first compiled with.
+ * @param crosswalk - The parsed crosswalk.
+ * @returns The compiled crosswalk.
+ * @throws CrosswalkStructureError when the crosswalk fails structural validation.
+ */
+export function compileCrosswalk(crosswalk: Crosswalk): CompiledCrosswalk {
+  const cached = compiledCrosswalks.get(crosswalk);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const issues = validateCrosswalk(crosswalk);
+  if (issues.length > 0) {
+    throw new CrosswalkStructureError(issues);
+  }
+  const encodePlan = planFor(crosswalk, "encode");
+  const decodePlan = planFor(crosswalk, "decode");
+  const compiled: CompiledCrosswalk = {
+    crosswalk,
+    encode: (doc) => run(encodePlan, doc),
+    decode: (doc) => run(decodePlan, doc),
+  };
+  compiledCrosswalks.set(crosswalk, compiled);
+
+  return compiled;
+}
+
+/**
+ * Encodes a native document into the shared shape. Every rule's `from` is read from `doc` exactly as given and every `to` is written into a fresh output, so the input is never mutated and rule order carries no meaning (validateCrosswalk, run when the crosswalk is first compiled, enforces the path uniqueness that makes this safe). A rule's `when` is evaluated against `doc`: definite true applies, definite false or indeterminate skips. Two-way rules write first, then the output's absent paths gain any due `default` values. The crosswalk is compiled on its first use and the compiled form reused ({@link compileCrosswalk}).
  * @param crosswalk - The parsed crosswalk.
  * @param doc - The native (source-side) document.
  * @returns The shared (target-side) document.
@@ -23,11 +74,11 @@ import { evaluateWhen, whenArity } from "./when";
  * @throws RuleApplicationError when a rule's `from` path is absent, a value does not fit the operation, two rules claim one output location, or an output array is left with an element no rule wrote (ruleIndex -1, since that gap belongs to no single rule).
  */
 export function encode(crosswalk: Crosswalk, doc: unknown): JsonValue {
-  return run(crosswalk, doc, "encode");
+  return compileCrosswalk(crosswalk).encode(doc);
 }
 
 /**
- * Decodes a shared document back into the native shape: the same executor with every two-way rule's paths swapped and each operation's inverse applied, so decode is a true inverse of encode over the paths the crosswalk maps. A rule's `when` is evaluated against `doc` (the target document, the decode input).
+ * Decodes a shared document back into the native shape: the same executor with every two-way rule's paths swapped and each operation's inverse applied, so decode is a true inverse of encode over the paths the crosswalk maps. A rule's `when` is evaluated against `doc` (the target document, the decode input). The crosswalk is compiled on its first use and the compiled form reused ({@link compileCrosswalk}).
  * @param crosswalk - The parsed crosswalk.
  * @param doc - The shared (target-side) document.
  * @returns The native (source-side) document.
@@ -35,31 +86,92 @@ export function encode(crosswalk: Crosswalk, doc: unknown): JsonValue {
  * @throws RuleApplicationError when a rule's `to` path (the decode read side) is absent, a value does not fit the inverse operation, two rules claim one output location, or an output array is left with a gap (ruleIndex -1).
  */
 export function decode(crosswalk: Crosswalk, doc: unknown): JsonValue {
-  return run(crosswalk, doc, "decode");
+  return compileCrosswalk(crosswalk).decode(doc);
 }
 
 /** The rule index a RuleApplicationError carries when the failure belongs to the rule list as a whole: a gap in an output array is the absence of a write, which no one rule owns. */
 const NO_SINGLE_RULE = -1;
 
-function run(crosswalk: Crosswalk, doc: unknown, direction: "encode" | "decode"): JsonValue {
-  const issues = validateCrosswalk(crosswalk);
-  if (issues.length > 0) {
-    throw new CrosswalkStructureError(issues);
+/** One read path of a rule in one direction, parsed. */
+interface ReadSide {
+  readonly path: string;
+  readonly locus: Locus;
+}
+
+/** One two-way rule prepared for one direction: its read and write paths parsed, the strings its errors name, and its operation resolved. */
+interface RulePlan {
+  readonly index: number;
+  readonly when: PredicateNode | undefined;
+  /** The read path the rule walks, which every other read path must pair with element by element. */
+  readonly governing: ReadSide;
+  readonly otherReads: readonly ReadSide[];
+  readonly writeLoci: readonly Locus[];
+  /** Every read path, as an operation's failure names them. */
+  readonly readPath: string;
+  /** Every write path, as a write's failure names them. */
+  readonly writePath: string;
+  /** The operation in this direction: one value per read path in, one per write path out. */
+  readonly transform: (values: readonly unknown[]) => readonly unknown[];
+}
+
+/** One one-way rule with the index its failures carry. */
+interface OneWayPlan {
+  readonly index: number;
+  readonly rule: OneWayRule;
+}
+
+/** A crosswalk prepared for one direction. */
+interface Plan {
+  readonly direction: Direction;
+  readonly rules: readonly RulePlan[];
+  readonly oneWay: readonly OneWayPlan[];
+}
+
+function planFor(crosswalk: Crosswalk, direction: Direction): Plan {
+  return {
+    direction,
+    rules: crosswalk.rules.map((rule, index) => rulePlan(rule, index, direction)),
+    oneWay: crosswalk.oneWay.map((rule, index) => ({ index: crosswalk.rules.length + index, rule })),
+  };
+}
+
+function rulePlan(rule: TwoWayRule, index: number, direction: Direction): RulePlan {
+  const sides = ruleSides(rule);
+  const reads = direction === "encode" ? sides.from : sides.to;
+  const writes = direction === "encode" ? sides.to : sides.from;
+  const [governingPath, ...otherPaths] = reads;
+  if (governingPath === undefined) {
+    throw new Error("a rule with no read path: ruleSides always returns at least one");
   }
+  const readSide = (path: string): ReadSide => ({ path, locus: parsePathMemo(path) });
+
+  return {
+    index,
+    when: rule.when,
+    governing: readSide(governingPath),
+    otherReads: otherPaths.map(readSide),
+    writeLoci: writes.map((path) => parsePathMemo(path)),
+    readPath: reads.join(", "),
+    writePath: writes.join(", "),
+    transform: transformFor(rule, direction),
+  };
+}
+
+function run(plan: Plan, doc: unknown): JsonValue {
   const target: Record<string, unknown> = {};
-  crosswalk.rules.forEach((rule, index) => {
-    applyTwoWayRule(rule, index, { direction, doc, target });
-  });
-  crosswalk.oneWay.forEach((rule, index) => {
+  for (const rule of plan.rules) {
+    applyTwoWayRule(rule, doc, target);
+  }
+  for (const { index, rule } of plan.oneWay) {
     if (rule.when !== undefined && !evaluateWhen(rule.when, doc)) {
-      return;
+      continue;
     }
     try {
-      applyOneWayRule(rule, direction, doc, target);
+      applyOneWayRule(rule, plan.direction, doc, target);
     } catch (error) {
-      throw new RuleApplicationError(crosswalk.rules.length + index, rule.op === "default" ? rule.to : rule.from, errorMessage(error));
+      throw new RuleApplicationError(index, rule.op === "default" ? rule.to : rule.from, errorMessage(error));
     }
-  });
+  }
   const hole = findHole(target);
   if (hole !== undefined) {
     throw new RuleApplicationError(NO_SINGLE_RULE, formatPath(hole), "no rule wrote this array element, so the array would have a gap");
@@ -93,23 +205,13 @@ function elementGate(when: PredicateNode, doc: unknown, governing: Locus): Eleme
  * Applies one two-way rule: walks the governing read path one element at a time, reads the other read paths at the same indexes, transforms each element's values with the operation in this direction, and writes the results to the write-side paths at those indexes as it goes, so nothing per element outlives the element. Empty arrays met on any read side are materialised on every write-side path.
  * @throws RuleApplicationError when a read path is absent, two read paths address different elements, the operation rejects a value, or a write conflicts.
  */
-function applyTwoWayRule(rule: TwoWayRule, index: number, context: RunContext): void {
-  const { direction, doc, target } = context;
-  const sides = ruleSides(rule);
-  const [governingPath, ...otherReads] = direction === "encode" ? sides.from : sides.to;
-  const writes = direction === "encode" ? sides.to : sides.from;
-  if (governingPath === undefined) {
-    throw new Error("a rule with no read path: ruleSides always returns at least one");
-  }
-  const governing = parsePathMemo(governingPath);
-  const gate = rule.when === undefined ? undefined : elementGate(rule.when, doc, governing);
+function applyTwoWayRule(rule: RulePlan, doc: unknown, target: Record<string, unknown>): void {
+  const { index, governing, otherReads, writeLoci } = rule;
+  const gate = rule.when === undefined ? undefined : elementGate(rule.when, doc, governing.locus);
   if (gate === false) {
     return;
   }
-  const writeLoci = writes.map((path) => parsePathMemo(path));
-  const readPath = (direction === "encode" ? sides.from : sides.to).join(", ");
   const empties: { readonly locus: Locus; readonly empty: EmptySite }[] = [];
-  let governingCount = 0;
   const countWalk = (locus: Locus): { readonly empties: readonly EmptySite[] | undefined; readonly count: number } => {
     let count = 0;
     const walked = walkLocus(doc, locus, gate, () => {
@@ -118,45 +220,45 @@ function applyTwoWayRule(rule: TwoWayRule, index: number, context: RunContext): 
 
     return { empties: walked, count };
   };
-  const governingWalk = countWalk(governing);
+  const governingWalk = countWalk(governing.locus);
   if (governingWalk.empties === undefined) {
-    throw new RuleApplicationError(index, governingPath, "the path is absent from the document");
+    throw new RuleApplicationError(index, governing.path, "the path is absent from the document");
   }
-  governingCount = governingWalk.count;
+  const governingCount = governingWalk.count;
   for (const empty of governingWalk.empties) {
-    empties.push({ locus: governing, empty });
+    empties.push({ locus: governing.locus, empty });
   }
-  const otherWalks = otherReads.map((path) => {
-    const locus = parsePathMemo(path);
-    const walked = countWalk(locus);
+  for (const read of otherReads) {
+    const walked = countWalk(read.locus);
     if (walked.empties === undefined) {
-      throw new RuleApplicationError(index, path, "the path is absent from the document");
+      throw new RuleApplicationError(index, read.path, "the path is absent from the document");
     }
     if (walked.count !== governingCount) {
-      throw new RuleApplicationError(index, path, `addresses different elements from ${governingPath}, so the paths cannot be paired element by element`);
+      throw new RuleApplicationError(index, read.path, `addresses different elements from ${governing.path}, so the paths cannot be paired element by element`);
     }
     for (const empty of walked.empties) {
-      empties.push({ locus, empty });
+      empties.push({ locus: read.locus, empty });
     }
+  }
+  walkLocus(doc, governing.locus, gate, (trail, value) => {
+    const indexes = wildcardIndexes(governing.locus, trail);
+    const values = [
+      value,
+      ...otherReads.map((read) => {
+        const found = readTrail(doc, bindLocus(read.locus, indexes));
+        if (!found.found) {
+          throw new RuleApplicationError(index, read.path, `addresses different elements from ${governing.path}, so the paths cannot be paired element by element`);
+        }
 
-    return locus;
-  });
-  walkLocus(doc, governing, gate, (trail, value) => {
-    const indexes = wildcardIndexes(governing, trail);
-    const values = [value, ...otherWalks.map((locus, position) => {
-      const found = readTrail(doc, bindLocus(locus, indexes));
-      if (!found.found) {
-        throw new RuleApplicationError(index, otherReads[position] ?? governingPath, `addresses different elements from ${governingPath}, so the paths cannot be paired element by element`);
-      }
-
-      return found.value;
-    })];
-    const results = transform(rule, direction, values, { index, path: readPath });
+        return found.value;
+      }),
+    ];
+    const results = transformed(rule, values);
     const outputs = writeLoci.map((locus, position) => ({ trail: bindLocus(locus, indexes), value: results[position] }));
     try {
       writeMatches(target, outputs);
     } catch (error) {
-      throw new RuleApplicationError(index, writes.join(", "), errorMessage(error));
+      throw new RuleApplicationError(index, rule.writePath, errorMessage(error));
     }
   });
   try {
@@ -168,67 +270,67 @@ function applyTwoWayRule(rule: TwoWayRule, index: number, context: RunContext): 
       }
     }
   } catch (error) {
-    throw new RuleApplicationError(index, writes.join(", "), errorMessage(error));
+    throw new RuleApplicationError(index, rule.writePath, errorMessage(error));
   }
 }
 
-/** What every rule in one encode or decode call shares: the direction, the input document and the output under construction. */
-interface RunContext {
-  readonly direction: "encode" | "decode";
-  readonly doc: unknown;
-  readonly target: Record<string, unknown>;
+/** Applies a rule's operation to one element's values, turning the operation's own thrown errors into RuleApplicationErrors that name the rule and its read paths. */
+function transformed(rule: RulePlan, values: readonly unknown[]): readonly unknown[] {
+  try {
+    return rule.transform(values);
+  } catch (error) {
+    throw new RuleApplicationError(rule.index, rule.readPath, errorMessage(error));
+  }
 }
 
-/** Applies one two-way rule's operation to one element's values in the given direction (one value per read path in, one per write path out), turning the operation's own thrown errors into RuleApplicationErrors that name the rule and path. */
-function transform(rule: TwoWayRule, direction: "encode" | "decode", values: readonly unknown[], where: { readonly index: number; readonly path: string }): readonly unknown[] {
-  try {
-    switch (rule.op) {
-      case "template": {
-        const pieces = parseTemplateMemo(rule.template);
-        const names = Object.keys(rule.from);
-        if (direction === "encode") {
-          return [renderTemplate(pieces, new Map(names.map((name, position) => [name, values[position]])))];
-        }
-        const [text] = values;
+/** Resolves a two-way rule's operation in one direction, once, to a function from one value per read path to one value per write path. */
+function transformFor(rule: TwoWayRule, direction: Direction): (values: readonly unknown[]) => readonly unknown[] {
+  switch (rule.op) {
+    case "template": {
+      const pieces = parseTemplateMemo(rule.template);
+      const names = Object.keys(rule.from);
+      if (direction === "encode") {
+        return (values) => [renderTemplate(pieces, new Map(names.map((name, position) => [name, values[position]])))];
+      }
+
+      return ([text]) => {
         if (typeof text !== "string") {
           throw new Error(`template decode applies to strings, found: ${JSON.stringify(text)}`);
         }
         const parts = splitTemplate(pieces, text);
 
         return names.map((name) => parts.get(name));
-      }
-      case "copy":
-        return direction === "encode" ? copyEncode(rule, values[0]) : [copyDecode(values)];
-      case "move":
-      case "scale":
-      case "enum":
-      case "format":
-      case "split":
-        return [applyOp(rule, direction, values[0])];
-      default:
-        return unhandledOp();
+      };
     }
-  } catch (error) {
-    if (error instanceof RuleApplicationError) {
-      throw error;
+    case "copy":
+      return direction === "encode" ? ([value]) => copyEncode(rule, value) : (values) => [copyDecode(values)];
+    case "move":
+    case "scale":
+    case "enum":
+    case "format":
+    case "split": {
+      const op = singlePathOp(rule, direction);
+
+      return ([value]) => [op(value)];
     }
-    throw new RuleApplicationError(where.index, where.path, errorMessage(error));
+    default:
+      return unhandledOp();
   }
 }
 
-/** Applies a single-path operation to one value in the given direction. */
-function applyOp(rule: Exclude<TwoWayRule, { readonly op: "template" | "copy" }>, direction: "encode" | "decode", value: unknown): unknown {
+/** Resolves a single-path operation in one direction to a function of the one value it reads. */
+function singlePathOp(rule: Exclude<TwoWayRule, { readonly op: "template" | "copy" }>, direction: Direction): (value: unknown) => unknown {
   switch (rule.op) {
     case "move":
-      return moveValue(rule, value);
+      return (value) => moveValue(rule, value);
     case "scale":
-      return direction === "encode" ? scaleEncode(rule, value) : scaleDecode(rule, value);
+      return direction === "encode" ? (value) => scaleEncode(rule, value) : (value) => scaleDecode(rule, value);
     case "enum":
-      return direction === "encode" ? enumEncode(rule, value) : enumDecode(rule, value);
+      return direction === "encode" ? (value) => enumEncode(rule, value) : (value) => enumDecode(rule, value);
     case "format":
-      return direction === "encode" ? formatEncode(rule, value) : formatDecode(rule, value);
+      return direction === "encode" ? (value) => formatEncode(rule, value) : (value) => formatDecode(rule, value);
     case "split":
-      return direction === "encode" ? splitEncode(rule, value) : splitDecode(rule, value);
+      return direction === "encode" ? (value) => splitEncode(rule, value) : (value) => splitDecode(rule, value);
     default:
       return unhandledOp();
   }
