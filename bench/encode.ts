@@ -53,6 +53,9 @@ const identityCrosswalk = parseCrosswalk({
   ],
 });
 
+/** The identity crosswalk written as a `keep` list, which parses to the same rules and so should cost the same. */
+const keptCrosswalk = parseCrosswalk({ source: "native", target: "shared", keep: ["meta", "nodes[].id", "nodes[].text"] });
+
 /** Identity moves for every field, plus one rule each of format, scale and enum. */
 const mixedCrosswalk = parseCrosswalk({
   source: "native",
@@ -296,6 +299,8 @@ function measure<Doc>(scenario: Scenario<Doc>): void {
 const mixedName = `${String(IDENTITY_FIELDS + 1)} moves + format, scale, enum`;
 measure({ name: "3 identity moves, encode", crosswalk: identityCrosswalk, direction: "encode", document: identityDocument, baseline: identityBaseline });
 measure({ name: "3 identity moves, decode", crosswalk: identityCrosswalk, direction: "decode", document: identityDocument, baseline: identityBaseline });
+measure({ name: "3 kept paths, encode", crosswalk: keptCrosswalk, direction: "encode", document: identityDocument, baseline: identityBaseline });
+measure({ name: "3 kept paths, decode", crosswalk: keptCrosswalk, direction: "decode", document: identityDocument, baseline: identityBaseline });
 measure({ name: `${mixedName}, encode`, crosswalk: mixedCrosswalk, direction: "encode", document: mixedDocument, baseline: mixedEncodeBaseline });
 measure({ name: `${mixedName}, decode`, crosswalk: mixedCrosswalk, direction: "decode", document: (count) => mixedEncodeBaseline(mixedDocument(count)), baseline: mixedDecodeBaseline });
 measure({ name: `${String(IDENTITY_FIELDS + 1)} moves + 1 gated per element (not fused), encode`, crosswalk: gatedCrosswalk, direction: "encode", document: mixedDocument, baseline: gatedBaseline });
