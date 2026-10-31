@@ -39,12 +39,14 @@ describe("the built JSON Schema", () => {
     expect(when["$ref"]).toBe(`https://cdn.jsdelivr.net/npm/trilean@${String(trileanVersion)}/schemas/trilean.schema.json#/$defs/PredicateNode`);
   });
 
-  it("describes the documents parseCrosswalk accepts: the rule lists, and a single-path rule's to, may be left out", () => {
+  it("describes the documents parseCrosswalk accepts: the rule lists, the keep list, and a single-path rule's to, may be left out", () => {
     const shape = z.object({
       $defs: z.object({
         Crosswalk: z.object({
           required: z.array(z.string()),
-          properties: z.object({ rules: z.object({ items: z.object({ oneOf: z.array(z.object({ properties: z.object({ op: z.object({ const: z.string() }) }), required: z.array(z.string()) })) }) }) }),
+          properties: z.object({
+            keep: z.object({ type: z.literal("array"), items: z.object({ type: z.literal("string"), pattern: z.string() }) }),
+            rules: z.object({ items: z.object({ oneOf: z.array(z.object({ properties: z.object({ op: z.object({ const: z.string() }) }), required: z.array(z.string()) })) }) }) }),
         }),
       }),
     });

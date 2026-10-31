@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CrosswalkSchema, parseCrosswalk } from "./crosswalk";
 import { CrosswalkSyntaxError } from "./errors";
+import { validateCrosswalk } from "./validate";
 
 const validCrosswalk = {
   source: "native",
@@ -153,5 +154,39 @@ describe("parseCrosswalk", () => {
 
   it("validates a to left out as the from path it stands for", () => {
     expect(() => parseCrosswalk({ source: "a", target: "b", rules: [{ op: "move", from: "a..b" }] })).toThrow(/rules\.0\.from/u);
+  });
+});
+
+describe("keep", () => {
+  it("reads each kept path as an identity move appended after the rules, in order", () => {
+    const parsed = parseCrosswalk({ source: "a", target: "b", rules: [{ op: "scale", from: "w", to: "weight", factor: 2 }], keep: ["meta", "nodes[].id"] });
+    expect(parsed.rules).toEqual([
+      { op: "scale", from: "w", to: "weight", factor: 2 },
+      { op: "move", from: "meta", to: "meta" },
+      { op: "move", from: "nodes[].id", to: "nodes[].id" },
+    ]);
+    expect(parsed).not.toHaveProperty("keep");
+  });
+
+  it("is optional, and a crosswalk of kept paths alone needs no rules", () => {
+    expect(parseCrosswalk({ source: "a", target: "b" }).rules).toEqual([]);
+    expect(parseCrosswalk({ source: "a", target: "b", keep: ["x"] }).rules).toEqual([{ op: "move", from: "x", to: "x" }]);
+  });
+
+  it.each([
+    ["a non-string entry", [true]],
+    ["an empty path", [""]],
+    ["a malformed path", ["a..b"]],
+    ["a __proto__ key", ["__proto__"]],
+    ["a list that is not an array", "meta"],
+  ])("refuses %s, naming the keep field", (_name, keep) => {
+    expect(() => parseCrosswalk({ source: "a", target: "b", keep })).toThrow(/keep/u);
+  });
+
+  it("leaves a path kept twice, or kept and named by a rule, to the path-uniqueness check", () => {
+    const twice = validateCrosswalk(parseCrosswalk({ source: "a", target: "b", keep: ["x", '["x"]'] }));
+    expect(twice.map((issue) => issue.message)).toEqual(["two rules write the same to path: x", "two rules use the same from path: x"]);
+    const collides = validateCrosswalk(parseCrosswalk({ source: "a", target: "b", rules: [{ op: "move", from: "y", to: "x" }], keep: ["x"] }));
+    expect(collides.map((issue) => issue.message)).toEqual(["two rules write the same to path: x"]);
   });
 });

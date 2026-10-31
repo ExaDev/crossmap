@@ -259,6 +259,34 @@ function crosswalkOf(rule: fc.Arbitrary<object>): fc.Arbitrary<Crosswalk | undef
   });
 }
 
+/** Paths of every shape a `keep` list may hold, drawn often from the keys most generated rules use, so a kept path both stands alone and collides with a rule's. */
+const keptPathArbitrary = fc.oneof({ weight: 3, arbitrary: keyedPathOfArity1 }, { weight: 2, arbitrary: keyPath }, { weight: 1, arbitrary: pathOfArity0 }, { weight: 1, arbitrary: pathOfArity1 }, { weight: 1, arbitrary: pathOfArity2 });
+
+/** One crosswalk written twice: once with its identity moves as a `keep` list, and once with them as explicit `move` rules after the others. */
+interface KeptPair {
+  readonly written: Crosswalk;
+  readonly explicit: Crosswalk;
+}
+
+/**
+ * Crosswalks whose identity moves are written as `keep`, each paired with the same crosswalk written with explicit moves.
+ * @param rule - The other two-way rules to draw from.
+ * @returns The pair, or `undefined` when the schema refuses a generated rule.
+ */
+function keptPairOf(rule: fc.Arbitrary<object>): fc.Arbitrary<KeptPair | undefined> {
+  return fc.tuple(fc.array(rule, { maxLength: MAX_RULES }), fc.array(keptPathArbitrary, { minLength: 1, maxLength: MAX_RULES }), fc.array(oneWayRule, { maxLength: MAX_ONE_WAY_RULES })).map(([rules, keep, oneWay]) => {
+    try {
+      return {
+        written: parseCrosswalk({ source: "native", target: "shared", rules, keep, oneWay }),
+        explicit: parseCrosswalk({ source: "native", target: "shared", rules: [...rules, ...keep.map((path) => ({ op: "move", from: path }))], oneWay }),
+      };
+    } catch {
+      // The schema's refusal is this generator's filter, not a result under test.
+      return undefined;
+    }
+  });
+}
+
 /** JSON scalars, several of which fit an op (enum keys, number text, ISO dates, separated text, JSON text). */
 const jsonLeaf = fc.constantFrom<unknown>("open", "closed", "x", "1", "2.5", "2026-10-18", "2026-10-18T09:30:00.000Z", "true", '{"k":1}', "p,q", "p-q", 0, 1, FRACTIONAL, NEGATIVE, true, false, null);
 
@@ -420,6 +448,34 @@ describe("the executor against the reference executor", () => {
       { numRuns: RUNS },
     );
     expect(fusedRuns).toBeGreaterThan(0);
+  }, PROPERTY_TIMEOUT_MILLISECONDS);
+
+  it("gives a crosswalk written with keep the outcome of the same crosswalk written with explicit moves, and of the reference, both ways", () => {
+    const seen = new Set<OutcomeKind>();
+    const note = (kind: OutcomeKind | undefined): void => {
+      if (kind !== undefined) {
+        seen.add(kind);
+      }
+    };
+    fc.assert(
+      fc.property(keptPairOf(fc.oneof(keyedRule, twoWayRule)), fc.record({ native: document, length: fc.integer({ min: 0, max: MAX_ARRAY_LENGTH }), draw: fc.gen() }), (pair, { native, length, draw }) => {
+        if (pair === undefined) {
+          return;
+        }
+        const { written, explicit } = pair;
+        const sides = explicit.rules.map(ruleSides);
+        const fittedNative = fitted(sides.flatMap((side) => side.from).map(parsePath), length, () => draw(() => fittedLeaf));
+        const fittedShared = fitted(sides.flatMap((side) => side.to).map(parsePath), length, () => draw(() => fittedLeaf));
+        for (const [doc, way] of [[native, "encode"], [fittedNative, "encode"], [fittedShared, "decode"]] as const) {
+          const run = (crosswalk: Crosswalk): Outcome => outcome(() => (way === "encode" ? encode(crosswalk, doc) : decode(crosswalk, doc)));
+          expect(run(written)).toEqual(run(explicit));
+          note(sameOutcome(explicit, doc, way));
+        }
+      }),
+      { numRuns: RUNS },
+    );
+    // Both a result and the errors kept paths most often meet were compared.
+    expect([...seen]).toEqual(expect.arrayContaining(["output", "absent", "structure", "conflict"]));
   }, PROPERTY_TIMEOUT_MILLISECONDS);
 
   it("gives the same result as the reference over every corpus sample, both ways", () => {
