@@ -1,11 +1,6 @@
 import { type Crosswalk, type OneWayRule, type TwoWayRule } from "./crosswalk";
 import { CrosswalkStructureError, RuleApplicationError } from "./errors";
-import { enumDecode, enumEncode } from "./ops/enum";
-import { formatDecode, formatEncode } from "./ops/format";
-import { moveValue } from "./ops/move";
 import { applyOneWayRule } from "./ops/one-way";
-import { scaleDecode, scaleEncode } from "./ops/scale";
-import { splitDecode, splitEncode } from "./ops/split";
 import { type JsonValue, JsonValueSchema, type PredicateNode } from "trilean";
 import { bindLocus, type ElementGate, type EmptySite, ensureArray, findHole, formatPath, type Locus, parsePathMemo, readTrail, walkLocus, wildcardIndexes, writeMatches } from "./paths";
 import { ruleSides } from "./sides";
@@ -13,6 +8,8 @@ import { copyDecode, copyEncode } from "./ops/copy";
 import { parseTemplateMemo, renderTemplate, splitTemplate } from "./ops/template";
 import { validateCrosswalk } from "./validate";
 import { evaluateWhen, whenArity } from "./when";
+import { type FusedPlan, fusedPlan, runFused } from "./fused";
+import { singlePathOp } from "./ops/single-path";
 
 /** The two directions a crosswalk runs in. */
 type Direction = "encode" | "decode";
@@ -125,6 +122,10 @@ interface Plan {
   readonly direction: Direction;
   readonly rules: readonly RulePlan[];
   readonly oneWay: readonly OneWayPlan[];
+  /** The two-way rules arranged to walk each source array once, when every rule has the shape that allows it. */
+  readonly fused: FusedPlan | undefined;
+  /** Whether a one-way rule writes in this direction, which can leave a gap in an output array the fused run built without one. */
+  readonly oneWayWrites: boolean;
 }
 
 function planFor(crosswalk: Crosswalk, direction: Direction): Plan {
@@ -132,8 +133,11 @@ function planFor(crosswalk: Crosswalk, direction: Direction): Plan {
     direction,
     rules: crosswalk.rules.map((rule, index) => rulePlan(rule, index, direction)),
     oneWay: crosswalk.oneWay.map((rule, index) => ({ index: crosswalk.rules.length + index, rule })),
+    fused: fusedPlan(crosswalk.rules, direction),
+    oneWayWrites: crosswalk.oneWay.some((rule) => rule.op !== "drop" && rule.direction === direction),
   };
 }
+
 
 function rulePlan(rule: TwoWayRule, index: number, direction: Direction): RulePlan {
   const sides = ruleSides(rule);
@@ -157,11 +161,12 @@ function rulePlan(rule: TwoWayRule, index: number, direction: Direction): RulePl
   };
 }
 
+/**
+ * Runs a plan over a document: the fused plan first where there is one, and the rules one at a time when there is none or the fused run gives way (it gives way on anything it does not decide for itself, so every error comes from the rule-at-a-time run, exactly as that run reports it).
+ */
 function run(plan: Plan, doc: unknown): JsonValue {
-  const target: Record<string, unknown> = {};
-  for (const rule of plan.rules) {
-    applyTwoWayRule(rule, doc, target);
-  }
+  const fused = plan.fused === undefined ? undefined : runFused(plan.fused, doc);
+  const target = fused === undefined ? runRules(plan, doc) : fused.target;
   for (const { index, rule } of plan.oneWay) {
     if (rule.when !== undefined && !evaluateWhen(rule.when, doc)) {
       continue;
@@ -172,12 +177,23 @@ function run(plan: Plan, doc: unknown): JsonValue {
       throw new RuleApplicationError(index, rule.op === "default" ? rule.to : rule.from, errorMessage(error));
     }
   }
-  const hole = findHole(target);
+  // A fused run fills each output array it builds from the start, so the search can find something only in a value stored whole or after a one-way write.
+  const hole = fused === undefined || fused.storedGap || plan.oneWayWrites ? findHole(target) : undefined;
   if (hole !== undefined) {
     throw new RuleApplicationError(NO_SINGLE_RULE, formatPath(hole), "no rule wrote this array element, so the array would have a gap");
   }
 
   return parseJsonValue(target);
+}
+
+/** Applies the two-way rules one at a time, each over the whole document, into a fresh output. */
+function runRules(plan: Plan, doc: unknown): Record<string, unknown> {
+  const target: Record<string, unknown> = {};
+  for (const rule of plan.rules) {
+    applyTwoWayRule(rule, doc, target);
+  }
+
+  return target;
 }
 
 /**
@@ -313,24 +329,6 @@ function transformFor(rule: TwoWayRule, direction: Direction): (values: readonly
 
       return ([value]) => [op(value)];
     }
-    default:
-      return unhandledOp();
-  }
-}
-
-/** Resolves a single-path operation in one direction to a function of the one value it reads. */
-function singlePathOp(rule: Exclude<TwoWayRule, { readonly op: "template" | "copy" }>, direction: Direction): (value: unknown) => unknown {
-  switch (rule.op) {
-    case "move":
-      return (value) => moveValue(rule, value);
-    case "scale":
-      return direction === "encode" ? (value) => scaleEncode(rule, value) : (value) => scaleDecode(rule, value);
-    case "enum":
-      return direction === "encode" ? (value) => enumEncode(rule, value) : (value) => enumDecode(rule, value);
-    case "format":
-      return direction === "encode" ? (value) => formatEncode(rule, value) : (value) => formatDecode(rule, value);
-    case "split":
-      return direction === "encode" ? (value) => splitEncode(rule, value) : (value) => splitDecode(rule, value);
     default:
       return unhandledOp();
   }

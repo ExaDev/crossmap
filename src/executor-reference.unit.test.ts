@@ -5,6 +5,7 @@ import { type Crosswalk, parseCrosswalk } from "./crosswalk";
 import { RuleApplicationError } from "./errors";
 import { decode, encode } from "./executor";
 import { type Locus, parsePath } from "./paths";
+import { fusedPlan, runFused } from "./fused";
 import { ruleSides } from "./sides";
 import { decodeReference, encodeReference } from "../test/support/reference-executor";
 
@@ -391,6 +392,34 @@ describe("the executor against the reference executor", () => {
 
   it("gives the same output or the same error as the reference over crosswalks of keyed single-path rules, both ways", () => {
     expect([...compareOver(crosswalkOf(keyedRule))].sort()).toEqual([...OUTCOME_KINDS].sort());
+  }, PROPERTY_TIMEOUT_MILLISECONDS);
+
+  it("never leaves to the general executor a run of keyed single-path rules that the reference completes", () => {
+    let fusedRuns = 0;
+    fc.assert(
+      fc.property(crosswalkOf(keyedRule), fc.integer({ min: 0, max: MAX_ARRAY_LENGTH }), fc.gen(), (crosswalk, length, draw) => {
+        if (crosswalk === undefined) {
+          return;
+        }
+        for (const way of ["encode", "decode"] as const) {
+          const plan = fusedPlan(crosswalk.rules, way);
+          const sides = crosswalk.rules.map(ruleSides);
+          const doc = fitted(sides.flatMap((side) => (way === "encode" ? side.from : side.to)).map(parsePath), length, () => draw(() => jsonLeaf));
+          // The fused run is the two-way rules alone, so the reference runs without the one-way rules that follow it.
+          const twoWay = { ...crosswalk, oneWay: [] };
+          const expected = outcome(() => (way === "encode" ? encodeReference(twoWay, doc) : decodeReference(twoWay, doc)));
+          if (plan === undefined || !("output" in expected)) {
+            continue;
+          }
+          const fused = runFused(plan, doc);
+          expect(fused).toBeDefined();
+          expect(JSON.stringify(fused?.target)).toBe(expected.output);
+          fusedRuns += 1;
+        }
+      }),
+      { numRuns: RUNS },
+    );
+    expect(fusedRuns).toBeGreaterThan(0);
   }, PROPERTY_TIMEOUT_MILLISECONDS);
 
   it("gives the same result as the reference over every corpus sample, both ways", () => {
