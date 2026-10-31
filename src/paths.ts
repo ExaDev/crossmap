@@ -23,7 +23,7 @@ export type Trail = readonly TrailStep[];
 const BARE_KEY = "[A-Za-z0-9_-]+";
 
 /**
- * A bare segment: `[A-Za-z0-9_-]+` except exactly `__proto__`. Every output passes through trilean's JSON value schema, which drops an own `__proto__` key without a word, so a rule mapping that key would lose its value silently; refusing the segment in the grammar makes it fail loudly where the crosswalk is parsed.
+ * A bare segment: `[A-Za-z0-9_-]+` except exactly `__proto__`. An output holding an own `__proto__` key is checked by trilean's JSON value schema, which drops the key without a word, so a rule mapping that key would lose its value silently; refusing the segment in the grammar makes it fail loudly where the crosswalk is parsed.
  */
 const SEGMENT = `(?!__proto__(?![A-Za-z0-9_-]))${BARE_KEY}`;
 

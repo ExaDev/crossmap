@@ -71,8 +71,8 @@ describe("runFused", () => {
   it("walks each array once into one output element per element, sharing a record moved whole", () => {
     const meta = { name: "g" };
     const output = runFused(plan, { meta, nodes: [{ id: "a", text: "x" }, { id: "b", text: "y" }] });
-    expect(output?.target).toEqual({ meta, items: [{ id: "a", label: { text: "x" } }, { id: "b", label: { text: "y" } }] });
-    expect(output?.target["meta"]).toBe(meta);
+    expect(output).toEqual({ meta, items: [{ id: "a", label: { text: "x" } }, { id: "b", label: { text: "y" } }] });
+    expect(output?.["meta"]).toBe(meta);
   });
 
   /** An array whose first element is a hole. */
@@ -90,8 +90,12 @@ describe("runFused", () => {
     expect(runFused(plan, { meta: {}, nodes: { id: "a", text: "x" } })).toBeUndefined();
   });
 
-  it("notes a value stored whole that holds an array with a hole", () => {
-    expect(runFused(plan, { meta: { list: holed(2) }, nodes: [] })?.storedGap).toBe(true);
-    expect(runFused(plan, { meta: { list: [1, 2] }, nodes: [] })?.storedGap).toBe(false);
+  it("gives way on a value it would store that is not exact JSON, which the general executor reports or rewrites", () => {
+    expect(runFused(plan, { meta: { list: holed(2) }, nodes: [] })).toBeUndefined();
+    expect(runFused(plan, { meta: Number.NaN, nodes: [] })).toBeUndefined();
+    expect(runFused(plan, { meta: {}, nodes: [{ id: undefined, text: "x" }] })).toBeUndefined();
+    const bare: unknown = Object.create(null);
+    expect(runFused(plan, { meta: bare, nodes: [] })).toBeUndefined();
+    expect(runFused(plan, { meta: { list: [1, 2] }, nodes: [] })).toEqual({ meta: { list: [1, 2] }, items: [] });
   });
 });

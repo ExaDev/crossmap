@@ -413,7 +413,7 @@ describe("the executor against the reference executor", () => {
           }
           const fused = runFused(plan, doc);
           expect(fused).toBeDefined();
-          expect(JSON.stringify(fused?.target)).toBe(expected.output);
+          expect(JSON.stringify(fused)).toBe(expected.output);
           fusedRuns += 1;
         }
       }),

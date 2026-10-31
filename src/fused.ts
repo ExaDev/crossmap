@@ -1,7 +1,8 @@
-import type { PredicateNode } from "trilean";
+import type { JsonValue, PredicateNode } from "trilean";
 import type { TwoWayRule } from "./crosswalk";
 import { singlePathOp } from "./ops/single-path";
-import { findHole, type Locus, markPlaced, parsePathMemo } from "./paths";
+import { isExactJson } from "./exact-json";
+import { type Locus, markPlaced, parsePathMemo } from "./paths";
 import { evaluateWhen, whenArity } from "./when";
 
 /**
@@ -35,28 +36,6 @@ interface Group {
 /** A rule with no wildcard: one value read and written. */
 interface Single extends Field {
   readonly kind: "single";
-}
-
-/** What a fused run wrote. */
-export class FusedOutput {
-  /** The output document. */
-  readonly target: Record<string, unknown> = {};
-
-  #storedGap = false;
-
-  /** Whether a value stored whole holds an array the gap search stops at: the arrays the run builds itself are filled from the start, so only such a value, or a later one-way write, can make the output's gap search find anything. */
-  get storedGap(): boolean {
-    return this.#storedGap;
-  }
-
-  /**
-   * Notes a record or array stored whole as a value: marks it as one, so later writes cannot merge into it, and notes whether it holds an array the gap search stops at.
-   * @param value - The stored value.
-   */
-  stored(value: object): void {
-    markPlaced(value);
-    this.#storedGap ||= findHole(value) !== undefined;
-  }
 }
 
 /** A crosswalk's two-way rules in one direction, arranged so that each source array is walked once. */
@@ -188,28 +167,31 @@ function continuedOneWay(node: WriteNode): boolean {
 /** Thrown to stop a fused run that meets a value or shape it does not decide for itself; nothing about the reason is kept, since the general executor that runs next decides the outcome and reports it exactly. */
 const DECLINED = new Error("the fused executor gives way to the general one");
 
+/** A record of the output a fused run builds. */
+type JsonRecord = Record<string, JsonValue>;
+
 /**
- * Runs a fused plan over a document: each source array is walked once, every rule of its group read from each element and written into one output element, and each value a `move` carries is stored as it is (a record or array moved whole is shared with the input, and marked as a stored value so later writes cannot merge into it).
+ * Runs a fused plan over a document: each source array is walked once, every rule of its group read from each element and written into one output element, and each value a `move` carries stored as it is (a record or array moved whole is shared with the input, and marked as a stored value so later writes cannot merge into it). Every value stored is checked to be exact JSON ({@link isExactJson}) as it is stored, and the records and arrays the run builds are exact JSON by construction, so a completed run's output needs no further check, gap search or copy.
  * @param plan - The plan for this direction.
  * @param doc - The input document.
- * @returns The output, or `undefined` when anything is absent, the wrong shape or rejected by an operation, or a `when` cannot be evaluated: the general executor then runs the crosswalk from the start and gives the exact error or result.
+ * @returns The output document, or `undefined` when anything is absent, the wrong shape, rejected by an operation or not exact JSON, or a `when` cannot be evaluated: the general executor then runs the crosswalk from the start and gives the exact error or result.
  */
-export function runFused(plan: FusedPlan, doc: unknown): FusedOutput | undefined {
-  const output = new FusedOutput();
+export function runFused(plan: FusedPlan, doc: unknown): JsonRecord | undefined {
+  const target: JsonRecord = {};
   try {
     for (const { item, fields } of activeItems(plan, doc)) {
       if (item.kind === "single") {
-        place(output.target, item.write, carried(item, readKeys(doc, item.read), output));
+        place(target, item.write, carried(item, readKeys(doc, item.read)));
         continue;
       }
-      runGroup(item, fields, doc, output);
+      runGroup(item, fields, doc, target);
     }
   } catch {
     // Whatever stopped the run (a decline above, an operation rejecting a value, a `when` that throws), the general executor runs next and raises it with the rule and path it belongs to, or gives the result; the tests require that a run the general executor completes is never declined.
     return undefined;
   }
 
-  return output;
+  return target;
 }
 
 /** The items a run applies, in the order the general executor would first write each one, with each group's fields narrowed to those whose `when` admits them. */
@@ -226,35 +208,38 @@ function activeItems(plan: FusedPlan, doc: unknown): readonly { readonly item: G
   return active.sort((left, right) => left.first - right.first);
 }
 
-function runGroup(group: Group, fields: readonly Field[], doc: unknown, run: FusedOutput): void {
+function runGroup(group: Group, fields: readonly Field[], doc: unknown, target: JsonRecord): void {
   const source = readKeys(doc, group.arrayRead);
   if (!Array.isArray(source)) {
     throw DECLINED;
   }
-  const output: unknown[] = [];
-  place(run.target, group.arrayWrite, output);
+  const output: JsonValue[] = [];
+  place(target, group.arrayWrite, output);
   const [only] = fields;
   if (fields.length === 1 && only?.write.length === 0) {
     for (const element of source) {
-      output.push(carried(only, readElement(element, only.read), run));
+      output.push(carried(only, readElement(element, only.read)));
     }
 
     return;
   }
   for (const element of source) {
-    const row: Record<string, unknown> = {};
+    const row: JsonRecord = {};
     for (const field of fields) {
-      place(row, field.write, carried(field, readElement(element, field.read), run));
+      place(row, field.write, carried(field, readElement(element, field.read)));
     }
     output.push(row);
   }
 }
 
-/** Applies a field's operation to the value read, and marks a record or array the field stores as a value, noting whether it holds an array the gap search would stop at. */
-function carried(field: Field, value: unknown, run: FusedOutput): unknown {
+/** Applies a field's operation to the value read, declines the run unless the result is exact JSON, and marks a record or array the field stores as a value. */
+function carried(field: Field, value: unknown): JsonValue {
   const result = field.op === undefined ? value : field.op(value);
+  if (!isExactJson(result)) {
+    throw DECLINED;
+  }
   if (typeof result === "object" && result !== null) {
-    run.stored(result);
+    markPlaced(result);
   }
 
   return result;
@@ -283,20 +268,20 @@ function readKeys(from: unknown, keys: readonly string[]): unknown {
 }
 
 /** Stores a value at keys below a record of the output, creating the records on the way: the plan's write paths are disjoint, so every record met was created by this run and the final key is free. */
-function place(into: Record<string, unknown>, keys: readonly string[], value: unknown): void {
+function place(into: JsonRecord, keys: readonly string[], value: JsonValue): void {
   let node = into;
   const last = keys.length - 1;
   for (let position = 0; position < last; position += 1) {
     const key = stepAt(keys, position);
     const existing = node[key];
     if (existing === undefined) {
-      const created: Record<string, unknown> = {};
+      const created: JsonRecord = {};
       node[key] = created;
       node = created;
       continue;
     }
     // Unreachable while the plan's writes are disjoint, as fusedPlan requires; declining leaves the general executor to report whatever the conflict is.
-    if (!isRecord(existing)) {
+    if (!isJsonRecord(existing)) {
       throw DECLINED;
     }
     node = existing;
@@ -315,5 +300,9 @@ function stepAt(keys: readonly string[], position: number): string {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isJsonRecord(value: JsonValue): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }

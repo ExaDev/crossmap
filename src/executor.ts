@@ -10,6 +10,7 @@ import { validateCrosswalk } from "./validate";
 import { evaluateWhen, whenArity } from "./when";
 import { type FusedPlan, fusedPlan, runFused } from "./fused";
 import { singlePathOp } from "./ops/single-path";
+import { isExactJson } from "./exact-json";
 
 /** The two directions a crosswalk runs in. */
 type Direction = "encode" | "decode";
@@ -124,7 +125,7 @@ interface Plan {
   readonly oneWay: readonly OneWayPlan[];
   /** The two-way rules arranged to walk each source array once, when every rule has the shape that allows it. */
   readonly fused: FusedPlan | undefined;
-  /** Whether a one-way rule writes in this direction, which can leave a gap in an output array the fused run built without one. */
+  /** Whether a one-way rule writes in this direction: its write can leave a gap, or a value that is not JSON, in an output the fused run built without either. */
   readonly oneWayWrites: boolean;
 }
 
@@ -166,7 +167,7 @@ function rulePlan(rule: TwoWayRule, index: number, direction: Direction): RulePl
  */
 function run(plan: Plan, doc: unknown): JsonValue {
   const fused = plan.fused === undefined ? undefined : runFused(plan.fused, doc);
-  const target = fused === undefined ? runRules(plan, doc) : fused.target;
+  const target: Record<string, unknown> = fused ?? runRules(plan, doc);
   for (const { index, rule } of plan.oneWay) {
     if (rule.when !== undefined && !evaluateWhen(rule.when, doc)) {
       continue;
@@ -177,13 +178,16 @@ function run(plan: Plan, doc: unknown): JsonValue {
       throw new RuleApplicationError(index, rule.op === "default" ? rule.to : rule.from, errorMessage(error));
     }
   }
-  // A fused run fills each output array it builds from the start, so the search can find something only in a value stored whole or after a one-way write.
-  const hole = fused === undefined || fused.storedGap || plan.oneWayWrites ? findHole(target) : undefined;
+  if (fused !== undefined && !plan.oneWayWrites) {
+    // A completed fused run's output is exact JSON with no gap (runFused), and no one-way rule wrote into it.
+    return fused;
+  }
+  const hole = findHole(target);
   if (hole !== undefined) {
     throw new RuleApplicationError(NO_SINGLE_RULE, formatPath(hole), "no rule wrote this array element, so the array would have a gap");
   }
 
-  return parseJsonValue(target);
+  return jsonOutput(target);
 }
 
 /** Applies the two-way rules one at a time, each over the whole document, into a fresh output. */
@@ -347,7 +351,9 @@ function errorMessage(error: unknown): string {
   return String(error);
 }
 
-/** The output document is only as JSON as the input document was (move passes values through untouched), so the declared JsonValue return type is earned at this boundary: a non-JSON value anywhere in the output fails loudly here rather than reaching a caller as a lie. */
-function parseJsonValue(target: Record<string, unknown>): JsonValue {
-  return JsonValueSchema.parse(target);
+/**
+ * The output document is only as JSON as the input document was (move passes values through untouched), so the declared JsonValue return type is earned at this boundary: a non-JSON value anywhere in the output fails loudly here rather than reaching a caller as a lie. An output that is exact JSON is returned as it is, which is what parsing it would return a copy of; any other goes through the schema, which throws for a value that is not JSON and copies one it accepts by rewriting it.
+ */
+function jsonOutput(target: Record<string, unknown>): JsonValue {
+  return isExactJson(target) ? target : JsonValueSchema.parse(target);
 }
