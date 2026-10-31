@@ -66,6 +66,17 @@ const mixedCrosswalk = parseCrosswalk({
   ],
 });
 
+/** Identity moves for every field and one more gated per element, which the rule-at-a-time executor runs (a gate per element is not fused). */
+const gatedCrosswalk = parseCrosswalk({
+  source: "native",
+  target: "shared",
+  rules: [
+    { op: "move", from: "meta", to: "meta" },
+    ...identityFieldNames.map((name) => ({ op: "move", from: `nodes[].${name}`, to: `nodes[].${name}` })),
+    { op: "move", from: "nodes[].weight", to: "nodes[].weight", when: { kind: "compare", op: "gte", left: { kind: "reference", key: "nodes[].weight" }, right: { kind: "numberLiteral", value: 0 } } },
+  ],
+});
+
 interface IdentityNode {
   readonly id: string;
   readonly text: string;
@@ -113,6 +124,24 @@ function mixedEncodeBaseline(doc: Document<MixedNode>): Document<MixedNode> {
       out["size"] = Number(node["sizeText"]);
       out["weightMilli"] = Number(node["weight"]) * SCALE_FACTOR;
       out["type"] = KIND_MAP[String(node["kind"])];
+
+      return out;
+    }),
+  };
+}
+
+/** The hand-written encode of the gated crosswalk. */
+function gatedBaseline(doc: Document<MixedNode>): unknown {
+  return {
+    meta: doc.meta,
+    nodes: doc.nodes.map((node) => {
+      const out: Record<string, unknown> = {};
+      for (const name of identityFieldNames) {
+        out[name] = node[name];
+      }
+      if (Number(node["weight"]) >= 0) {
+        out["weight"] = node["weight"];
+      }
 
       return out;
     }),
@@ -269,3 +298,4 @@ measure({ name: "3 identity moves, encode", crosswalk: identityCrosswalk, direct
 measure({ name: "3 identity moves, decode", crosswalk: identityCrosswalk, direction: "decode", document: identityDocument, baseline: identityBaseline });
 measure({ name: `${mixedName}, encode`, crosswalk: mixedCrosswalk, direction: "encode", document: mixedDocument, baseline: mixedEncodeBaseline });
 measure({ name: `${mixedName}, decode`, crosswalk: mixedCrosswalk, direction: "decode", document: (count) => mixedEncodeBaseline(mixedDocument(count)), baseline: mixedDecodeBaseline });
+measure({ name: `${String(IDENTITY_FIELDS + 1)} moves + 1 gated per element (not fused), encode`, crosswalk: gatedCrosswalk, direction: "encode", document: mixedDocument, baseline: gatedBaseline });
