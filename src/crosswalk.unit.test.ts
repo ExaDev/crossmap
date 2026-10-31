@@ -133,4 +133,25 @@ describe("parseCrosswalk", () => {
       expect(issues.length).toBeGreaterThan(1);
     }
   });
+
+  it.each([
+    { op: "move", from: "nodes[].id" },
+    { op: "scale", from: "nodes[].weight", factor: 2 },
+    { op: "enum", from: "nodes[].kind", map: { a: "A" }, mapBack: { A: "a" } },
+    { op: "format", from: "nodes[].at", kind: "isoDateTime" },
+    { op: "split", from: "nodes[].tags", separator: ";" },
+  ])("reads a $op rule with no to as one whose to is its from", (rule) => {
+    const [parsed] = parseCrosswalk({ source: "a", target: "b", rules: [rule] }).rules;
+    expect(parsed).toEqual({ ...rule, to: rule.from });
+  });
+
+  it("keeps a to that is written, and still requires one on template and copy rules", () => {
+    expect(parseCrosswalk({ source: "a", target: "b", rules: [{ op: "move", from: "x", to: "y" }] }).rules).toEqual([{ op: "move", from: "x", to: "y" }]);
+    expect(() => parseCrosswalk({ source: "a", target: "b", rules: [{ op: "template", from: { x: "x" }, template: "{x}" }] })).toThrow(/rules\.0\.to/u);
+    expect(() => parseCrosswalk({ source: "a", target: "b", rules: [{ op: "copy", from: "x" }] })).toThrow(/rules\.0\.to/u);
+  });
+
+  it("validates a to left out as the from path it stands for", () => {
+    expect(() => parseCrosswalk({ source: "a", target: "b", rules: [{ op: "move", from: "a..b" }] })).toThrow(/rules\.0\.from/u);
+  });
 });

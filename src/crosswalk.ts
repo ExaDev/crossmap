@@ -13,35 +13,56 @@ const PathField = z.string().regex(PATH_REGEX, {
 /** A trilean predicate tree, the shape of every rule's optional `when`: evaluated against the governing document (source for encode, target for decode; wildcards forbidden, checked structurally in validateCrosswalk). Exported so consumers building crosswalks in TypeScript have the type without importing trilean separately. */
 export type When = z.infer<typeof PredicateNodeSchema>;
 
-export const MoveRuleSchema = z
+/** A single-path rule as parsing returns it: its `to` always present. */
+type WithTo<Rule> = Omit<Rule, "to"> & { readonly to: string };
+
+/**
+ * A single-path rule with its `to` filled in: as written, or the rule's own `from` when `to` is left out, so a rule that keeps a field at the same path names the path once. Every rule the schema returns carries a `to`, so nothing downstream of parsing distinguishes the two spellings.
+ * @param rule - The rule as the schema read it.
+ * @returns The rule with `to` present.
+ */
+function withSameTo<Rule extends { readonly from: string; readonly to?: string | undefined }>(rule: Rule): WithTo<Rule> {
+  return { ...rule, to: rule.to ?? rule.from };
+}
+
+/** The schema of a single-path rule whose `to` may be left out: its object schema, then {@link withSameTo}. Named so that declaration emit refers to it rather than spelling out the whole inferred type, which is longer than the compiler will serialise. */
+type SamePathDefault<Shape extends z.ZodType<{ readonly from: string; readonly to?: string | undefined }>> = z.ZodPipe<Shape, z.ZodTransform<WithTo<z.output<Shape>>, z.output<Shape>>>;
+
+function samePathDefault<Shape extends z.ZodType<{ readonly from: string; readonly to?: string | undefined }>>(shape: Shape): SamePathDefault<Shape> {
+  return shape.transform(withSameTo);
+}
+
+const MoveRuleObject = z
   .object({
     op: z.literal("move"),
     from: PathField,
-    to: PathField,
+    to: PathField.optional(),
     when: PredicateNodeSchema.optional(),
   })
   .strict();
+export const MoveRuleSchema = samePathDefault(MoveRuleObject);
 export type MoveRule = z.infer<typeof MoveRuleSchema>;
 
-export const ScaleRuleSchema = z
+const ScaleRuleObject = z
   .object({
     op: z.literal("scale"),
     from: PathField,
-    to: PathField,
+    to: PathField.optional(),
     factor: z.number().refine((factor) => Number.isFinite(factor) && factor !== 0, {
       message: "factor must be a finite non-zero number: decode divides by it",
     }),
     when: PredicateNodeSchema.optional(),
   })
   .strict();
+export const ScaleRuleSchema = samePathDefault(ScaleRuleObject);
 export type ScaleRule = z.infer<typeof ScaleRuleSchema>;
 
 /** The enum op's pair of mappings is validated as one bijection: mapBack must be map's exact inverse (injective map, mapBack holding exactly map's image, every entry inverted), so decode is determined by encode's vocabulary and cannot drift from it. */
-export const EnumRuleSchema = z
+const EnumRuleObject = z
   .object({
     op: z.literal("enum"),
     from: PathField,
-    to: PathField,
+    to: PathField.optional(),
     map: z.record(z.string(), z.string()),
     mapBack: z.record(z.string(), z.string()),
     when: PredicateNodeSchema.optional(),
@@ -61,32 +82,35 @@ export const EnumRuleSchema = z
       }
     }
   });
+export const EnumRuleSchema = samePathDefault(EnumRuleObject);
 export type EnumRule = z.infer<typeof EnumRuleSchema>;
 
 /** The textual forms `format` converts: each is a bijection between its canonical text and a machine value, which is what makes the round trip hold for canonical input. */
 export const FormatKindSchema = z.enum(["isoDateTime", "isoDate", "numberText", "booleanText", "jsonText"]);
 export type FormatKind = z.infer<typeof FormatKindSchema>;
 
-export const FormatRuleSchema = z
+const FormatRuleObject = z
   .object({
     op: z.literal("format"),
     from: PathField,
-    to: PathField,
+    to: PathField.optional(),
     kind: FormatKindSchema,
     when: PredicateNodeSchema.optional(),
   })
   .strict();
+export const FormatRuleSchema = samePathDefault(FormatRuleObject);
 export type FormatRule = z.infer<typeof FormatRuleSchema>;
 
-export const SplitRuleSchema = z
+const SplitRuleObject = z
   .object({
     op: z.literal("split"),
     from: PathField,
-    to: PathField,
+    to: PathField.optional(),
     separator: z.string().min(1, "separator must be non-empty: an empty separator makes decode's join ambiguous"),
     when: PredicateNodeSchema.optional(),
   })
   .strict();
+export const SplitRuleSchema = samePathDefault(SplitRuleObject);
 export type SplitRule = z.infer<typeof SplitRuleSchema>;
 
 /** Several fields rendered into one text through a template, and split back out of it. `from` maps each placeholder name to the path of its field; the template is validated as having a unique inverse (every field used exactly once, a literal between every two placeholders), and encode refuses a value that contains the literal after its placeholder, so decode always recovers the fields encode rendered. */

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import canonicalize from "canonicalize";
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
 const schemaPath = join(import.meta.dirname, "../schemas/crossmap.schema.json");
 
@@ -36,5 +37,20 @@ describe("the built JSON Schema", () => {
       throw new Error("the built schema has no $defs.When entry");
     }
     expect(when["$ref"]).toBe(`https://cdn.jsdelivr.net/npm/trilean@${String(trileanVersion)}/schemas/trilean.schema.json#/$defs/PredicateNode`);
+  });
+
+  it("describes the documents parseCrosswalk accepts: the rule lists, and a single-path rule's to, may be left out", () => {
+    const shape = z.object({
+      $defs: z.object({
+        Crosswalk: z.object({
+          required: z.array(z.string()),
+          properties: z.object({ rules: z.object({ items: z.object({ oneOf: z.array(z.object({ properties: z.object({ op: z.object({ const: z.string() }) }), required: z.array(z.string()) })) }) }) }),
+        }),
+      }),
+    });
+    const crosswalk = shape.parse(parsed).$defs.Crosswalk;
+    expect(crosswalk.required.sort()).toEqual(["source", "target"]);
+    const requiresTo = Object.fromEntries(crosswalk.properties.rules.items.oneOf.map((rule) => [rule.properties.op.const, rule.required.includes("to")]));
+    expect(requiresTo).toEqual({ move: false, scale: false, enum: false, format: false, split: false, template: true, copy: true });
   });
 });

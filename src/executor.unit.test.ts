@@ -435,3 +435,20 @@ describe("encode over a large wildcard array", () => {
     expect(growthPerEdge).toBeLessThan(BYTES_PER_ELEMENT_BOUND);
   }, TEST_TIMEOUT_MILLISECONDS);
 });
+
+describe("a rule whose to is left out", () => {
+  it("writes to the path it reads, both ways", () => {
+    const cw = crosswalk({
+      source: "n",
+      target: "s",
+      rules: [
+        { op: "move", from: "meta" },
+        { op: "move", from: "nodes[].id" },
+        { op: "scale", from: "nodes[].weight", factor: 2 },
+      ],
+    });
+    const doc = { meta: { name: "g" }, nodes: [{ id: "a", weight: 1 }] };
+    expect(encode(cw, doc)).toEqual({ meta: { name: "g" }, nodes: [{ id: "a", weight: 2 }] });
+    assertRoundTrip(cw, [doc]);
+  });
+});
