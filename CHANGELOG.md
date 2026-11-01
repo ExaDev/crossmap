@@ -1,3 +1,9 @@
+## [0.11.0](https://github.com/ExaDev/crossmap/compare/v0.10.0...v0.11.0) (2026-11-01)
+
+### Features
+
+* export ruleSides and its RuleSides type ([a638bf0](https://github.com/ExaDev/crossmap/commit/a638bf0999af346627d88a8405bd3b407ec83ef0))
+
 ## [0.10.0](https://github.com/ExaDev/crossmap/compare/v0.9.0...v0.10.0) (2026-11-01)
 
 ### Features
