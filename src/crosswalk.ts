@@ -200,6 +200,7 @@ export type OneWayRule = z.infer<typeof OneWayRuleSchema>;
 export const CrosswalkSchema: z.ZodType<Crosswalk> & { is: (value: unknown) => value is Crosswalk } = define(
   z
     .object({
+      $schema: z.string().optional(),
       source: z.string(),
       target: z.string(),
       rules: z.array(TwoWayRuleSchema).default([]),
@@ -219,6 +220,8 @@ function keptPath(path: string): MoveRule {
   return { op: "move", from: path, to: path };
 }
 export interface Crosswalk {
+  /** The address of the JSON Schema the document declares itself written against, which editors read to validate and complete it. It has no part in encoding, decoding or validation. */
+  readonly $schema?: string | undefined;
   readonly source: string;
   readonly target: string;
   readonly rules: readonly TwoWayRule[];

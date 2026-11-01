@@ -157,6 +157,20 @@ describe("parseCrosswalk", () => {
   });
 });
 
+describe("$schema", () => {
+  it("is accepted as the address of the document's own schema and carries no rule", () => {
+    const parsed = parseCrosswalk({ $schema: "https://example.com/crossmap.schema.json", source: "a", target: "b", keep: ["x"] });
+    expect(parsed.$schema).toBe("https://example.com/crossmap.schema.json");
+    expect(parsed.rules).toEqual([{ op: "move", from: "x", to: "x" }]);
+    expect(validateCrosswalk(parsed)).toEqual([]);
+  });
+
+  it("is optional and must be text", () => {
+    expect(parseCrosswalk({ source: "a", target: "b" }).$schema).toBeUndefined();
+    expect(() => parseCrosswalk({ $schema: 1, source: "a", target: "b" })).toThrow(CrosswalkSyntaxError);
+  });
+});
+
 describe("keep", () => {
   it("reads each kept path as an identity move appended after the rules, in order", () => {
     const parsed = parseCrosswalk({ source: "a", target: "b", rules: [{ op: "scale", from: "w", to: "weight", factor: 2 }], keep: ["meta", "nodes[].id"] });
