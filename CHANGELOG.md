@@ -1,3 +1,32 @@
+## [0.9.0](https://github.com/ExaDev/crossmap/compare/v0.8.3...v0.9.0) (2026-11-01)
+
+### Features
+
+* **crosswalk:** add a keep list of paths carried through unchanged ([64671de](https://github.com/ExaDev/crossmap/commit/64671def2857611931a80b2cfada33de0a15a8cd))
+* **crosswalk:** let a single-path rule leave out a to that equals its from ([7a5272b](https://github.com/ExaDev/crossmap/commit/7a5272bd2f42b2e01ce51af778c4a9136a43c236))
+
+### Performance Improvements
+
+* **executor:** check the output is JSON without copying it ([7088e20](https://github.com/ExaDev/crossmap/commit/7088e20e24e9b71c59ac6ac1164bb002cd8ee4c8))
+* **executor:** validate and prepare a crosswalk once per crosswalk object ([48b4366](https://github.com/ExaDev/crossmap/commit/48b4366195a2bb9f5c0735ff4662aa3cddbdee75))
+* **executor:** walk each source array once for all the rules that read it ([f75bfff](https://github.com/ExaDev/crossmap/commit/f75bfff924efdb684d156edb925f161d2c0a4c5c))
+* **paths:** find gaps with one trail and format a write's path only on failure ([fca33ac](https://github.com/ExaDev/crossmap/commit/fca33ac493b091f067366dd3d1ec160bf3cedfd2))
+
+### Documentation
+
+* **contributing:** keep the executor and its reference in step ([31fba57](https://github.com/ExaDev/crossmap/commit/31fba57e5f142489082bb19eab4de65ac345a4d3))
+
+### Tests
+
+* **exact-json:** refuse an array of a subclass, which the schema copies ([f6a468a](https://github.com/ExaDev/crossmap/commit/f6a468af24cdbc2904b99de86ff59a1ce94f3b7b))
+* **executor:** compare the executor with a frozen reference copy of it ([f8b8af5](https://github.com/ExaDev/crossmap/commit/f8b8af53832a6b56c2549759c5d3bd4d4a089561))
+
+### Chores
+
+* **bench:** measure a crosswalk the rule-at-a-time executor runs ([8bd2eca](https://github.com/ExaDev/crossmap/commit/8bd2ecacd2b8a30a1c0915937d57503924e3899c))
+* **bench:** measure encode and decode against a hand-written copy ([1bb1590](https://github.com/ExaDev/crossmap/commit/1bb15905803084d823e9a4db039d16f49bed7213))
+* **bench:** measure the identity crosswalk written as a keep list ([db2a1e8](https://github.com/ExaDev/crossmap/commit/db2a1e85feb5a1c052ef8b73db88181e7e7a581a))
+
 ## [0.8.3](https://github.com/ExaDev/crossmap/compare/v0.8.2...v0.8.3) (2026-10-31)
 
 ### Continuous Integration
