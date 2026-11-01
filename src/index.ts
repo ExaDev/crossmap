@@ -17,6 +17,8 @@ export type {
   TwoWayRule,
   When,
 } from "./crosswalk";
+export { ruleSides } from "./sides";
+export type { RuleSides } from "./sides";
 export { CrosswalkStructureError, CrosswalkSyntaxError, RuleApplicationError, RoundTripMismatchError, CrossmapError } from "./errors";
 export type { CrosswalkIssue, SyntaxIssue } from "./errors";
 export { compileCrosswalk, decode, encode } from "./executor";
