@@ -1,3 +1,9 @@
+## [0.10.0](https://github.com/ExaDev/crossmap/compare/v0.9.0...v0.10.0) (2026-11-01)
+
+### Features
+
+* **crosswalk:** accept a $schema property naming the document's schema ([c06d765](https://github.com/ExaDev/crossmap/commit/c06d7652f54c913a6b11acd7c72daae5ce93ef40))
+
 ## [0.9.0](https://github.com/ExaDev/crossmap/compare/v0.8.3...v0.9.0) (2026-11-01)
 
 ### Features
