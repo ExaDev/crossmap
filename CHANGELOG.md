@@ -1,3 +1,9 @@
+## [0.11.1](https://github.com/ExaDev/crossmap/compare/v0.11.0...v0.11.1) (2026-11-05)
+
+### Bug Fixes
+
+* **deps:** align zod with dependent consumers ([4eacdbc](https://github.com/ExaDev/crossmap/commit/4eacdbc6e837683fc72837cbedde0f30a8b8f94b))
+
 ## [0.11.0](https://github.com/ExaDev/crossmap/compare/v0.10.0...v0.11.0) (2026-11-01)
 
 ### Features
