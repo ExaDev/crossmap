@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "lib": ["ES2024"],
-    "types": []
-  },
-  "exclude": [],
-  "extends": "./tsconfig.json",
-  "include": ["rust/bindings/crossmap-wasm/js/*.d.ts"]
-}

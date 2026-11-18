@@ -26,7 +26,7 @@ export const commitTypes = [
 ];
 
 /**
- * Runs on `main`. Analyses commits since the last tag and computes the one version every artefact is released at; scripts/semantic-release-version.mjs writes it into the Rust workspace, the lock file and the npm manifests and regenerates the schema whose `$id` names it. The release commit holds those files and CHANGELOG.md, and is tagged and given a GitHub Release with generated notes. semantic-release publishes nothing: the jobs after it in .github/workflows/ci.yml build the crates, the wheels and the npm package from the tagged commit and publish them to crates.io, PyPI and npm through trusted publishing (no stored token). The release commit and tag are pushed over SSH with the deploy key ci.yml provisions.
+ * Runs on `main`. Analyses commits since the last tag and computes the one version every artefact is released at; scripts/semantic-release-version.mjs writes it into the Rust workspace, the lock file and the npm manifest and regenerates the schema whose `$id` names it. The release commit holds those files and CHANGELOG.md, and is tagged and given a GitHub Release with generated notes. semantic-release publishes nothing: the jobs after it in .github/workflows/ci.yml build the crates, the wheels and the npm package from the tagged commit and publish them to crates.io, PyPI and npm through trusted publishing (no stored token). The release commit and tag are pushed over SSH with the deploy key ci.yml provisions.
  */
 /** @type {import('semantic-release').Options} */
 const config = {
@@ -54,7 +54,7 @@ const config = {
       '@semantic-release/git',
       {
         // Every file scripts/release-version.py and the schema generator write, beside the changelog.
-        assets: ['CHANGELOG.md', 'package.json', 'packages/crossmap/package.json', 'rust/Cargo.toml', 'rust/Cargo.lock', 'schemas/crossmap.schema.json'],
+        assets: ['CHANGELOG.md', 'packages/crossmap/package.json', 'rust/Cargo.toml', 'rust/Cargo.lock', 'schemas/crossmap.schema.json'],
         message: 'chore(release): ${nextRelease.version} [skip ci]',
       },
     ],

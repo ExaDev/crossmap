@@ -1,12 +1,6 @@
 node_modules/
 dist/
-dist-cli/
-*.tsbuildinfo
 .DS_Store
-coverage/
-.eslintcache
-.turbo/
-reports/
 
 # The instruction files are tracked symlinks to README.md; a global ignore may otherwise exclude them.
 !CLAUDE.md

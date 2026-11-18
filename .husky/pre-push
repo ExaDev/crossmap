@@ -1,2 +1,4 @@
-# Run the same build, typecheck and test gate CI runs, through turbo's _prepush task (see turbo.json): the order lives there, and a push with nothing relevant changed since the last run is a cache hit.
-pnpm run prepush
+# The Rust checks CI runs first, from scripts/rust.sh as CI calls them, so a push CI would reject on formatting, a lint or a failing test fails here first. cargo builds incrementally, so a push with nothing changed since the last run rebuilds nothing.
+sh scripts/rust.sh fmt
+sh scripts/rust.sh clippy
+sh scripts/rust.sh test
