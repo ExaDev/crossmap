@@ -1,0 +1,199 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {},
+      "expect": {
+        "output": {
+          "locale": "en-GB"
+        }
+      },
+      "from": "src/ops/one-way.unit.test.ts: applyOneWayRule > inserts an encode-direction default when its target is absent",
+      "id": "ops.one-way.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "delivery.locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "delivery"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": {
+          "locale": "cy"
+        }
+      },
+      "expect": {
+        "output": {
+          "delivery": {
+            "locale": "cy"
+          }
+        }
+      },
+      "from": "src/ops/one-way.unit.test.ts: applyOneWayRule > leaves an existing value in place",
+      "id": "ops.one-way.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {},
+      "expect": {
+        "output": {}
+      },
+      "from": "src/ops/one-way.unit.test.ts: applyOneWayRule > does nothing when running the other direction",
+      "id": "ops.one-way.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "delivery.locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {},
+      "expect": {
+        "output": {
+          "delivery": {
+            "locale": "en-GB"
+          }
+        }
+      },
+      "from": "src/ops/one-way.unit.test.ts: applyOneWayRule > creates intermediate records for a nested target",
+      "id": "ops.one-way.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "internal": 1
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/ops/one-way.unit.test.ts: applyOneWayRule > drop is a declared no-op (encode)",
+      "id": "ops.one-way.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "internal": 1
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/ops/one-way.unit.test.ts: applyOneWayRule > drop is a declared no-op (decode)",
+      "id": "ops.one-way.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "meta",
+            "value": {
+              "nested": [
+                1,
+                null
+              ]
+            }
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {},
+      "expect": {
+        "output": {
+          "meta": {
+            "nested": [
+              1,
+              null
+            ]
+          }
+        }
+      },
+      "from": "src/ops/one-way.unit.test.ts: applyOneWayRule > a default's value may be any JSON value",
+      "id": "ops.one-way.7",
+      "kind": "run"
+    }
+  ]
+}

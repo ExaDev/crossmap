@@ -1,0 +1,775 @@
+{
+  "cases": [
+    {
+      "document": {
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "README.md: The format > only source and target are required",
+      "id": "json-schema.validates.1",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "source": "a"
+      },
+      "expect": false,
+      "from": "README.md: The format > a missing target is invalid",
+      "id": "json-schema.validates.2",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "rules": [
+          {
+            "from": "x",
+            "op": "move"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "README.md: The format > a single-path rule may leave out to",
+      "id": "json-schema.validates.3",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "rules": [
+          {
+            "from": {
+              "x": "x"
+            },
+            "op": "template",
+            "template": "{x}"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "README.md: Two-way rules > a template needs a to",
+      "id": "json-schema.validates.4",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "rules": [
+          {
+            "from": "x",
+            "op": "copy"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "README.md: Two-way rules > a copy needs a to",
+      "id": "json-schema.validates.5",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "rules": [
+          {
+            "from": {
+              "x": "x"
+            },
+            "op": "template",
+            "template": "{x}",
+            "to": "t"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "README.md: Two-way rules > a template with a to is valid",
+      "id": "json-schema.validates.6",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "extra": 1,
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "README.md: The format > an unknown top-level field is invalid",
+      "id": "json-schema.validates.7",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "rules": [
+          {
+            "from": "a",
+            "op": "teleport",
+            "to": "b"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "README.md: The format > an unknown op is invalid",
+      "id": "json-schema.validates.8",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "$schema": "https://example.com/crossmap.schema.json",
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "README.md: The format > $schema may carry the address of the schema",
+      "id": "json-schema.validates.9",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "from": "a",
+            "op": "drop"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "README.md: One-way rules > a drop rule only runs on encode",
+      "id": "json-schema.validates.10",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "a[].x",
+            "op": "aggregate",
+            "to": "total"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "README.md: One-way rules > an aggregate with a direction is valid",
+      "id": "json-schema.validates.11",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "a",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "README.md: Gating with when > a predicate from the trilean grammar is valid",
+      "id": "json-schema.validates.12",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "kind": "nope"
+              }
+            }
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "README.md: Gating with when > a predicate outside the trilean grammar is invalid",
+      "id": "json-schema.validates.13",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a is valid",
+      "id": "json-schema.validates.14",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a.b"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a.b is valid",
+      "id": "json-schema.validates.15",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a[] is valid",
+      "id": "json-schema.validates.16",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[].b"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a[].b is valid",
+      "id": "json-schema.validates.17",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[].b[].c"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a[].b[].c is valid",
+      "id": "json-schema.validates.18",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "grid[][]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: grid[][] is valid",
+      "id": "json-schema.validates.19",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[0]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a[0] is valid",
+      "id": "json-schema.validates.20",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[12].b"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a[12].b is valid",
+      "id": "json-schema.validates.21",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[][0][]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a[][0][] is valid",
+      "id": "json-schema.validates.22",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a.0"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a.0 is valid",
+      "id": "json-schema.validates.23",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "snake_case-key.digits123"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: snake_case-key.digits123 is valid",
+      "id": "json-schema.validates.24",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "[\"a.b\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: [\"a.b\"] is valid",
+      "id": "json-schema.validates.25",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[\"x y\"].b"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a[\"x y\"].b is valid",
+      "id": "json-schema.validates.26",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[\"[]\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a[\"[]\"] is valid",
+      "id": "json-schema.validates.27",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "[\"say \\\"hi\\\"\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: [\"say \\\"hi\\\"\"] is valid",
+      "id": "json-schema.validates.28",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "[\"back\\\\slash\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: [\"back\\\\slash\"] is valid",
+      "id": "json-schema.validates.29",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "[\"\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: [\"\"] is valid",
+      "id": "json-schema.validates.30",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "[\"__proto__x\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: [\"__proto__x\"] is valid",
+      "id": "json-schema.validates.31",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "__proto__x"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: __proto__x is valid",
+      "id": "json-schema.validates.32",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[999999999]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": true,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: a[999999999] is valid",
+      "id": "json-schema.validates.33",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          ""
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"\" is invalid",
+      "id": "json-schema.validates.34",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          ".a"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \".a\" is invalid",
+      "id": "json-schema.validates.35",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a."
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a.\" is invalid",
+      "id": "json-schema.validates.36",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a..b"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a..b\" is invalid",
+      "id": "json-schema.validates.37",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "[]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"[]\" is invalid",
+      "id": "json-schema.validates.38",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "[0]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"[0]\" is invalid",
+      "id": "json-schema.validates.39",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[].[]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a[].[]\" is invalid",
+      "id": "json-schema.validates.40",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a.[0]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a.[0]\" is invalid",
+      "id": "json-schema.validates.41",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a b"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a b\" is invalid",
+      "id": "json-schema.validates.42",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a.b-c.d e"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a.b-c.d e\" is invalid",
+      "id": "json-schema.validates.43",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a["
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a[\" is invalid",
+      "id": "json-schema.validates.44",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[01]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a[01]\" is invalid",
+      "id": "json-schema.validates.45",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[-1]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a[-1]\" is invalid",
+      "id": "json-schema.validates.46",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[1234567890]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a[1234567890]\" is invalid",
+      "id": "json-schema.validates.47",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "ä"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"ä\" is invalid",
+      "id": "json-schema.validates.48",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "__proto__"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"__proto__\" is invalid",
+      "id": "json-schema.validates.49",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a.__proto__"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a.__proto__\" is invalid",
+      "id": "json-schema.validates.50",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "[\"__proto__\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"[\\\"__proto__\\\"]\" is invalid",
+      "id": "json-schema.validates.51",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[\"__proto__\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a[\\\"__proto__\\\"]\" is invalid",
+      "id": "json-schema.validates.52",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[\"unterminated"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a[\\\"unterminated\" is invalid",
+      "id": "json-schema.validates.53",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[\"x\""
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a[\\\"x\\\"\" is invalid",
+      "id": "json-schema.validates.54",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[\"bad\\escape\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a[\\\"bad\\\\escape\\\"]\" is invalid",
+      "id": "json-schema.validates.55",
+      "kind": "schema-validates"
+    },
+    {
+      "document": {
+        "keep": [
+          "a[\"x\"\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": false,
+      "from": "src/paths.unit.test.ts: parsePath > the path grammar as a keep entry: \"a[\\\"x\\\"\\\"]\" is invalid",
+      "id": "json-schema.validates.56",
+      "kind": "schema-validates"
+    }
+  ]
+}

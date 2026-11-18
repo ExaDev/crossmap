@@ -1,0 +1,779 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "orders[].lines[].qty",
+            "op": "aggregate",
+            "to": "sales[].units"
+          },
+          {
+            "direction": "encode",
+            "fn": "count",
+            "from": "orders[]",
+            "op": "aggregate",
+            "to": "orderCount"
+          }
+        ],
+        "rules": [
+          {
+            "from": "orders[].lines[].qty",
+            "op": "move",
+            "to": "sales[].lines[].qty"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "orders": [
+          {
+            "lines": [
+              {
+                "qty": 1
+              },
+              {
+                "qty": 2
+              }
+            ]
+          },
+          {
+            "lines": []
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "orderCount": 2,
+          "sales": [
+            {
+              "lines": [
+                {
+                  "qty": 1
+                },
+                {
+                  "qty": 2
+                }
+              ],
+              "units": 3
+            },
+            {
+              "lines": [],
+              "units": 0
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: aggregate > adds derived totals on encode",
+      "id": "executor.aggregate.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "orders[].lines[].qty",
+            "op": "aggregate",
+            "to": "sales[].units"
+          },
+          {
+            "direction": "encode",
+            "fn": "count",
+            "from": "orders[]",
+            "op": "aggregate",
+            "to": "orderCount"
+          }
+        ],
+        "rules": [
+          {
+            "from": "orders[].lines[].qty",
+            "op": "move",
+            "to": "sales[].lines[].qty"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "orderCount": 2,
+        "sales": [
+          {
+            "lines": [
+              {
+                "qty": 1
+              },
+              {
+                "qty": 2
+              }
+            ],
+            "units": 3
+          },
+          {
+            "lines": [],
+            "units": 0
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "orders": [
+            {
+              "lines": [
+                {
+                  "qty": 1
+                },
+                {
+                  "qty": 2
+                }
+              ]
+            },
+            {
+              "lines": []
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: aggregate > leaves them out of decode",
+      "id": "executor.aggregate.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "orders[].lines[].qty",
+            "op": "aggregate",
+            "to": "sales[].units"
+          },
+          {
+            "direction": "encode",
+            "fn": "count",
+            "from": "orders[]",
+            "op": "aggregate",
+            "to": "orderCount"
+          }
+        ],
+        "rules": [
+          {
+            "from": "orders[].lines[].qty",
+            "op": "move",
+            "to": "sales[].lines[].qty"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/executor.unit.test.ts: aggregate > adds derived totals on encode and leaves them out of decode (assertRoundTrip)",
+      "id": "executor.aggregate.3",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "orders": [
+            {
+              "lines": [
+                {
+                  "qty": 1
+                },
+                {
+                  "qty": 2
+                }
+              ]
+            },
+            {
+              "lines": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "fn": "count",
+            "from": "labels[]",
+            "op": "aggregate",
+            "to": "tagCount"
+          }
+        ],
+        "rules": [
+          {
+            "from": "tags[]",
+            "op": "move",
+            "to": "labels[]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "labels": [
+          "a",
+          "b"
+        ]
+      },
+      "expect": {
+        "output": {
+          "tagCount": 2,
+          "tags": [
+            "a",
+            "b"
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: aggregate > writes a decode-direction aggregate into the source shape",
+      "id": "executor.aggregate.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "fn": "count",
+            "from": "labels[]",
+            "op": "aggregate",
+            "to": "tagCount"
+          }
+        ],
+        "rules": [
+          {
+            "from": "tags[]",
+            "op": "move",
+            "to": "labels[]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/executor.unit.test.ts: aggregate > excludes a decode-direction aggregate from the round trip",
+      "id": "executor.aggregate.5",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "tags": [
+            "a"
+          ]
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "total"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": [
+          "1"
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "finite numbers"
+          ],
+          "path": "xs[]",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/executor.unit.test.ts: aggregate > throws RuleApplicationError for a value that does not fit",
+      "id": "executor.aggregate.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "count",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": [
+          2,
+          "x",
+          null
+        ]
+      },
+      "expect": {
+        "output": {
+          "n": 3
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > count of [2,\"x\",null] is 3",
+      "id": "executor.aggregate.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": [
+          2,
+          7
+        ]
+      },
+      "expect": {
+        "output": {
+          "n": 9
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > sum of [2,7] is 9",
+      "id": "executor.aggregate.8",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "min",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": [
+          7,
+          -3,
+          2
+        ]
+      },
+      "expect": {
+        "output": {
+          "n": -3
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > min of [7,-3,2] is -3",
+      "id": "executor.aggregate.9",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "max",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": [
+          2,
+          7
+        ]
+      },
+      "expect": {
+        "output": {
+          "n": 7
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > max of [2,7] is 7",
+      "id": "executor.aggregate.10",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "count",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": []
+      },
+      "expect": {
+        "output": {
+          "n": 0
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > count of [] is 0",
+      "id": "executor.aggregate.11",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": []
+      },
+      "expect": {
+        "output": {
+          "n": 0
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > sum of [] is 0",
+      "id": "executor.aggregate.12",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "min",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": []
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "has no answer"
+          ],
+          "path": "xs[]",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > min of no values throws",
+      "id": "executor.aggregate.13",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "max",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": []
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "has no answer"
+          ],
+          "path": "xs[]",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > max of no values throws",
+      "id": "executor.aggregate.14",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": [
+          1,
+          "2"
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "finite numbers"
+          ],
+          "path": "xs[]",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > refuses a value that is not a finite number (sum)",
+      "id": "executor.aggregate.15",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "max",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": [
+          null
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "finite numbers"
+          ],
+          "path": "xs[]",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > refuses a value that is not a finite number (max over null; NaN is not JSON)",
+      "id": "executor.aggregate.16",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "xs": [
+          1.7976931348623157e+308,
+          1.7976931348623157e+308
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "overflows"
+          ],
+          "path": "xs[]",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: combine > refuses a sum that overflows",
+      "id": "executor.aggregate.17",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "count",
+            "from": "items[]",
+            "op": "aggregate",
+            "to": "itemCount"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "items": [
+          "a",
+          "b"
+        ]
+      },
+      "expect": {
+        "output": {
+          "itemCount": 2
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: aggregateWrites > writes one total for the whole array",
+      "id": "executor.aggregate.18",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "orders[].lines[].qty",
+            "op": "aggregate",
+            "to": "sales[].units"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "orders": [
+          {
+            "lines": [
+              {
+                "qty": 2
+              },
+              {
+                "qty": 7
+              }
+            ]
+          },
+          {
+            "lines": []
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "sales": [
+            {
+              "units": 9
+            },
+            {
+              "units": 0
+            }
+          ]
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: aggregateWrites > writes one total per outer element, including elements whose inner array is empty",
+      "id": "executor.aggregate.19",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "count",
+            "from": "items[]",
+            "op": "aggregate",
+            "to": "n"
+          }
+        ],
+        "rules": [],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {},
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "absent"
+          ],
+          "path": "items[]",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/aggregate.unit.test.ts: aggregateWrites > throws when the path is absent",
+      "id": "executor.aggregate.20",
+      "kind": "run"
+    }
+  ]
+}

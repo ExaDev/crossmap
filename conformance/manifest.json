@@ -1,0 +1,292 @@
+{
+  "files": {
+    "crossmap/cli/commands.json": {
+      "cases": 10,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/cli/is-url.json": {
+      "cases": 18,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/cli/stdin.json": {
+      "cases": 4,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/cli/urls.json": {
+      "cases": 20,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/cli/usage.json": {
+      "cases": 10,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/crosswalk/keep.json": {
+      "cases": 9,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/crosswalk/parse.json": {
+      "cases": 12,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/crosswalk/rule-sides.json": {
+      "cases": 5,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/crosswalk/schema-field.json": {
+      "cases": 4,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/crosswalk/schema.json": {
+      "cases": 24,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/examples/readme.json": {
+      "cases": 9,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/executor/aggregate.json": {
+      "cases": 20,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/executor/decode.json": {
+      "cases": 7,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/executor/element-gates.json": {
+      "cases": 6,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/executor/encode.json": {
+      "cases": 14,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/executor/omitted-to-and-keep.json": {
+      "cases": 5,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/executor/path-shapes.json": {
+      "cases": 18,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/executor/prototype-keys.json": {
+      "cases": 9,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/executor/template-copy.json": {
+      "cases": 9,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/generated/differential.json": {
+      "cases": 303,
+      "generated": true,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/json-schema/schema.json": {
+      "cases": 15,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/json-schema/validates.json": {
+      "cases": 56,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/ops/enum.json": {
+      "cases": 5,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/ops/format.json": {
+      "cases": 33,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/ops/move.json": {
+      "cases": 7,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/ops/one-way.json": {
+      "cases": 7,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/ops/scale.json": {
+      "cases": 8,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/ops/split.json": {
+      "cases": 8,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/ops/template.json": {
+      "cases": 17,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/paths/format.json": {
+      "cases": 10,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/paths/parse.json": {
+      "cases": 43,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/paths/read.json": {
+      "cases": 14,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/round-trip/corpus-samples.json": {
+      "cases": 90,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/round-trip/corpus.json": {
+      "cases": 23,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/round-trip/failures.json": {
+      "cases": 7,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/validate/aggregate.json": {
+      "cases": 4,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/validate/element-gates.json": {
+      "cases": 5,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/validate/error-messages.json": {
+      "cases": 5,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/validate/multi-path.json": {
+      "cases": 4,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/validate/structure.json": {
+      "cases": 22,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    },
+    "crossmap/when/predicates.json": {
+      "cases": 13,
+      "skip": {
+        "rust": [],
+        "ts": []
+      }
+    }
+  }
+}

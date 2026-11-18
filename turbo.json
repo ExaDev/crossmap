@@ -17,6 +17,12 @@
       // schemas/** is the generation step's output and dist-cli/** is tsdown's second entry (the command), both beside dist/.
       "outputs": ["dist/**", "dist-cli/**", "schemas/**"]
     },
+    // The language-neutral corpus run against the TypeScript implementation. The JSON Schema cases read schemas/crossmap.schema.json, which the build generates, so it depends on the build like the test task does; `pnpm test` also runs the corpus (conformance/runner/conformance.test.ts), this task is the standalone command that exits non-zero on a mismatch.
+    "_conformance": {
+      "dependsOn": ["_build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": []
+    },
     "_lint": {
       "inputs": ["$TURBO_DEFAULT$", "eslint.config.ts"],
       "outputs": [".eslintcache"]

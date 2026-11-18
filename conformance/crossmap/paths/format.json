@@ -1,0 +1,94 @@
+{
+  "cases": [
+    {
+      "expect": {
+        "canonical": "a"
+      },
+      "from": "src/paths.unit.test.ts: formatPath > prints the canonical spelling back for a",
+      "id": "paths.format.1",
+      "kind": "path-format",
+      "path": "a"
+    },
+    {
+      "expect": {
+        "canonical": "a.b[].c"
+      },
+      "from": "src/paths.unit.test.ts: formatPath > prints the canonical spelling back for a.b[].c",
+      "id": "paths.format.2",
+      "kind": "path-format",
+      "path": "a.b[].c"
+    },
+    {
+      "expect": {
+        "canonical": "grid[][]"
+      },
+      "from": "src/paths.unit.test.ts: formatPath > prints the canonical spelling back for grid[][]",
+      "id": "paths.format.3",
+      "kind": "path-format",
+      "path": "grid[][]"
+    },
+    {
+      "expect": {
+        "canonical": "a[3].b"
+      },
+      "from": "src/paths.unit.test.ts: formatPath > prints the canonical spelling back for a[3].b",
+      "id": "paths.format.4",
+      "kind": "path-format",
+      "path": "a[3].b"
+    },
+    {
+      "expect": {
+        "canonical": "[\"a.b\"].c"
+      },
+      "from": "src/paths.unit.test.ts: formatPath > prints the canonical spelling back for [\"a.b\"].c",
+      "id": "paths.format.5",
+      "kind": "path-format",
+      "path": "[\"a.b\"].c"
+    },
+    {
+      "expect": {
+        "canonical": "[\"say \\\"hi\\\" \\\\ there\"]"
+      },
+      "from": "src/paths.unit.test.ts: formatPath > prints the canonical spelling back for [\"say \\\"hi\\\" \\\\ there\"]",
+      "id": "paths.format.6",
+      "kind": "path-format",
+      "path": "[\"say \\\"hi\\\" \\\\ there\"]"
+    },
+    {
+      "expect": {
+        "canonical": "[\"\"]"
+      },
+      "from": "src/paths.unit.test.ts: formatPath > prints the canonical spelling back for [\"\"]",
+      "id": "paths.format.7",
+      "kind": "path-format",
+      "path": "[\"\"]"
+    },
+    {
+      "expect": {
+        "canonical": "a[\"0 1\"][0]"
+      },
+      "from": "src/paths.unit.test.ts: formatPath > prints the canonical spelling back for a[\"0 1\"][0]",
+      "id": "paths.format.8",
+      "kind": "path-format",
+      "path": "a[\"0 1\"][0]"
+    },
+    {
+      "expect": {
+        "canonical": "a.b"
+      },
+      "from": "src/paths.unit.test.ts: formatPath > canonicalises a quoted key the bare class covers",
+      "id": "paths.format.9",
+      "kind": "path-format",
+      "path": "[\"a\"][\"b\"]"
+    },
+    {
+      "expect": {
+        "canonical": "a.0"
+      },
+      "from": "src/paths.unit.test.ts: formatPath > canonicalises a quoted key the bare class covers",
+      "id": "paths.format.10",
+      "kind": "path-format",
+      "path": "a[\"0\"]"
+    }
+  ]
+}

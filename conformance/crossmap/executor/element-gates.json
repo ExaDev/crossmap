@@ -1,0 +1,423 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].kind",
+            "op": "move",
+            "to": "shapes[].kind"
+          },
+          {
+            "from": "items[].radius",
+            "op": "move",
+            "to": "shapes[].r",
+            "when": {
+              "kind": "textCompare",
+              "left": {
+                "key": "items[].kind",
+                "kind": "reference"
+              },
+              "op": "equals",
+              "right": {
+                "kind": "textLiteral",
+                "value": "circle"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "items": [
+          {
+            "kind": "circle",
+            "radius": 2
+          },
+          {
+            "kind": "square"
+          },
+          {
+            "kind": "circle",
+            "radius": 1
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "shapes": [
+            {
+              "kind": "circle",
+              "r": 2
+            },
+            {
+              "kind": "square"
+            },
+            {
+              "kind": "circle",
+              "r": 1
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: per-element when > applies a rule only to the elements whose own field passes (and rebases the reference onto the target array while decoding) (encode half)",
+      "id": "executor.element-gates.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].kind",
+            "op": "move",
+            "to": "shapes[].kind"
+          },
+          {
+            "from": "items[].radius",
+            "op": "move",
+            "to": "shapes[].r",
+            "when": {
+              "kind": "textCompare",
+              "left": {
+                "key": "items[].kind",
+                "kind": "reference"
+              },
+              "op": "equals",
+              "right": {
+                "kind": "textLiteral",
+                "value": "circle"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "shapes": [
+          {
+            "kind": "circle",
+            "r": 2
+          },
+          {
+            "kind": "square"
+          },
+          {
+            "kind": "circle",
+            "r": 1
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "items": [
+            {
+              "kind": "circle",
+              "radius": 2
+            },
+            {
+              "kind": "square"
+            },
+            {
+              "kind": "circle",
+              "radius": 1
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: per-element when > applies a rule only to the elements whose own field passes (and rebases the reference onto the target array while decoding) (decode half)",
+      "id": "executor.element-gates.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "orders[].id",
+            "op": "move",
+            "to": "sales[].id"
+          },
+          {
+            "from": "orders[].currency",
+            "op": "move",
+            "to": "sales[].currency",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "orders[].currency",
+                "kind": "reference"
+              }
+            }
+          },
+          {
+            "factor": 100,
+            "from": "orders[].lines[].pence",
+            "op": "scale",
+            "to": "sales[].lines[].pounds",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "orders[].currency",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "orders": [
+          {
+            "currency": "GBP",
+            "id": "a",
+            "lines": [
+              {
+                "pence": 1
+              }
+            ]
+          },
+          {
+            "id": "b"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "sales": [
+            {
+              "currency": "GBP",
+              "id": "a",
+              "lines": [
+                {
+                  "pounds": 100
+                }
+              ]
+            },
+            {
+              "id": "b"
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: per-element when > gates an inner wildcard on a field of the outer element (encode half)",
+      "id": "executor.element-gates.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "orders[].id",
+            "op": "move",
+            "to": "sales[].id"
+          },
+          {
+            "from": "orders[].currency",
+            "op": "move",
+            "to": "sales[].currency",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "orders[].currency",
+                "kind": "reference"
+              }
+            }
+          },
+          {
+            "factor": 100,
+            "from": "orders[].lines[].pence",
+            "op": "scale",
+            "to": "sales[].lines[].pounds",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "orders[].currency",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "sales": [
+          {
+            "currency": "GBP",
+            "id": "a",
+            "lines": [
+              {
+                "pounds": 100
+              }
+            ]
+          },
+          {
+            "id": "b"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "orders": [
+            {
+              "currency": "GBP",
+              "id": "a",
+              "lines": [
+                {
+                  "pence": 1
+                }
+              ]
+            },
+            {
+              "id": "b"
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: per-element when > gates an inner wildcard on a field of the outer element (decode half)",
+      "id": "executor.element-gates.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "boxes[].parts",
+            "op": "move",
+            "to": "crates[].parts"
+          },
+          {
+            "from": "boxes[].label",
+            "op": "move",
+            "to": "crates[].warning",
+            "when": {
+              "collection": "boxes[].parts",
+              "item": {
+                "kind": "compare",
+                "left": {
+                  "key": "kg",
+                  "kind": "reference"
+                },
+                "op": "gt",
+                "right": {
+                  "kind": "numberLiteral",
+                  "value": 1
+                }
+              },
+              "kind": "some"
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "boxes": [
+          {
+            "label": "heavy",
+            "parts": [
+              {
+                "kg": 2
+              }
+            ]
+          },
+          {
+            "label": "light",
+            "parts": [
+              {
+                "kg": 1
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "crates": [
+            {
+              "parts": [
+                {
+                  "kg": 2
+                }
+              ],
+              "warning": "heavy"
+            },
+            {
+              "parts": [
+                {
+                  "kg": 1
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: per-element when > binds a collection reference to the visited element",
+      "id": "executor.element-gates.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].radius",
+            "op": "move",
+            "to": "radii[]",
+            "when": {
+              "kind": "textCompare",
+              "left": {
+                "key": "items[].kind",
+                "kind": "reference"
+              },
+              "op": "equals",
+              "right": {
+                "kind": "textLiteral",
+                "value": "circle"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "items": [
+          {
+            "kind": "square"
+          },
+          {
+            "kind": "circle",
+            "radius": 1
+          }
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "radii[0]: no rule wrote this array element"
+          ],
+          "path": "radii[0]",
+          "ruleIndex": -1
+        }
+      },
+      "from": "src/executor.unit.test.ts: per-element when > throws naming the gap when a gated rule is the only writer of an element",
+      "id": "executor.element-gates.6",
+      "kind": "run"
+    }
+  ]
+}

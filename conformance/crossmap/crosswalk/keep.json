@@ -1,0 +1,226 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "keep": [
+          "meta",
+          "nodes[].id"
+        ],
+        "rules": [
+          {
+            "factor": 2,
+            "from": "w",
+            "op": "scale",
+            "to": "weight"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [
+            {
+              "factor": 2,
+              "from": "w",
+              "op": "scale",
+              "to": "weight"
+            },
+            {
+              "from": "meta",
+              "op": "move",
+              "to": "meta"
+            },
+            {
+              "from": "nodes[].id",
+              "op": "move",
+              "to": "nodes[].id"
+            }
+          ],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: keep > reads each kept path as an identity move appended after the rules, in order",
+      "id": "crosswalk.keep.1",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "keep": [
+          "x"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [
+            {
+              "from": "x",
+              "op": "move",
+              "to": "x"
+            }
+          ],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: keep > is optional, and a crosswalk of kept paths alone needs no rules",
+      "id": "crosswalk.keep.2",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "keep": [
+          true
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "keep"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: keep > refuses a non-string entry, naming the keep field",
+      "id": "crosswalk.keep.3",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "keep": [
+          ""
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "keep"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: keep > refuses an empty path, naming the keep field",
+      "id": "crosswalk.keep.4",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "keep": [
+          "a..b"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "keep"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: keep > refuses a malformed path, naming the keep field",
+      "id": "crosswalk.keep.5",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "keep": [
+          "__proto__"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "keep"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: keep > refuses a __proto__ key, naming the keep field",
+      "id": "crosswalk.keep.6",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "keep": "meta",
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "keep"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: keep > refuses a list that is not an array, naming the keep field",
+      "id": "crosswalk.keep.7",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "keep": [
+          "x",
+          "[\"x\"]"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "two rules write the same to path: x",
+            "ruleIndex": -1
+          },
+          {
+            "message": "two rules use the same from path: x",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/crosswalk.unit.test.ts: keep > leaves a path kept twice to the path-uniqueness check",
+      "id": "crosswalk.keep.8",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "keep": [
+          "x"
+        ],
+        "rules": [
+          {
+            "from": "y",
+            "op": "move",
+            "to": "x"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "two rules write the same to path: x",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/crosswalk.unit.test.ts: keep > leaves a path kept and named by a rule to the path-uniqueness check",
+      "id": "crosswalk.keep.9",
+      "kind": "validate"
+    }
+  ]
+}

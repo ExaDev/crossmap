@@ -1,0 +1,165 @@
+{
+  "cases": [
+    {
+      "args": [
+        "validate",
+        "{dir}/missing.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "startsWith": "cannot read {dir}/missing.json: "
+        }
+      },
+      "from": "cli/run.unit.test.ts: run > reports an unreadable file as a usage error",
+      "id": "cli.usage.1",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "{dir}/cw.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "startsWith": "{dir}/cw.json is not valid JSON: "
+        }
+      },
+      "files": {
+        "cw.json": "{"
+      },
+      "from": "cli/run.unit.test.ts: run > reports a non-JSON file as a usage error",
+      "id": "cli.usage.2",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "https://example.test/cw.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "startsWith": "cannot read https://example.test/cw.json: "
+        }
+      },
+      "from": "cli/run.unit.test.ts: run > names a remote argument by its URL and reports a failed read as a usage error",
+      "id": "cli.usage.3",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "encode",
+        "-",
+        "-"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "only one argument"
+          ]
+        }
+      },
+      "from": "cli/run.unit.test.ts: run > refuses two arguments that both read standard input",
+      "id": "cli.usage.4",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "frobnicate",
+        "a"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "Usage: crossmap"
+          ]
+        }
+      },
+      "from": "cli/run.unit.test.ts: run > answers an unknown command, a missing file argument and an unknown flag with the usage text (#1)",
+      "id": "cli.usage.5",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "encode",
+        "cw.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "Usage: crossmap"
+          ]
+        }
+      },
+      "from": "cli/run.unit.test.ts: run > answers an unknown command, a missing file argument and an unknown flag with the usage text (#2)",
+      "id": "cli.usage.6",
+      "kind": "cli"
+    },
+    {
+      "args": [],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "Usage: crossmap"
+          ]
+        }
+      },
+      "from": "cli/run.unit.test.ts: run > answers an unknown command, a missing file argument and an unknown flag with the usage text (#3)",
+      "id": "cli.usage.7",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "--nope"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "Usage: crossmap"
+          ]
+        }
+      },
+      "from": "cli/run.unit.test.ts: run > answers an unknown command, a missing file argument and an unknown flag with the usage text (#4)",
+      "id": "cli.usage.8",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "--version"
+      ],
+      "expect": {
+        "status": 0,
+        "stderr": {
+          "equals": ""
+        },
+        "stdout": "{version}\n"
+      },
+      "from": "cli/run.unit.test.ts: run > prints the version on success",
+      "id": "cli.usage.9",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "-h"
+      ],
+      "expect": {
+        "status": 0,
+        "stdout": {
+          "contains": [
+            "Usage: crossmap"
+          ]
+        }
+      },
+      "from": "cli/run.unit.test.ts: run > prints the help text on success",
+      "id": "cli.usage.10",
+      "kind": "cli"
+    }
+  ]
+}

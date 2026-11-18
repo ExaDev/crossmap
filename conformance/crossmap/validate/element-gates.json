@@ -1,0 +1,154 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "p[].q[].v",
+            "op": "move",
+            "to": "n[].m[].v",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "p[].flag",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on per-element when references > accepts a reference into the array the rule iterates (outer)",
+      "id": "validate.element-gates.1",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "p[].q[].v",
+            "op": "move",
+            "to": "n[].m[].v",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "p[].q[].flag",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on per-element when references > accepts a reference into the array the rule iterates (inner)",
+      "id": "validate.element-gates.2",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "p[].v",
+            "op": "move",
+            "to": "n[].v",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "other[].flag",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "when reference other[].flag contains a wildcard into other[], which is not the array its rule's from iterates at that depth (p[])",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on per-element when references > rejects a reference into another array",
+      "id": "validate.element-gates.3",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "p[].v",
+            "op": "move",
+            "to": "n[].v",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "p[].q[].flag",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "when reference p[].q[].flag contains 2 wildcards where its rule's from has 1",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on per-element when references > rejects a reference with more wildcards than the rule",
+      "id": "validate.element-gates.4",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "p[].v",
+            "op": "drop",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "p[].flag",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "rules": [],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "when reference p[].flag contains a wildcard, but a one-way rule visits no element to bind it to",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on per-element when references > rejects a wildcard reference on a one-way rule",
+      "id": "validate.element-gates.5",
+      "kind": "validate"
+    }
+  ]
+}

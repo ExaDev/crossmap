@@ -1,0 +1,617 @@
+{
+  "cases": [
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a",
+      "id": "paths.parse.1",
+      "kind": "path-parse",
+      "path": "a"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "key": "b",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a.b",
+      "id": "paths.parse.2",
+      "kind": "path-parse",
+      "path": "a.b"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "kind": "wildcard"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a[]",
+      "id": "paths.parse.3",
+      "kind": "path-parse",
+      "path": "a[]"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "kind": "wildcard"
+          },
+          {
+            "key": "b",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a[].b",
+      "id": "paths.parse.4",
+      "kind": "path-parse",
+      "path": "a[].b"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "kind": "wildcard"
+          },
+          {
+            "key": "b",
+            "kind": "key"
+          },
+          {
+            "kind": "wildcard"
+          },
+          {
+            "key": "c",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a[].b[].c",
+      "id": "paths.parse.5",
+      "kind": "path-parse",
+      "path": "a[].b[].c"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "grid",
+            "kind": "key"
+          },
+          {
+            "kind": "wildcard"
+          },
+          {
+            "kind": "wildcard"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses grid[][]",
+      "id": "paths.parse.6",
+      "kind": "path-parse",
+      "path": "grid[][]"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "index": 0,
+            "kind": "index"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a[0]",
+      "id": "paths.parse.7",
+      "kind": "path-parse",
+      "path": "a[0]"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "index": 12,
+            "kind": "index"
+          },
+          {
+            "key": "b",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a[12].b",
+      "id": "paths.parse.8",
+      "kind": "path-parse",
+      "path": "a[12].b"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "kind": "wildcard"
+          },
+          {
+            "index": 0,
+            "kind": "index"
+          },
+          {
+            "kind": "wildcard"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a[][0][]",
+      "id": "paths.parse.9",
+      "kind": "path-parse",
+      "path": "a[][0][]"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "key": "0",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a.0",
+      "id": "paths.parse.10",
+      "kind": "path-parse",
+      "path": "a.0"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "snake_case-key",
+            "kind": "key"
+          },
+          {
+            "key": "digits123",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses snake_case-key.digits123",
+      "id": "paths.parse.11",
+      "kind": "path-parse",
+      "path": "snake_case-key.digits123"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a.b",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses [\"a.b\"]",
+      "id": "paths.parse.12",
+      "kind": "path-parse",
+      "path": "[\"a.b\"]"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "key": "x y",
+            "kind": "key"
+          },
+          {
+            "key": "b",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a[\"x y\"].b",
+      "id": "paths.parse.13",
+      "kind": "path-parse",
+      "path": "a[\"x y\"].b"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "key": "[]",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a[\"[]\"]",
+      "id": "paths.parse.14",
+      "kind": "path-parse",
+      "path": "a[\"[]\"]"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "say \"hi\"",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses [\"say \\\"hi\\\"\"]",
+      "id": "paths.parse.15",
+      "kind": "path-parse",
+      "path": "[\"say \\\"hi\\\"\"]"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "back\\slash",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses [\"back\\\\slash\"]",
+      "id": "paths.parse.16",
+      "kind": "path-parse",
+      "path": "[\"back\\\\slash\"]"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses [\"\"]",
+      "id": "paths.parse.17",
+      "kind": "path-parse",
+      "path": "[\"\"]"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "__proto__x",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses [\"__proto__x\"]",
+      "id": "paths.parse.18",
+      "kind": "path-parse",
+      "path": "[\"__proto__x\"]"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "__proto__x",
+            "kind": "key"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses __proto__x",
+      "id": "paths.parse.19",
+      "kind": "path-parse",
+      "path": "__proto__x"
+    },
+    {
+      "expect": {
+        "steps": [
+          {
+            "key": "a",
+            "kind": "key"
+          },
+          {
+            "index": 999999999,
+            "kind": "index"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: parsePath > parses a[999999999]",
+      "id": "paths.parse.20",
+      "kind": "path-parse",
+      "path": "a[999999999]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects ",
+      "id": "paths.parse.21",
+      "kind": "path-parse",
+      "path": ""
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects .a",
+      "id": "paths.parse.22",
+      "kind": "path-parse",
+      "path": ".a"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a.",
+      "id": "paths.parse.23",
+      "kind": "path-parse",
+      "path": "a."
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a..b",
+      "id": "paths.parse.24",
+      "kind": "path-parse",
+      "path": "a..b"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects []",
+      "id": "paths.parse.25",
+      "kind": "path-parse",
+      "path": "[]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects [0]",
+      "id": "paths.parse.26",
+      "kind": "path-parse",
+      "path": "[0]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a[].[]",
+      "id": "paths.parse.27",
+      "kind": "path-parse",
+      "path": "a[].[]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a.[0]",
+      "id": "paths.parse.28",
+      "kind": "path-parse",
+      "path": "a.[0]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a b",
+      "id": "paths.parse.29",
+      "kind": "path-parse",
+      "path": "a b"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a.b-c.d e",
+      "id": "paths.parse.30",
+      "kind": "path-parse",
+      "path": "a.b-c.d e"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a[",
+      "id": "paths.parse.31",
+      "kind": "path-parse",
+      "path": "a["
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a[01]",
+      "id": "paths.parse.32",
+      "kind": "path-parse",
+      "path": "a[01]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a[-1]",
+      "id": "paths.parse.33",
+      "kind": "path-parse",
+      "path": "a[-1]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a[1234567890]",
+      "id": "paths.parse.34",
+      "kind": "path-parse",
+      "path": "a[1234567890]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects ä",
+      "id": "paths.parse.35",
+      "kind": "path-parse",
+      "path": "ä"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects __proto__",
+      "id": "paths.parse.36",
+      "kind": "path-parse",
+      "path": "__proto__"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a.__proto__",
+      "id": "paths.parse.37",
+      "kind": "path-parse",
+      "path": "a.__proto__"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects [\"__proto__\"]",
+      "id": "paths.parse.38",
+      "kind": "path-parse",
+      "path": "[\"__proto__\"]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a[\"__proto__\"]",
+      "id": "paths.parse.39",
+      "kind": "path-parse",
+      "path": "a[\"__proto__\"]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a[\"unterminated",
+      "id": "paths.parse.40",
+      "kind": "path-parse",
+      "path": "a[\"unterminated"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a[\"x\"",
+      "id": "paths.parse.41",
+      "kind": "path-parse",
+      "path": "a[\"x\""
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a[\"bad\\escape\"]",
+      "id": "paths.parse.42",
+      "kind": "path-parse",
+      "path": "a[\"bad\\escape\"]"
+    },
+    {
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/paths.unit.test.ts: parsePath > rejects a[\"x\"\"]",
+      "id": "paths.parse.43",
+      "kind": "path-parse",
+      "path": "a[\"x\"\"]"
+    }
+  ]
+}

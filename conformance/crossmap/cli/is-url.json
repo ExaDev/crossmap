@@ -1,0 +1,130 @@
+{
+  "cases": [
+    {
+      "argument": "http://a.test/x.json",
+      "expect": true,
+      "from": "cli/read-source.unit.test.ts: isUrl > takes as a URL: http://a.test/x.json",
+      "id": "cli.is-url.1",
+      "kind": "is-url"
+    },
+    {
+      "argument": "https://a.test",
+      "expect": true,
+      "from": "cli/read-source.unit.test.ts: isUrl > takes as a URL: https://a.test",
+      "id": "cli.is-url.2",
+      "kind": "is-url"
+    },
+    {
+      "argument": "data:application/json,{}",
+      "expect": true,
+      "from": "cli/read-source.unit.test.ts: isUrl > takes as a URL: data:application/json,{}",
+      "id": "cli.is-url.3",
+      "kind": "is-url"
+    },
+    {
+      "argument": "file:///tmp/x.json",
+      "expect": true,
+      "from": "cli/read-source.unit.test.ts: isUrl > takes as a URL: file:///tmp/x.json",
+      "id": "cli.is-url.4",
+      "kind": "is-url"
+    },
+    {
+      "argument": "ftp://a.test/x",
+      "expect": true,
+      "from": "cli/read-source.unit.test.ts: isUrl > takes as a URL: ftp://a.test/x",
+      "id": "cli.is-url.5",
+      "kind": "is-url"
+    },
+    {
+      "argument": "s3://bucket/x.json",
+      "expect": true,
+      "from": "cli/read-source.unit.test.ts: isUrl > takes as a URL: s3://bucket/x.json",
+      "id": "cli.is-url.6",
+      "kind": "is-url"
+    },
+    {
+      "argument": "git+ssh://a.test/x",
+      "expect": true,
+      "from": "cli/read-source.unit.test.ts: isUrl > takes as a URL: git+ssh://a.test/x",
+      "id": "cli.is-url.7",
+      "kind": "is-url"
+    },
+    {
+      "argument": "HTTPS://A.TEST/X",
+      "expect": true,
+      "from": "cli/read-source.unit.test.ts: isUrl > takes as a URL: HTTPS://A.TEST/X",
+      "id": "cli.is-url.8",
+      "kind": "is-url"
+    },
+    {
+      "argument": "-",
+      "expect": false,
+      "from": "cli/read-source.unit.test.ts: isUrl > keeps as a path: -",
+      "id": "cli.is-url.9",
+      "kind": "is-url"
+    },
+    {
+      "argument": "x.json",
+      "expect": false,
+      "from": "cli/read-source.unit.test.ts: isUrl > keeps as a path: x.json",
+      "id": "cli.is-url.10",
+      "kind": "is-url"
+    },
+    {
+      "argument": "./x.json",
+      "expect": false,
+      "from": "cli/read-source.unit.test.ts: isUrl > keeps as a path: ./x.json",
+      "id": "cli.is-url.11",
+      "kind": "is-url"
+    },
+    {
+      "argument": "../a/x.json",
+      "expect": false,
+      "from": "cli/read-source.unit.test.ts: isUrl > keeps as a path: ../a/x.json",
+      "id": "cli.is-url.12",
+      "kind": "is-url"
+    },
+    {
+      "argument": "/tmp/x.json",
+      "expect": false,
+      "from": "cli/read-source.unit.test.ts: isUrl > keeps as a path: /tmp/x.json",
+      "id": "cli.is-url.13",
+      "kind": "is-url"
+    },
+    {
+      "argument": "C:\\x.json",
+      "expect": false,
+      "from": "cli/read-source.unit.test.ts: isUrl > keeps as a path: C:\\x.json",
+      "id": "cli.is-url.14",
+      "kind": "is-url"
+    },
+    {
+      "argument": "C:/x.json",
+      "expect": false,
+      "from": "cli/read-source.unit.test.ts: isUrl > keeps as a path: C:/x.json",
+      "id": "cli.is-url.15",
+      "kind": "is-url"
+    },
+    {
+      "argument": "c:x.json",
+      "expect": false,
+      "from": "cli/read-source.unit.test.ts: isUrl > keeps as a path: c:x.json",
+      "id": "cli.is-url.16",
+      "kind": "is-url"
+    },
+    {
+      "argument": "dir/a:b.json",
+      "expect": false,
+      "from": "cli/read-source.unit.test.ts: isUrl > keeps as a path: dir/a:b.json",
+      "id": "cli.is-url.17",
+      "kind": "is-url"
+    },
+    {
+      "argument": "1a:b.json",
+      "expect": false,
+      "from": "cli/read-source.unit.test.ts: isUrl > keeps as a path: 1a:b.json",
+      "id": "cli.is-url.18",
+      "kind": "is-url"
+    }
+  ]
+}

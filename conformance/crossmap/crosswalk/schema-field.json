@@ -1,0 +1,80 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "$schema": "https://example.com/crossmap.schema.json",
+        "keep": [
+          "x"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "$schema": "https://example.com/crossmap.schema.json",
+          "oneWay": [],
+          "rules": [
+            {
+              "from": "x",
+              "op": "move",
+              "to": "x"
+            }
+          ],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: $schema > is accepted as the address of the document's own schema and carries no rule",
+      "id": "crosswalk.schema-field.1",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "$schema": "https://example.com/crossmap.schema.json",
+        "keep": [
+          "x"
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/crosswalk.unit.test.ts: $schema > validates with no issues",
+      "id": "crosswalk.schema-field.2",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: $schema > is optional",
+      "id": "crosswalk.schema-field.3",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "$schema": 1,
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: $schema > must be text",
+      "id": "crosswalk.schema-field.4",
+      "kind": "parse"
+    }
+  ]
+}

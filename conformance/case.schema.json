@@ -1,0 +1,1318 @@
+{
+  "$defs": {
+    "cliStderr": {
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "contains": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "equals": {
+          "type": "string"
+        },
+        "startsWith": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "cliText": {
+      "description": "Exact text, or an object requiring substrings.",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "contains": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "contains"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "errorExpect": {
+      "additionalProperties": false,
+      "description": "What a thrown error must carry. `class` is the error's name. Where given, ruleIndex and path (RuleApplicationError, RoundTripMismatchError: sampleIndex and path) must equal; `message` must equal exactly; every messageContains entry must be a substring of the message; minIssues bounds a CrosswalkSyntaxError's issue count from below. A parse error's message text comes from the schema library, so it is matched only on field names the original tests matched.",
+      "properties": {
+        "class": {
+          "type": "string"
+        },
+        "issues": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "ruleIndex": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "message",
+              "ruleIndex"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "message": {
+          "type": "string"
+        },
+        "messageContains": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "minIssues": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "path": {
+          "type": "string"
+        },
+        "ruleIndex": {
+          "type": "integer"
+        },
+        "sampleIndex": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "type": "object"
+    },
+    "errorOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "error": {
+          "$ref": "#/$defs/errorExpect"
+        }
+      },
+      "required": [
+        "error"
+      ],
+      "type": "object"
+    },
+    "id": {
+      "description": "Unique across the whole corpus; lower-case ASCII letters, digits, dots, hyphens and underscores.",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$",
+      "type": "string"
+    },
+    "json": {
+      "description": "Any JSON value."
+    },
+    "step": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "key"
+            }
+          },
+          "required": [
+            "kind",
+            "key"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "index": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "kind": {
+              "const": "index"
+            }
+          },
+          "required": [
+            "kind",
+            "index"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "wildcard"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "trailStep": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "key"
+            }
+          },
+          "required": [
+            "kind",
+            "key"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "index": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "kind": {
+              "const": "index"
+            }
+          },
+          "required": [
+            "kind",
+            "index"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One file holds at least one case. Every case has an id, a from (the original test title or a recorded behaviour), a kind selecting the shape, and optionally skip (the implementation that does not run the case, `ts` or `rust`) with its reason.",
+  "properties": {
+    "cases": {
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "expect": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "steps": {
+                        "items": {
+                          "$ref": "#/$defs/step"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "steps"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "error": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "class": {
+                            "const": "CrosswalkSyntaxError"
+                          }
+                        },
+                        "required": [
+                          "class"
+                        ],
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "error"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "path-parse"
+              },
+              "path": {
+                "type": "string"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "path",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "expect": {
+                "additionalProperties": false,
+                "properties": {
+                  "canonical": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "canonical"
+                ],
+                "type": "object"
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "path-format"
+              },
+              "path": {
+                "type": "string"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "path",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "document": {
+                "$ref": "#/$defs/json"
+              },
+              "expect": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "found": {
+                        "const": false
+                      }
+                    },
+                    "required": [
+                      "found"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "empties": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "trail": {
+                              "items": {
+                                "$ref": "#/$defs/trailStep"
+                              },
+                              "type": "array"
+                            },
+                            "wildcard": {
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "trail",
+                            "wildcard"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "found": {
+                        "const": true
+                      },
+                      "matches": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "trail": {
+                              "items": {
+                                "$ref": "#/$defs/trailStep"
+                              },
+                              "type": "array"
+                            },
+                            "value": {
+                              "$ref": "#/$defs/json"
+                            }
+                          },
+                          "required": [
+                            "trail",
+                            "value"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "found",
+                      "matches",
+                      "empties"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "path-read"
+              },
+              "path": {
+                "type": "string"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "document",
+              "path",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "crosswalk": {
+                "$ref": "#/$defs/json"
+              },
+              "expect": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "crosswalk": {
+                        "$ref": "#/$defs/json"
+                      }
+                    },
+                    "required": [
+                      "crosswalk"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "$ref": "#/$defs/errorOutcome"
+                  }
+                ]
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "parse"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "crosswalk",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "crosswalk": {
+                "$ref": "#/$defs/json"
+              },
+              "expect": {
+                "additionalProperties": false,
+                "properties": {
+                  "issues": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "ruleIndex": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "message",
+                        "ruleIndex"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "issues"
+                ],
+                "type": "object"
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "validate"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "crosswalk",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "expect": {
+                "additionalProperties": false,
+                "properties": {
+                  "from": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "to": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "from",
+                  "to"
+                ],
+                "type": "object"
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "rule-sides"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "rule": {
+                "$ref": "#/$defs/json"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "rule",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "class": {
+                    "enum": [
+                      "CrosswalkSyntaxError",
+                      "CrosswalkStructureError",
+                      "RuleApplicationError",
+                      "RoundTripMismatchError"
+                    ]
+                  },
+                  "issues": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "ruleIndex": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "message"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "ruleIndex": {
+                    "type": "integer"
+                  },
+                  "sampleIndex": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "class"
+                ],
+                "type": "object"
+              },
+              "expect": {
+                "additionalProperties": false,
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "message"
+                ],
+                "type": "object"
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "error-message"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "error",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "crosswalk": {
+                "$ref": "#/$defs/json"
+              },
+              "direction": {
+                "enum": [
+                  "encode",
+                  "decode"
+                ]
+              },
+              "document": {
+                "$ref": "#/$defs/json"
+              },
+              "expect": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "output": {
+                        "$ref": "#/$defs/json"
+                      },
+                      "outputText": {
+                        "description": "The exact serialisation of the output, key order included: checked only where the implementation promises insertion order.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "output"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "$ref": "#/$defs/errorOutcome"
+                  }
+                ]
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "run"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "crosswalk",
+              "direction",
+              "document",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "crosswalk": {
+                "$ref": "#/$defs/json"
+              },
+              "expect": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "ok": {
+                        "const": true
+                      }
+                    },
+                    "required": [
+                      "ok"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "$ref": "#/$defs/errorOutcome"
+                  }
+                ]
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "round-trip"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "samples": {
+                "type": "array"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "crosswalk",
+              "samples",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "args": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "expect": {
+                "additionalProperties": false,
+                "properties": {
+                  "status": {
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ]
+                  },
+                  "stderr": {
+                    "$ref": "#/$defs/cliStderr"
+                  },
+                  "stdout": {
+                    "$ref": "#/$defs/cliText"
+                  },
+                  "stdoutJson": {
+                    "$ref": "#/$defs/json"
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "type": "object"
+              },
+              "files": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Files written into a fresh directory, named by `{dir}` in args and expectations.",
+                "type": "object"
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "cli"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "server": {
+                "additionalProperties": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "body": {
+                      "type": "string"
+                    },
+                    "headers": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "body"
+                  ],
+                  "type": "object"
+                },
+                "description": "Responses of a local HTTP server, keyed by request path; `{origin}` names its origin.",
+                "type": "object"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              },
+              "stdin": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "args",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "argument": {
+                "type": "string"
+              },
+              "expect": {
+                "type": "boolean"
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "is-url"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "argument",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "expect": {
+                "const": true
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "schema-canonical"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "expect": {
+                "type": "string"
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "schema-when-ref"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "expect": {
+                "$ref": "#/$defs/json"
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "schema-pointer"
+              },
+              "pointer": {
+                "type": "string"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              },
+              "sorted": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "pointer",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "expect": {
+                "type": "boolean"
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "schema-rule-requires-to"
+              },
+              "op": {
+                "type": "string"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "op",
+              "expect"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "dependentRequired": {
+              "reason": [
+                "skip"
+              ],
+              "skip": [
+                "reason"
+              ]
+            },
+            "properties": {
+              "document": {
+                "$ref": "#/$defs/json"
+              },
+              "expect": {
+                "type": "boolean"
+              },
+              "from": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "id": {
+                "$ref": "#/$defs/id"
+              },
+              "kind": {
+                "const": "schema-validates"
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "skip": {
+                "enum": [
+                  "ts",
+                  "rust"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "from",
+              "kind",
+              "document",
+              "expect"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "minItems": 1,
+      "type": "array"
+    }
+  },
+  "required": [
+    "cases"
+  ],
+  "title": "A crossmap conformance corpus file",
+  "type": "object"
+}

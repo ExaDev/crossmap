@@ -1,0 +1,193 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "meta",
+            "op": "move"
+          },
+          {
+            "from": "nodes[].id",
+            "op": "move"
+          },
+          {
+            "factor": 2,
+            "from": "nodes[].weight",
+            "op": "scale"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "meta": {
+          "name": "g"
+        },
+        "nodes": [
+          {
+            "id": "a",
+            "weight": 1
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "meta": {
+            "name": "g"
+          },
+          "nodes": [
+            {
+              "id": "a",
+              "weight": 2
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: a rule whose to is left out > writes to the path it reads (encode)",
+      "id": "executor.omitted-to-and-keep.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "meta",
+            "op": "move"
+          },
+          {
+            "from": "nodes[].id",
+            "op": "move"
+          },
+          {
+            "factor": 2,
+            "from": "nodes[].weight",
+            "op": "scale"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/executor.unit.test.ts: a rule whose to is left out > writes to the path it reads, both ways (assertRoundTrip)",
+      "id": "executor.omitted-to-and-keep.2",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "meta": {
+            "name": "g"
+          },
+          "nodes": [
+            {
+              "id": "a",
+              "weight": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "keep": [
+          "meta",
+          "nodes[].id"
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "meta": {
+          "name": "g"
+        },
+        "nodes": [
+          {
+            "id": "a",
+            "unnamed": 1
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "meta": {
+            "name": "g"
+          },
+          "nodes": [
+            {
+              "id": "a"
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: kept paths > carry the paths they name through unchanged and nothing else",
+      "id": "executor.omitted-to-and-keep.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "keep": [
+          "meta",
+          "nodes[].id"
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/executor.unit.test.ts: kept paths > round trip over the kept paths",
+      "id": "executor.omitted-to-and-keep.4",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "meta": {
+            "name": "g"
+          },
+          "nodes": [
+            {
+              "id": "a"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "keep": [
+          "b",
+          "c"
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "b": 2
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "message": "rule 2 (c): the path is absent from the document",
+          "path": "c",
+          "ruleIndex": 2
+        }
+      },
+      "from": "src/executor.unit.test.ts: kept paths > are numbered after the written rules in the errors they raise",
+      "id": "executor.omitted-to-and-keep.5",
+      "kind": "run"
+    }
+  ]
+}

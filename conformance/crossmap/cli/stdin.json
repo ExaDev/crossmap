@@ -1,0 +1,79 @@
+{
+  "cases": [
+    {
+      "args": [
+        "encode",
+        "{dir}/cw.json",
+        "-"
+      ],
+      "expect": {
+        "status": 0,
+        "stdoutJson": {
+          "id": "MF-2041",
+          "weightKilograms": 1250
+        }
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}"
+      },
+      "from": "test/cli.e2e.test.ts > encodes a document read from standard input and exits 0",
+      "id": "cli.stdin.1",
+      "kind": "cli",
+      "stdin": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}"
+    },
+    {
+      "args": [
+        "encode",
+        "{dir}/cw.json",
+        "-"
+      ],
+      "expect": {
+        "status": 1,
+        "stderr": {
+          "contains": [
+            "rule 0 (consignmentId)"
+          ]
+        },
+        "stdout": ""
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}"
+      },
+      "from": "test/cli.e2e.test.ts > exits 1 with the library's message on standard error when a rule cannot apply",
+      "id": "cli.stdin.2",
+      "kind": "cli",
+      "stdin": "{}"
+    },
+    {
+      "args": [
+        "validate",
+        "-"
+      ],
+      "expect": {
+        "status": 0,
+        "stdout": ""
+      },
+      "from": "test/cli.e2e.test.ts > reads the crosswalk from standard input",
+      "id": "cli.stdin.3",
+      "kind": "cli",
+      "stdin": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}"
+    },
+    {
+      "args": [
+        "validate",
+        "no-such-crosswalk.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "cannot read no-such-crosswalk.json"
+          ]
+        }
+      },
+      "from": "test/cli.e2e.test.ts > exits 2 for a file that does not exist",
+      "id": "cli.stdin.4",
+      "kind": "cli"
+    }
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "a",
+            "op": "scale",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 199
+      },
+      "expect": {
+        "output": {
+          "b": 19900
+        }
+      },
+      "from": "src/ops/scale.unit.test.ts: scale > multiplies on encode",
+      "id": "ops.scale.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "a",
+            "op": "scale",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": 19900
+      },
+      "expect": {
+        "output": {
+          "a": 199
+        }
+      },
+      "from": "src/ops/scale.unit.test.ts: scale > divides on decode",
+      "id": "ops.scale.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "a",
+            "op": "scale",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 0
+      },
+      "expect": {
+        "output": {
+          "b": 0
+        }
+      },
+      "from": "src/ops/scale.unit.test.ts: scale > is exact for zero on encode",
+      "id": "ops.scale.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "a",
+            "op": "scale",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": 0
+      },
+      "expect": {
+        "output": {
+          "a": 0
+        }
+      },
+      "from": "src/ops/scale.unit.test.ts: scale > is exact for zero on decode",
+      "id": "ops.scale.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "a",
+            "op": "scale",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": -42
+      },
+      "expect": {
+        "output": {
+          "b": -4200
+        }
+      },
+      "from": "src/ops/scale.unit.test.ts: scale > is exact for a negative value under an integer factor",
+      "id": "ops.scale.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "a",
+            "op": "scale",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "12"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "finite numbers"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/scale.unit.test.ts: scale > throws for a non-number value on encode",
+      "id": "ops.scale.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "a",
+            "op": "scale",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": null
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "finite numbers"
+          ],
+          "path": "b",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/scale.unit.test.ts: scale > throws for a non-number value on decode",
+      "id": "ops.scale.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 1e+308,
+            "from": "a",
+            "op": "scale",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1e+308
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "overflows"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/scale.unit.test.ts: scale > throws for a non-finite result",
+      "id": "ops.scale.8",
+      "kind": "run"
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "map": {
+              "closed": "CLOSED",
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "open"
+      },
+      "expect": {
+        "output": {
+          "b": "OPEN"
+        }
+      },
+      "from": "src/ops/enum.unit.test.ts: enum > maps through map on encode",
+      "id": "ops.enum.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "map": {
+              "closed": "CLOSED",
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": "CLOSED"
+      },
+      "expect": {
+        "output": {
+          "a": "closed"
+        }
+      },
+      "from": "src/ops/enum.unit.test.ts: enum > maps through mapBack on decode",
+      "id": "ops.enum.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "map": {
+              "closed": "CLOSED",
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "strings"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/enum.unit.test.ts: enum > throws for a non-string value",
+      "id": "ops.enum.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "map": {
+              "closed": "CLOSED",
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "paused"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "no entry in map"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/enum.unit.test.ts: enum > throws for an unmapped value on encode",
+      "id": "ops.enum.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "map": {
+              "closed": "CLOSED",
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": "PAUSED"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "no entry in mapBack"
+          ],
+          "path": "b",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/enum.unit.test.ts: enum > throws for an unmapped value on decode",
+      "id": "ops.enum.5",
+      "kind": "run"
+    }
+  ]
+}

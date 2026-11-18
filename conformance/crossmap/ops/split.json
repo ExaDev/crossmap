@@ -1,0 +1,258 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "split",
+            "separator": ",",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "alpha,beta"
+      },
+      "expect": {
+        "output": {
+          "b": [
+            "alpha",
+            "beta"
+          ]
+        }
+      },
+      "from": "src/ops/split.unit.test.ts: split > splits on encode",
+      "id": "ops.split.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "split",
+            "separator": ",",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": [
+          "alpha",
+          "beta"
+        ]
+      },
+      "expect": {
+        "output": {
+          "a": "alpha,beta"
+        }
+      },
+      "from": "src/ops/split.unit.test.ts: split > joins on decode",
+      "id": "ops.split.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "split",
+            "separator": ",",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": ""
+      },
+      "expect": {
+        "output": {
+          "b": [
+            ""
+          ]
+        }
+      },
+      "from": "src/ops/split.unit.test.ts: split > keeps empty parts on encode",
+      "id": "ops.split.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "split",
+            "separator": ",",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": [
+          ""
+        ]
+      },
+      "expect": {
+        "output": {
+          "a": ""
+        }
+      },
+      "from": "src/ops/split.unit.test.ts: split > keeps empty parts on decode",
+      "id": "ops.split.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "split",
+            "separator": ",",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": [
+          "a"
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "applies to strings"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/split.unit.test.ts: split > throws for a non-string on encode",
+      "id": "ops.split.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "split",
+            "separator": ",",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": "alpha"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "arrays of strings"
+          ],
+          "path": "b",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/split.unit.test.ts: split > throws for a non-array on decode",
+      "id": "ops.split.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "split",
+            "separator": ",",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": [
+          "a",
+          1
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "arrays of strings"
+          ],
+          "path": "b",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/split.unit.test.ts: split > throws for non-string parts on decode",
+      "id": "ops.split.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "split",
+            "separator": "-",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": [
+          "a-b",
+          "c"
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "contains the separator"
+          ],
+          "path": "b",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/split.unit.test.ts: split > throws when a part contains the separator, so the join stays unambiguous",
+      "id": "ops.split.8",
+      "kind": "run"
+    }
+  ]
+}
