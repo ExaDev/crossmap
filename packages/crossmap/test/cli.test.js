@@ -1,4 +1,4 @@
-// Runs the installed `crossmap` command as a child process, the way `npx crossmap` does, so what is checked is the shipped file: its shebang line, its imports resolving inside the installed package, its standard input and its exit status. The scenarios are the TypeScript package's test/cli.e2e.test.ts, against the command the wasm package ships.
+// Runs the installed `crossmap` command as a child process, the way `npx crossmap` does, so what is checked is the shipped file: its shebang line, its imports resolving inside the installed package, its standard input and its exit status. The scenarios are the command's end-to-end tests from before the port, against the command the wasm package ships.
 
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";

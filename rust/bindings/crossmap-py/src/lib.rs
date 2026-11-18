@@ -28,8 +28,8 @@ use convert::{from_value, to_value};
 const ERRORS_MODULE: &str = "crosswalk_codec._errors";
 
 /// The Python exception for a codec error: an instance of the matching `crosswalk_codec._errors` class, or a
-/// `ValueError` for a `when` predicate that cannot be evaluated at all, which the TypeScript implementation also reports
-/// outside its error classes.
+/// `ValueError` for a `when` predicate that cannot be evaluated at all, which every package reports outside its error
+/// classes.
 fn raise(py: Python<'_>, error: CrossmapError) -> PyErr {
     match build_exception(py, error) {
         Ok(exception) => exception,

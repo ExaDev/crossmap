@@ -61,9 +61,9 @@ pub enum CrossmapError {
         detail: String,
     },
     /// A `when` predicate could not be evaluated at all, as opposed to being indeterminate: it names a collection that
-    /// is absent or not an array of records, or uses a `lookup` node, which crosswalks do not support. The
-    /// TypeScript implementation throws a plain `Error` here, outside its error classes; [`CrossmapError::class_name`]
-    /// reports it as `Error` for that reason.
+    /// is absent or not an array of records, or uses a `lookup` node, which crosswalks do not support. It is outside
+    /// the codec's error classes (the npm package throws a plain `Error` and the Python package a `ValueError`), so
+    /// [`CrossmapError::class_name`] reports it as `Error`.
     #[error("{message}")]
     WhenEvaluation {
         /// Why the predicate could not be evaluated.
@@ -72,7 +72,7 @@ pub enum CrossmapError {
 }
 
 impl CrossmapError {
-    /// The name of the error's class in the TypeScript implementation and in the conformance corpus:
+    /// The name of the error's class in the npm and Python packages and in the conformance corpus:
     /// `CrosswalkSyntaxError`, `CrosswalkStructureError`, `RuleApplicationError`, `RoundTripMismatchError`, or `Error`
     /// for [`CrossmapError::WhenEvaluation`].
     pub fn class_name(&self) -> &'static str {

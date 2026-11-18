@@ -3,8 +3,9 @@
 //! A path starts with a key and continues with any sequence of `.key`, a quoted key `["..."]`, a fixed index `[n]` or
 //! a wildcard `[]`. A bare key is `[A-Za-z0-9_-]+`; a quoted key is any text with `"` and `\` written `\"` and `\\`,
 //! the only two escapes, so every key has one quoted spelling. No key may be exactly `__proto__`, bare or quoted,
-//! because the TypeScript implementation's output check drops that key without a word. An index is `0` or a decimal
-//! of up to nine digits without a leading zero, every one of which is a valid JavaScript array index.
+//! because assigning it on a JavaScript object sets the object's prototype rather than a key, so a path naming it
+//! would not mean one thing in every host. An index is `0` or a decimal of up to nine digits without a leading zero,
+//! every one of which is a valid JavaScript array index.
 
 use json_shape::Value;
 
