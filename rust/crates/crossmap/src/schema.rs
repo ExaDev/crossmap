@@ -21,10 +21,11 @@ use crate::path::{MAX_INDEX_DIGITS, PROTO};
 
 /// The version of the trilean npm package whose published schema the `when` reference names.
 ///
-/// It is the trilean release the format's predicate grammar is pinned to, which is the version the TypeScript package
-/// depends on exactly; the Rust crates read predicates with trilean's Rust evaluator, which is not published with a
-/// version of its own. A test of the workspace's tooling checks that the two pins agree while the TypeScript package
-/// exists.
+/// It is the trilean release the format's predicate grammar is pinned to, and this constant is that pin's one source:
+/// the schema, the conformance runner's `{trileanVersion}` and the packages' schema file all take it from here. It is
+/// the release the schema named before the port, which the workspace's tooling tests check against the pre-port schema
+/// file. It is independent of the version of trilean's Rust crates the codec evaluates predicates with, whose grammar
+/// that schema describes.
 pub const TRILEAN_VERSION: &str = "1.9.0";
 
 /// The version of the crate, which names the published schema in its `$id`.
