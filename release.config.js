@@ -1,18 +1,17 @@
-import type { Options } from 'semantic-release';
-
-type ReleaseLevel = 'major' | 'minor' | 'patch' | false;
-
-interface CommitType {
-  readonly type: string;
-  readonly release: ReleaseLevel;
-  /** The changelog and GitHub release notes section commits of this type render under. */
-  readonly section: string;
-}
+/** @typedef {'major' | 'minor' | 'patch' | false} ReleaseLevel */
 
 /**
- * Single source of truth for the conventional-commit types this project uses. commitlint's allowed type-enum (commitlint.config.ts imports this), commit-analyzer's releaseRules below and the notes generator's sections all derive from it, so a type cannot trigger a release without also being accepted by commit-msg validation, or the reverse, and no type can release without its commits appearing in the notes: the early releases whose only commits were docs and chore entries shipped as empty sections because the notes preset hid them.
+ * @typedef {object} CommitType
+ * @property {string} type
+ * @property {ReleaseLevel} release
+ * @property {string} section The changelog and GitHub release notes section commits of this type render under.
  */
-export const commitTypes: readonly CommitType[] = [
+
+/**
+ * Single source of truth for the conventional-commit types this project uses. commitlint's allowed type-enum (commitlint.config.js imports this), commit-analyzer's releaseRules below and the notes generator's sections all derive from it, so a type cannot trigger a release without also being accepted by commit-msg validation, or the reverse, and no type can release without its commits appearing in the notes: the early releases whose only commits were docs and chore entries shipped as empty sections because the notes preset hid them.
+ */
+/** @type {readonly CommitType[]} */
+export const commitTypes = [
   { type: 'feat', release: 'minor', section: 'Features' },
   { type: 'fix', release: 'patch', section: 'Bug Fixes' },
   { type: 'perf', release: 'patch', section: 'Performance Improvements' },
@@ -29,7 +28,8 @@ export const commitTypes: readonly CommitType[] = [
 /**
  * Runs on `main`. Analyses commits since the last tag and computes the one version every artefact is released at; scripts/semantic-release-version.mjs writes it into the Rust workspace, the lock file and the npm manifests and regenerates the schema whose `$id` names it. The release commit holds those files and CHANGELOG.md, and is tagged and given a GitHub Release with generated notes. semantic-release publishes nothing: the jobs after it in .github/workflows/ci.yml build the crates, the wheels and the npm package from the tagged commit and publish them to crates.io, PyPI and npm through trusted publishing (no stored token). The release commit and tag are pushed over SSH with the deploy key ci.yml provisions.
  */
-const config: Options = {
+/** @type {import('semantic-release').Options} */
+const config = {
   branches: ['main'],
   plugins: [
     [
