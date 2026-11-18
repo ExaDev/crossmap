@@ -4,6 +4,8 @@
 //! what the manifest says), then every case not marked `skip: "rust"` is executed. The run fails on any corpus problem,
 //! any mismatch, and on an empty corpus, and prints the id of every failing case with each difference.
 
+#![forbid(unsafe_code)]
+
 use std::collections::BTreeMap;
 use std::io::{BufRead as _, BufReader, Read as _, Write as _};
 use std::net::TcpListener;
