@@ -1,0 +1,3 @@
+# `cargo xtask <task>` from the rust directory runs the repository's tasks; see xtask/src/main.rs.
+[alias]
+xtask = "run --package xtask --"

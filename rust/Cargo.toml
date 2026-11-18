@@ -4,6 +4,7 @@ members = [
     "crates/crossmap",
     "crates/crossmap-cli",
     "tests/crossmap-conformance",
+    "xtask",
 ]
 
 [workspace.package]
