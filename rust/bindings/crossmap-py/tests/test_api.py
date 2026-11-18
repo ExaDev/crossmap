@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-
 import pickle
 import subprocess
 import sys
@@ -75,7 +74,9 @@ def test_returns_the_repository_schema_byte_for_byte() -> None:
     # The committed schema this wheel was built from, which the npm package ships and the crate generates.
     committed = (Path(__file__).resolve().parents[4] / "schemas" / "crossmap.schema.json").read_bytes()
     assert crosswalk_codec.json_schema_text().encode() == committed
-    assert json.loads(crosswalk_codec.json_schema_text())["$id"].endswith(f"/crossmap@{crosswalk_codec.__version__}/schemas/crossmap.schema.json")
+    assert json.loads(crosswalk_codec.json_schema_text())["$id"].endswith(
+        f"/crossmap@{crosswalk_codec.__version__}/schemas/crossmap.schema.json"
+    )
 
 
 def test_ships_its_type_information() -> None:
@@ -242,7 +243,23 @@ def carry(value: Any) -> JsonValue:  # noqa: ANN401
 
 @pytest.mark.parametrize(
     "value",
-    [None, True, False, "", "text é \U0001f600", 0, -7, 2**53 - 1, -(2**53 - 1), 2.5, 1e300, 5e-324, [], {}, [1, [2, {}]]],
+    [
+        None,
+        True,
+        False,
+        "",
+        "text é \U0001f600",
+        0,
+        -7,
+        2**53 - 1,
+        -(2**53 - 1),
+        2.5,
+        1e300,
+        5e-324,
+        [],
+        {},
+        [1, [2, {}]],
+    ],
 )
 def test_json_values_cross_unchanged(value: JsonValue) -> None:
     got = carry(value)
