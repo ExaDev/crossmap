@@ -83,16 +83,38 @@ fn read_file(path: &str) -> Result<String, String> {
     Ok(String::from_utf8_lossy(&bytes).into_owned())
 }
 
-/// The path a `file:` URL names. The host must be empty or `localhost`, and the path is percent-decoded.
+/// The path a `file:` URL names on this platform, as Node's `fileURLToPath` gives it there: the Windows rules on
+/// Windows, the POSIX rules everywhere else.
 fn file_url_path(url: &str) -> Result<String, String> {
+    let (host, path) = file_url_parts(url);
+    if cfg!(windows) {
+        windows_file_path(host, path)
+    } else {
+        posix_file_path(host, path)
+    }
+}
+
+/// A `file:` URL's host and path, without its query or fragment. `localhost` is the empty host, as the URL standard
+/// parses it, and a URL with no `//` has an empty host.
+fn file_url_parts(url: &str) -> (&str, &str) {
     let rest = &url["file:".len()..];
+    let rest = rest.split(['?', '#']).next().unwrap_or("");
     let Some(after) = rest.strip_prefix("//") else {
-        return decode_path(rest);
+        return ("", rest);
     };
     let (host, path) = after
         .find('/')
         .map_or((after, ""), |slash| after.split_at(slash));
-    if !host.is_empty() && !host.eq_ignore_ascii_case("localhost") {
+    if host.eq_ignore_ascii_case("localhost") {
+        ("", path)
+    } else {
+        (host, path)
+    }
+}
+
+/// A POSIX path names no host, so the host must be empty, and the percent-decoded path is the file's path.
+fn posix_file_path(host: &str, path: &str) -> Result<String, String> {
+    if !host.is_empty() {
         return Err(format!(
             "File URL host must be \"localhost\" or empty on this platform: {host}"
         ));
@@ -100,14 +122,37 @@ fn file_url_path(url: &str) -> Result<String, String> {
     if path.is_empty() {
         return Err("File URL path must be absolute".to_owned());
     }
-    decode_path(path)
-}
-
-fn decode_path(path: &str) -> Result<String, String> {
-    let path = path.split(['?', '#']).next().unwrap_or("");
     if path.contains("%2F") || path.contains("%2f") {
         return Err("File URL path must not include encoded / characters".to_owned());
     }
+    percent_decode(path)
+}
+
+/// A Windows path: with a host, the UNC path `\\host\path`; without one, the path must start with a drive letter
+/// (`/C:/...` gives `C:\...`). Every `/` becomes `\`, so an encoded `/` or `\` is refused as ambiguous.
+fn windows_file_path(host: &str, path: &str) -> Result<String, String> {
+    let lower = path.to_ascii_lowercase();
+    if lower.contains("%2f") || lower.contains("%5c") {
+        return Err("File URL path must not include encoded \\ or / characters".to_owned());
+    }
+    let path = percent_decode(&path.replace('/', "\\"))?;
+    if !host.is_empty() {
+        return Ok(format!("\\\\{host}{path}"));
+    }
+    let local = path.strip_prefix('\\').unwrap_or(&path);
+    let mut characters = local.chars();
+    if characters
+        .next()
+        .is_some_and(|letter| letter.is_ascii_alphabetic())
+        && characters.next() == Some(':')
+    {
+        Ok(local.to_owned())
+    } else {
+        Err("File URL path must be absolute".to_owned())
+    }
+}
+
+fn percent_decode(path: &str) -> Result<String, String> {
     percent_decode_str(path)
         .decode_utf8()
         .map(|decoded| decoded.into_owned())
@@ -189,4 +234,89 @@ fn fetch_text(url: &str, limits: ReadLimits) -> Result<String, String> {
             other => other.to_string(),
         })?;
     String::from_utf8(bytes).map_err(|error| format!("the response is not UTF-8 ({error})"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn absolute() -> Result<String, String> {
+        Err("File URL path must be absolute".to_owned())
+    }
+
+    #[test]
+    fn a_file_url_splits_into_host_and_path_without_query_or_fragment() {
+        assert_eq!(
+            file_url_parts("file:///tmp/a.json?x#y"),
+            ("", "/tmp/a.json")
+        );
+        assert_eq!(
+            file_url_parts("file://LOCALHOST/tmp/a.json"),
+            ("", "/tmp/a.json")
+        );
+        assert_eq!(
+            file_url_parts("file://server/share/a.json"),
+            ("server", "/share/a.json")
+        );
+        assert_eq!(file_url_parts("file:/tmp/a.json"), ("", "/tmp/a.json"));
+    }
+
+    // Each expectation is what Node's `fileURLToPath` returns or throws for the same URL on Linux or macOS.
+    #[test]
+    fn a_posix_path_is_the_decoded_url_path_with_no_host() {
+        let posix = |url| {
+            let (host, path) = file_url_parts(url);
+            posix_file_path(host, path)
+        };
+        assert_eq!(
+            posix("file:///tmp/a%20b.json"),
+            Ok("/tmp/a b.json".to_owned())
+        );
+        assert_eq!(
+            posix("file://localhost/tmp/a.json"),
+            Ok("/tmp/a.json".to_owned())
+        );
+        assert_eq!(
+            posix("file://example.test/x.json"),
+            Err(
+                "File URL host must be \"localhost\" or empty on this platform: example.test"
+                    .to_owned()
+            )
+        );
+        assert_eq!(
+            posix("file:///tmp/a%2Fb.json"),
+            Err("File URL path must not include encoded / characters".to_owned())
+        );
+    }
+
+    // Each expectation is what Node's `fileURLToPath` returns or throws for the same URL on Windows.
+    #[test]
+    fn a_windows_path_needs_a_drive_letter_or_names_a_unc_share() {
+        let windows = |url| {
+            let (host, path) = file_url_parts(url);
+            windows_file_path(host, path)
+        };
+        assert_eq!(
+            windows("file:///C:/Users/a%20b/cw.json"),
+            Ok("C:\\Users\\a b\\cw.json".to_owned())
+        );
+        assert_eq!(
+            windows("file://localhost/d:/x.json"),
+            Ok("d:\\x.json".to_owned())
+        );
+        assert_eq!(
+            windows("file://server/share/x.json"),
+            Ok("\\\\server\\share\\x.json".to_owned())
+        );
+        assert_eq!(windows("file:///tmp/x.json"), absolute());
+        assert_eq!(windows("file:///1:/x.json"), absolute());
+        assert_eq!(
+            windows("file:///C:/a%5Cb.json"),
+            Err("File URL path must not include encoded \\ or / characters".to_owned())
+        );
+        assert_eq!(
+            windows("file:///C:/a%2fb.json"),
+            Err("File URL path must not include encoded \\ or / characters".to_owned())
+        );
+    }
 }
