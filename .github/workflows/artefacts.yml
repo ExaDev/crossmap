@@ -49,8 +49,11 @@ jobs:
           node-version: '24'
       - name: Test the packed tarball on Node 24
         run: npm --prefix packages/crossmap run test
+      # npm pack writes into --pack-destination but does not create it.
       - name: Pack the tarball the publish job uploads
-        run: npm pack --pack-destination "$RUNNER_TEMP/npm" ./packages/crossmap
+        run: |
+          mkdir -p "$RUNNER_TEMP/npm"
+          npm pack --pack-destination "$RUNNER_TEMP/npm" ./packages/crossmap
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ inputs.artifact-prefix }}npm
