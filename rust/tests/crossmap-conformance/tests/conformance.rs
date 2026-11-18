@@ -21,6 +21,7 @@ use crossmap::{
     rule_sides, stringify, validate_crosswalk,
 };
 use crossmap_cli::{CliIo, ReadLimits, is_url, read_source};
+use percent_encoding::{AsciiSet, CONTROLS, utf8_percent_encode};
 
 /// The implementation this runner executes, which decides the skip list it honours.
 const IMPLEMENTATION: &str = "rust";
@@ -796,6 +797,32 @@ fn crossmap_display(value: &Value) -> String {
 // ---------------------------------------------------------------------------------------------------------------------
 // Command-line cases.
 
+/// The characters Node's `pathToFileURL` percent-encodes in a path: the controls, `%`, and the URL standard's path
+/// percent-encode set.
+const FILE_URL_PATH: &AsciiSet = &CONTROLS
+    .add(b' ')
+    .add(b'"')
+    .add(b'#')
+    .add(b'%')
+    .add(b'<')
+    .add(b'>')
+    .add(b'?')
+    .add(b'`')
+    .add(b'{')
+    .add(b'}');
+
+/// A directory's `file:` URL as Node's `pathToFileURL` writes it: `file:///C:/...` for a Windows path, whose
+/// backslashes become slashes, and `file:///...` for a POSIX one.
+fn file_url(dir: &Path) -> String {
+    let text = dir.to_string_lossy();
+    let path = if cfg!(windows) {
+        format!("/{}", text.replace('\\', "/"))
+    } else {
+        text.into_owned()
+    };
+    format!("file://{}", utf8_percent_encode(&path, FILE_URL_PATH))
+}
+
 fn substitute(text: &str, replacements: &[(&str, &str)]) -> String {
     replacements
         .iter()
@@ -960,11 +987,13 @@ fn run_cli_case(entry: &Value, expect: &Value, dir: &Path) -> Result<Vec<String>
         None => None,
     };
     let dir_text = dir.to_string_lossy().into_owned();
+    let dir_url = file_url(dir);
     let origin = server
         .as_ref()
         .map_or_else(String::new, |server| server.origin.clone());
     let replacements = [
         ("dir", dir_text.as_str()),
+        ("dirUrl", dir_url.as_str()),
         ("origin", origin.as_str()),
         ("version", crossmap_cli::VERSION),
     ];

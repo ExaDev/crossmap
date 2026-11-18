@@ -176,7 +176,7 @@ async function cliCase(entry) {
   const dir = mkdtempSync(join(tmpdir(), "crossmap-conformance-"));
   const started = entry.server === undefined ? undefined : await listen(entry.server);
   try {
-    const replacements = { dir, version, origin: started?.origin ?? "" };
+    const replacements = { dir, dirUrl: pathToFileURL(dir).href, version, origin: started?.origin ?? "" };
     for (const [name, content] of Object.entries(entry.files ?? {})) {
       const path = join(dir, name);
       mkdirSync(dirname(path), { recursive: true });

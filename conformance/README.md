@@ -47,7 +47,7 @@ Numbers are written as JSON writes them and read as `JSON.parse` reads them (IEE
 | `is-url` | `argument` | whether the command reads it as a URL |
 | `schema-*` | `schemas/crossmap.schema.json` (built by the TypeScript runner, committed for the Rust one) | its canonical form, its trilean reference, a JSON pointer's value, whether a rule requires `to`, and whether a document validates |
 
-A `cli` case runs the command with `files` written into a fresh directory, `stdin` as standard input and `server` (response status, body and headers by request path) as a local HTTP server. These placeholders are replaced in `args` and in expected text: `{dir}` the directory, `{origin}` the server's origin, `{version}` the package version. In `schema-*` cases `{trileanVersion}` and `{packageVersion}` are replaced the same way. The TypeScript runner calls `run` from `cli/run.ts` in process; another implementation runs its binary.
+A `cli` case runs the command with `files` written into a fresh directory, `stdin` as standard input and `server` (response status, body and headers by request path) as a local HTTP server. These placeholders are replaced in `args` and in expected text: `{dir}` the directory, `{dirUrl}` its `file:` URL (as Node's `pathToFileURL` writes it, so `file:///C:/...` on Windows), `{origin}` the server's origin, `{version}` the package version. In `schema-*` cases `{trileanVersion}` and `{packageVersion}` are replaced the same way. The TypeScript runner calls `run` from `cli/run.ts` in process; another implementation runs its binary.
 
 ## Areas
 
