@@ -1,5 +1,6 @@
-# This is a single-package repo, not a real pnpm workspace: packages is deliberately empty. The file exists to carry pnpm settings.
-packages: []
+# The root holds the TypeScript implementation and the repository's tooling; packages/crossmap is the npm package built from the Rust workspace's wasm binding, a member so its own development dependencies (the package checks) install with the root's under the settings below.
+packages:
+  - "packages/*"
 # Every dependency add or update writes an exact version, never a range: a floating range lets a routine `pnpm install` silently resolve to a version nobody has reviewed.
 saveExact: true
 
