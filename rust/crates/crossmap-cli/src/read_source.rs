@@ -7,8 +7,7 @@ use std::time::Duration;
 use base64::Engine as _;
 use percent_encoding::percent_decode_str;
 
-/// The argument that stands for standard input.
-pub const STDIN: &str = "-";
+use crate::argument::{STDIN, SUPPORTED_SCHEMES, scheme_of};
 
 /// How long one remote read may take, from sending the request to the last byte of the body. A command has no one
 /// watching a progress indicator, so a server that accepts the connection and then stalls would otherwise hang it for
@@ -23,9 +22,6 @@ const BYTES_PER_MIB: u64 = 1024 * 1024;
 /// grow the process until it is killed. A crosswalk is a few kilobytes and a document or sample set is data a person
 /// chose to apply it to, so the bound sits well above any plausible input.
 pub const MAX_RESPONSE_BYTES: u64 = 64 * BYTES_PER_MIB;
-
-/// The URL schemes the command reads, in the order the error for any other scheme lists them.
-const SUPPORTED_SCHEMES: [&str; 4] = ["http", "https", "data", "file"];
 
 /// The bounds on a remote read.
 #[derive(Clone, Copy, Debug)]
@@ -43,27 +39,6 @@ impl Default for ReadLimits {
             max_bytes: MAX_RESPONSE_BYTES,
         }
     }
-}
-
-/// Whether an argument names a URL: it starts with a scheme of two or more characters (a letter, then letters,
-/// digits, `+`, `-` or `.`, as RFC 3986 allows) and a colon. Two characters at least, so a Windows drive path such as
-/// `C:\x.json` stays a path; the character set admits `s3:` and `git+ssh:`, which are reported as unsupported rather
-/// than read as file names.
-pub fn is_url(argument: &str) -> bool {
-    scheme_of(argument).is_some()
-}
-
-fn scheme_of(argument: &str) -> Option<&str> {
-    let colon = argument.find(':')?;
-    let scheme = &argument[..colon];
-    let mut characters = scheme.chars();
-    let first = characters.next()?;
-    let valid = first.is_ascii_alphabetic()
-        && scheme.len() >= 2
-        && characters.all(|character| {
-            character.is_ascii_alphanumeric() || matches!(character, '+' | '.' | '-')
-        });
-    valid.then_some(scheme)
 }
 
 /// Reads the text an argument names. `http:` and `https:` are fetched, following redirects, within `limits`;
