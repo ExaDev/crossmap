@@ -29,6 +29,7 @@ allow = [
     { crate = "crossmap", reason = "The codec." },
     { crate = "crossmap-cli", reason = "The crossmap command." },
     { crate = "crossmap-conformance", reason = "Runs the conformance corpus against the codec and the command." },
+    { crate = "xtask", reason = "Writes the generated files the repository commits." },
     { crate = "trilean", reason = "The predicate trees `when` is written in, their reading and their three-valued evaluator." },
     { crate = "trilean-regex", reason = "The regular expressions trilean's text comparisons evaluate." },
     { crate = "json-shape", reason = "The ordered JSON value documents are read as, written as JavaScript writes it, and the reading of trilean's trees." },
