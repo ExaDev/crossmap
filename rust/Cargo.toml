@@ -28,6 +28,8 @@ proptest = { version = "1", default-features = false, features = ["std"] }
 ureq = { version = "3", default-features = false, features = ["rustls"] }
 base64 = "0.23"
 percent-encoding = "2"
+# Test only: the JSON Schema 2020-12 validator the conformance runner checks documents against the published schema with. Without its default features, which fetch remote references over HTTP and read them from files; the runner registers trilean's schema itself.
+jsonschema = { version = "0.61", default-features = false }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
