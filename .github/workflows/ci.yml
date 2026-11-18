@@ -162,8 +162,8 @@ jobs:
   required-checks:
     name: Required Checks
     needs: [determine-runner, commitlint, rust, cargo-deny, artefacts, actionlint, zizmor]
-    # Always runs, even if a dependency failed, so it reports that failure itself rather than being skipped: a required check that is silently absent blocks a PR indefinitely instead of failing it visibly.
-    if: always()
+    # Runs even if a dependency failed, so it reports that failure itself rather than being skipped: a required check that is silently absent blocks a PR indefinitely instead of failing it visibly. Not `always()`, which also runs it in a run the concurrency group has cancelled: that job then waits for a runner while the cancelled run holds the group, and every newer run of the branch stays pending behind it.
+    if: ${{ !cancelled() }}
     runs-on: ${{ fromJson(needs.determine-runner.outputs.selected-runner) }}
     timeout-minutes: 5
     steps:
