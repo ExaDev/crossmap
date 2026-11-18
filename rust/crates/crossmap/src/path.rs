@@ -232,7 +232,8 @@ pub struct Reading<'a> {
 }
 
 /// What a walk calls for each location it reaches: the trail (valid until the next call) and the value there.
-pub(crate) type Visit<'v, 'a> = dyn FnMut(&[TrailStep], &'a Value) -> Result<(), CrossmapError> + 'v;
+pub(crate) type Visit<'v, 'a> =
+    dyn FnMut(&[TrailStep], &'a Value) -> Result<(), CrossmapError> + 'v;
 
 /// A per-element admission test: once the first `arity` wildcards are bound, an element is kept only when `admit`
 /// returns true for its indexes at those wildcards, and nothing below a refused element is read.
