@@ -32,6 +32,15 @@ A result comes back as fresh plain arrays and objects, its keys in the order the
 
 `parseCrosswalk` returns the parsed crosswalk as a plain object. `encode`, `decode` and `compileCrosswalk` prepare a crosswalk once per object and keep the prepared form for it, so a crosswalk object changed after it has been used keeps the behaviour it was first compiled with; parse a new one instead.
 
+## Breaking changes from the TypeScript package
+
+Versions up to 0.11.1 were the TypeScript implementation. This package keeps its functions, error classes and schema export, with these differences:
+
+- **The Zod schemas are no longer exported.** `CrosswalkSchema`, `FormatKindSchema` and `AggregateFunctionSchema` are gone, and the package depends on neither `zod` nor `trilean`. Parse and check a crosswalk with `parseCrosswalk`, which throws `CrosswalkSyntaxError` with every issue, or validate one with any JSON Schema 2020-12 validator against `crossmap/schemas/crossmap.schema.json`, which is unchanged.
+- **The `When` type is a predicate object, not trilean's `PredicateNode` type.** The predicate grammar is still trilean's and `parseCrosswalk` still checks it, but the declarations no longer import trilean's types.
+- **A value that is not JSON is a `TypeError` at the boundary**, naming where it is, where the final JSON check used to raise a Zod error (see below).
+- **Results are fresh values.** A record or array that a `move` carries whole used to be the input's own object, shared by the output; it is now a copy, so changing either one in place no longer changes the other.
+
 ## Command line
 
 The package installs a `crossmap` command:
