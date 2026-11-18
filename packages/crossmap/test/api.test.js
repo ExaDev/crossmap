@@ -51,7 +51,7 @@ describe("the error classes", () => {
     }
   });
 
-  it("build their messages as the TypeScript classes did", () => {
+  it("build their messages from their fields", () => {
     assert.equal(new RuleApplicationError(2, "a.b", "absent").message, "rule 2 (a.b): absent");
     assert.equal(new RuleApplicationError(-1, "a[0]", "no rule wrote it").message, "a[0]: no rule wrote it");
     assert.equal(new RoundTripMismatchError(1, "x", "differs").message, "sample 1 (x): differs");
