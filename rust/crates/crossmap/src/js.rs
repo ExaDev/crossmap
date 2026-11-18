@@ -162,6 +162,28 @@ fn write_value(text: &mut String, value: &Value, indent: Option<&str>, current: 
     }
 }
 
+/// The JSON Canonicalization Scheme form of a value (RFC 8785, <https://www.rfc-editor.org/rfc/rfc8785>): compact, every
+/// record's keys sorted by their UTF-16 code units, strings escaped and numbers written as `JSON.stringify` writes them,
+/// which is what the scheme prescribes for both.
+pub fn canonical_json(value: &Value) -> String {
+    match value {
+        Value::Array(items) => {
+            let parts: Vec<String> = items.iter().map(canonical_json).collect();
+            format!("[{}]", parts.join(","))
+        }
+        Value::Object(pairs) => {
+            let mut sorted: Vec<&(String, Value)> = pairs.iter().collect();
+            sorted.sort_by(|left, right| compare_code_units(&left.0, &right.0));
+            let parts: Vec<String> = sorted
+                .into_iter()
+                .map(|(key, member)| format!("{}:{}", quote(key), canonical_json(member)))
+                .collect();
+            format!("{{{}}}", parts.join(","))
+        }
+        scalar => stringify(scalar),
+    }
+}
+
 /// The text `String(value)` gives for a JSON scalar, and for a record or array the text a mismatch message shows.
 pub(crate) fn to_display_string(value: &Value) -> String {
     match value {

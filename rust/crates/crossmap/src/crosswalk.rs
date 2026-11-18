@@ -52,7 +52,8 @@ pub enum FormatKind {
 }
 
 impl FormatKind {
-    const ALL: [FormatKind; 5] = [
+    /// Every kind, in the order the format lists them.
+    pub(crate) const ALL: [FormatKind; 5] = [
         FormatKind::IsoDateTime,
         FormatKind::IsoDate,
         FormatKind::NumberText,
@@ -86,7 +87,8 @@ pub enum AggregateFunction {
 }
 
 impl AggregateFunction {
-    const ALL: [AggregateFunction; 4] = [
+    /// Every function, in the order the format lists them.
+    pub(crate) const ALL: [AggregateFunction; 4] = [
         AggregateFunction::Count,
         AggregateFunction::Sum,
         AggregateFunction::Min,
@@ -102,6 +104,180 @@ impl AggregateFunction {
             AggregateFunction::Max => "max",
         }
     }
+}
+
+/// A field a rule may carry. Which fields each operation takes is [`TWO_WAY_SHAPES`]' and [`ONE_WAY_SHAPES`]'s, which
+/// the parser refuses any other field by and the JSON Schema lists the properties of each rule from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Field {
+    Op,
+    From,
+    To,
+    When,
+    Factor,
+    Map,
+    MapBack,
+    Kind,
+    Separator,
+    Template,
+    Direction,
+    Value,
+    Fn,
+}
+
+impl Field {
+    /// The field's key in a rule.
+    pub(crate) fn name(self) -> &'static str {
+        match self {
+            Field::Op => "op",
+            Field::From => "from",
+            Field::To => "to",
+            Field::When => "when",
+            Field::Factor => "factor",
+            Field::Map => "map",
+            Field::MapBack => "mapBack",
+            Field::Kind => "kind",
+            Field::Separator => "separator",
+            Field::Template => "template",
+            Field::Direction => "direction",
+            Field::Value => "value",
+            Field::Fn => "fn",
+        }
+    }
+}
+
+/// The fields of one operation's rule and which of them a rule may leave out.
+pub(crate) struct RuleShape {
+    /// The operation's name, the value of `op`.
+    pub(crate) op: &'static str,
+    /// Every field the rule may carry, in the order the format lists them.
+    pub(crate) fields: &'static [Field],
+    /// The fields of `fields` a rule may leave out: the gate, and `to` where parsing fills it in from `from`.
+    pub(crate) optional: &'static [Field],
+    /// The directions a one-way rule may run in; empty for a two-way rule.
+    pub(crate) directions: &'static [Direction],
+}
+
+impl RuleShape {
+    /// The names of the fields the rule may carry.
+    pub(crate) fn field_names(&self) -> Vec<&'static str> {
+        self.fields.iter().map(|field| field.name()).collect()
+    }
+}
+
+/// The two-way operations, in the order the format lists them.
+pub(crate) const TWO_WAY_SHAPES: [RuleShape; 7] = [
+    RuleShape {
+        op: "move",
+        fields: &[Field::Op, Field::From, Field::To, Field::When],
+        optional: &[Field::To, Field::When],
+        directions: &[],
+    },
+    RuleShape {
+        op: "scale",
+        fields: &[
+            Field::Op,
+            Field::From,
+            Field::To,
+            Field::Factor,
+            Field::When,
+        ],
+        optional: &[Field::To, Field::When],
+        directions: &[],
+    },
+    RuleShape {
+        op: "enum",
+        fields: &[
+            Field::Op,
+            Field::From,
+            Field::To,
+            Field::Map,
+            Field::MapBack,
+            Field::When,
+        ],
+        optional: &[Field::To, Field::When],
+        directions: &[],
+    },
+    RuleShape {
+        op: "format",
+        fields: &[Field::Op, Field::From, Field::To, Field::Kind, Field::When],
+        optional: &[Field::To, Field::When],
+        directions: &[],
+    },
+    RuleShape {
+        op: "split",
+        fields: &[
+            Field::Op,
+            Field::From,
+            Field::To,
+            Field::Separator,
+            Field::When,
+        ],
+        optional: &[Field::To, Field::When],
+        directions: &[],
+    },
+    RuleShape {
+        op: "template",
+        fields: &[
+            Field::Op,
+            Field::From,
+            Field::To,
+            Field::Template,
+            Field::When,
+        ],
+        optional: &[Field::When],
+        directions: &[],
+    },
+    RuleShape {
+        op: "copy",
+        fields: &[Field::Op, Field::From, Field::To, Field::When],
+        optional: &[Field::When],
+        directions: &[],
+    },
+];
+
+/// The one-way operations, in the order the format lists them.
+pub(crate) const ONE_WAY_SHAPES: [RuleShape; 3] = [
+    RuleShape {
+        op: "drop",
+        fields: &[Field::Op, Field::From, Field::Direction, Field::When],
+        optional: &[Field::When],
+        directions: &[Direction::Encode],
+    },
+    RuleShape {
+        op: "default",
+        fields: &[
+            Field::Op,
+            Field::To,
+            Field::Value,
+            Field::Direction,
+            Field::When,
+        ],
+        optional: &[Field::When],
+        directions: &[Direction::Encode, Direction::Decode],
+    },
+    RuleShape {
+        op: "aggregate",
+        fields: &[
+            Field::Op,
+            Field::Fn,
+            Field::From,
+            Field::To,
+            Field::Direction,
+            Field::When,
+        ],
+        optional: &[Field::When],
+        directions: &[Direction::Encode, Direction::Decode],
+    },
+];
+
+/// The fields of a crosswalk document, in the order the format lists them.
+pub(crate) const CROSSWALK_FIELDS: [&str; 6] =
+    ["$schema", "source", "target", "rules", "keep", "oneWay"];
+
+/// The shape of the operation named `op` among `shapes`.
+fn shape_of<'s>(shapes: &'s [RuleShape], op: Option<&str>) -> Option<&'s RuleShape> {
+    shapes.iter().find(|shape| Some(shape.op) == op)
 }
 
 /// The paths and gate of a rule with one path on each side.
@@ -676,21 +852,12 @@ impl Reader {
         let pairs = self.object(at, value)?;
         let get = |key: &str| member(pairs, key);
         let op = get("op").and_then(Value::as_str);
-        let known: &[&str] = match op {
-            Some("move") => &["op", "from", "to", "when"],
-            Some("scale") => &["op", "from", "to", "factor", "when"],
-            Some("enum") => &["op", "from", "to", "map", "mapBack", "when"],
-            Some("format") => &["op", "from", "to", "kind", "when"],
-            Some("split") => &["op", "from", "to", "separator", "when"],
-            Some("template") => &["op", "from", "to", "template", "when"],
-            Some("copy") => &["op", "from", "to", "when"],
-            _ => {
-                self.issue(
-                    &at.key("op"),
-                    "Invalid input: expected one of \"move\"|\"scale\"|\"enum\"|\"format\"|\"split\"|\"template\"|\"copy\"",
-                );
-                return None;
-            }
+        let Some(shape) = shape_of(&TWO_WAY_SHAPES, op) else {
+            self.issue(
+                &at.key("op"),
+                "Invalid input: expected one of \"move\"|\"scale\"|\"enum\"|\"format\"|\"split\"|\"template\"|\"copy\"",
+            );
+            return None;
         };
         let before = self.issues.len();
         let rule = match op {
@@ -699,7 +866,7 @@ impl Reader {
             Some(single_op) => self.single(at, single_op, pairs),
             None => None,
         };
-        self.strict(at, pairs, known);
+        self.strict(at, pairs, &shape.field_names());
         rule.filter(|_| self.issues.len() == before)
     }
 
@@ -924,19 +1091,25 @@ impl Reader {
         let pairs = self.object(at, value)?;
         let get = |key: &str| member(pairs, key);
         let before = self.issues.len();
-        let (rule, known): (Option<OneWayRule>, &[&str]) = match get("op").and_then(Value::as_str) {
-            Some("drop") => {
+        let Some(shape) = shape_of(&ONE_WAY_SHAPES, get("op").and_then(Value::as_str)) else {
+            self.issue(
+                &at.key("op"),
+                "Invalid input: expected one of \"drop\"|\"default\"|\"aggregate\"",
+            );
+            return None;
+        };
+        let rule = match shape.op {
+            "drop" => {
                 let from = self.path(&at.key("from"), get("from"));
                 let direction =
-                    self.direction(&at.key("direction"), get("direction"), &[Direction::Encode]);
+                    self.direction(&at.key("direction"), get("direction"), shape.directions);
                 let when = self.when(&at.key("when"), get("when"));
-                let rule = match (from, direction, when) {
+                match (from, direction, when) {
                     (Some(from), Some(_), Some(when)) => Some(OneWayRule::Drop { from, when }),
                     _ => None,
-                };
-                (rule, &["op", "from", "direction", "when"])
+                }
             }
-            Some("default") => {
+            "default" => {
                 let to = self.path(&at.key("to"), get("to"));
                 let value = match get("value") {
                     Some(value) => Some(without_prototype_keys(value)),
@@ -948,13 +1121,10 @@ impl Reader {
                         None
                     }
                 };
-                let direction = self.direction(
-                    &at.key("direction"),
-                    get("direction"),
-                    &[Direction::Encode, Direction::Decode],
-                );
+                let direction =
+                    self.direction(&at.key("direction"), get("direction"), shape.directions);
                 let when = self.when(&at.key("when"), get("when"));
-                let rule = match (to, value, direction, when) {
+                match (to, value, direction, when) {
                     (Some(to), Some(value), Some(direction), Some(when)) => {
                         Some(OneWayRule::Default {
                             to,
@@ -964,10 +1134,9 @@ impl Reader {
                         })
                     }
                     _ => None,
-                };
-                (rule, &["op", "to", "value", "direction", "when"])
+                }
             }
-            Some("aggregate") => {
+            "aggregate" => {
                 let function = AggregateFunction::ALL
                     .into_iter()
                     .find(|function| get("fn").and_then(Value::as_str) == Some(function.name()));
@@ -979,13 +1148,10 @@ impl Reader {
                 }
                 let from = self.path(&at.key("from"), get("from"));
                 let to = self.path(&at.key("to"), get("to"));
-                let direction = self.direction(
-                    &at.key("direction"),
-                    get("direction"),
-                    &[Direction::Encode, Direction::Decode],
-                );
+                let direction =
+                    self.direction(&at.key("direction"), get("direction"), shape.directions);
                 let when = self.when(&at.key("when"), get("when"));
-                let rule = match (function, from, to, direction, when) {
+                match (function, from, to, direction, when) {
                     (Some(function), Some(from), Some(to), Some(direction), Some(when)) => {
                         Some(OneWayRule::Aggregate {
                             function,
@@ -996,18 +1162,11 @@ impl Reader {
                         })
                     }
                     _ => None,
-                };
-                (rule, &["op", "fn", "from", "to", "direction", "when"])
+                }
             }
-            _ => {
-                self.issue(
-                    &at.key("op"),
-                    "Invalid input: expected one of \"drop\"|\"default\"|\"aggregate\"",
-                );
-                return None;
-            }
+            _ => None,
         };
-        self.strict(at, pairs, known);
+        self.strict(at, pairs, &shape.field_names());
         rule.filter(|_| self.issues.len() == before)
     }
 }
@@ -1103,11 +1262,7 @@ pub fn parse_crosswalk(document: &Value) -> Result<Crosswalk, CrossmapError> {
         }
         Some(other) => reader.expected(&root.key("oneWay"), "array", Some(other)),
     }
-    reader.strict(
-        &root,
-        pairs,
-        &["$schema", "source", "target", "rules", "keep", "oneWay"],
-    );
+    reader.strict(&root, pairs, &CROSSWALK_FIELDS);
     match (source, target) {
         (Some(source), Some(target)) if reader.issues.is_empty() => Ok(Crosswalk {
             schema,

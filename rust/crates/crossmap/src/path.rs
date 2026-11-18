@@ -32,7 +32,7 @@ pub enum TrailStep {
 }
 
 /// The most digits an index may have: every number of up to nine digits is a valid JavaScript array index.
-const MAX_INDEX_DIGITS: usize = 9;
+pub(crate) const MAX_INDEX_DIGITS: usize = 9;
 
 /// The key no path may name.
 pub(crate) const PROTO: &str = "__proto__";
