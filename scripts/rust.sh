@@ -6,6 +6,7 @@
 #   clippy                  lints over every crate and target, warnings denied
 #   test                    the tests of every crate, the conformance runner and the schema checks among them
 #   conformance             the conformance corpus alone: fails unless every case of the manifest executes and passes, none skipped
+#   bench                   encode and decode against hand-written copies of the same fields, optimised: prints each one's ratio to its copy in this run on this machine
 #   deny                    cargo-deny's advisories, bans, licences and sources
 #   schema-check            fails when schemas/crossmap.schema.json is not what the crate generates
 #   published-dependencies  fails, naming them, while a published crate's path dependency outside the workspace is not on crates.io at its required version
@@ -40,6 +41,7 @@ case "$task" in
     # The runner already fails on a failing case, a corpus problem or a case it did not run; this also refuses a case the corpus marks to skip for Rust.
     printf '%s\n' "$summary" | grep -q ' executed, 0 skipped as marked, 0 failed, 0 corpus problems$' || { echo "conformance: not every case executed" >&2; exit 1; }
     ;;
+  bench) cargo bench --locked --package crossmap --bench encode ;;
   deny) cargo deny --locked check ;;
   schema-check) cargo run --locked --package xtask -- schema --check ;;
   published-dependencies)
@@ -75,7 +77,7 @@ case "$task" in
     fi
     ;;
   *)
-    echo "usage: rust.sh fmt|clippy|test|conformance|deny|schema-check|published-dependencies|publish-dry-run|publish|packaged-schema|xtask|install-wasm-bindgen [arguments]" >&2
+    echo "usage: rust.sh fmt|clippy|test|conformance|bench|deny|schema-check|published-dependencies|publish-dry-run|publish|packaged-schema|xtask|install-wasm-bindgen [arguments]" >&2
     exit 2
     ;;
 esac

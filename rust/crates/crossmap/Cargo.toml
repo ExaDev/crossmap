@@ -20,5 +20,11 @@ trilean.workspace = true
 [dev-dependencies]
 proptest.workspace = true
 
+# Measures encode and decode against hand-written copies of the same fields: `sh scripts/rust.sh bench`. A plain main
+# rather than libtest's bench harness, which is unstable.
+[[bench]]
+name = "encode"
+harness = false
+
 [lints]
 workspace = true
