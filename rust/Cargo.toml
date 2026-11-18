@@ -22,9 +22,9 @@ crossmap = { path = "crates/crossmap", version = "=0.11.1" }
 # Without its native reader, which only the binary and the conformance runner turn on: the wasm binding uses the
 # command's pure steps and leaves the reading to its host.
 crossmap-cli = { path = "crates/crossmap-cli", version = "=0.11.1", default-features = false }
-# trilean's predicate trees, their reading and their three-valued evaluator, and the ordered JSON value they are read from, published as trilean-eval and trilean-json-shape and imported under their old names. STOPGAP until both are on crates.io: `path` points at the trilean worktree of ExaDev/trilean pull request 192, which publishes them, and CI checks that commit out there (.github/actions/setup-rust). The commit that takes them from crates.io deletes the two `path` keys and that checkout, and nothing else; `version` is the one crates.io resolves already.
-json-shape = { package = "trilean-json-shape", version = "2.0.3", path = "../../../trilean-worktrees/rust-crates-publish/rust/crates/trilean-json-shape" }
-trilean = { package = "trilean-eval", version = "2.0.3", path = "../../../trilean-worktrees/rust-crates-publish/rust/crates/trilean-eval" }
+# trilean's predicate trees, their reading and their three-valued evaluator, and the ordered JSON value they are read from, published as trilean-eval and trilean-json-shape and imported under their old names. STOPGAP until both are on crates.io: `path` points at a checkout of trilean's trilean@3.0.0 release commit, the one those crates are published from, and CI checks that commit out there (.github/actions/setup-rust). The commit that takes them from crates.io deletes the two `path` keys and that checkout, and nothing else; `version` is the one crates.io resolves already.
+json-shape = { package = "trilean-json-shape", version = "3.0.0", path = "../../../trilean-worktrees/trilean-3.0.0/rust/crates/trilean-json-shape" }
+trilean = { package = "trilean-eval", version = "3.0.0", path = "../../../trilean-worktrees/trilean-3.0.0/rust/crates/trilean-eval" }
 # `float_roundtrip` makes a number literal read as the nearest double, as `JSON.parse` reads it. `raw_value` lets the ordered value's `Serialize` write a number as the text `JSON.stringify` writes. Both as trilean's workspace sets them.
 serde_json = { version = "1", features = ["float_roundtrip", "raw_value"] }
 serde = "1"
