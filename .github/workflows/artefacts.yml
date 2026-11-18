@@ -1,0 +1,254 @@
+name: Artefacts
+
+# Builds and tests the three published artefacts from one commit: the npm package (from the wasm binding), the Python wheels and sdist (from the PyO3 binding, with maturin) and the crates, then runs every registry's publish dry run over them and checks that they carry one version and one schema. ci.yml calls this twice: on every pull request and push against the commit under test, which is the pre-merge check, and on a release against the tagged release commit, whose artefacts the publish jobs in ci.yml then upload. Nothing here holds a publish credential.
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "The commit to build, which is the commit under test or the release tag."
+        required: true
+        type: string
+      artifact-prefix:
+        description: Prepended to every uploaded artifact's name, so the two calls in one run do not collide.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  # The npm package built from the wasm binding, tested as a consumer installs it: test-packed.js packs it, checks the tarball holds exactly the published files, installs it into an empty project and runs the API, command and conformance suites there, on every Node line the package supports. publint and attw check the manifest and the types, and tsc the declarations.
+  npm:
+    name: npm package
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+        with:
+          wasm-bindgen: 'true'
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build the package from the wasm binding
+        run: pnpm --dir packages/crossmap run build
+      - name: Check the manifest and the types
+        run: pnpm --dir packages/crossmap run check:package
+      - name: Typecheck the declarations
+        run: pnpm exec tsc -p tsconfig.wasm.json
+      - name: Test the packed tarball on Node 22
+        run: pnpm --dir packages/crossmap run test
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Test the packed tarball on Node 24
+        run: npm --prefix packages/crossmap run test
+      - name: Pack the tarball the publish job uploads
+        run: npm pack --pack-destination "$RUNNER_TEMP/npm" ./packages/crossmap
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.artifact-prefix }}npm
+          path: ${{ runner.temp }}/npm/*.tgz
+          if-no-files-found: error
+
+  # One abi3 wheel per platform, each built by maturin against CPython 3.11's stable ABI. Linux wheels are built in the manylinux and musllinux containers maturin-action runs, so they link only what those policies allow. Every wheel is installed into a fresh environment on a runner that can load it and tested from there: the full pytest suite where the runner's Python matches the wheel, and in an Alpine container for the musllinux wheels.
+  wheels:
+    name: Wheel (${{ matrix.name }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: manylinux x86_64, runner: ubuntu-latest, target: x86_64-unknown-linux-gnu, manylinux: '2_28', test: pytest }
+          - { name: manylinux aarch64, runner: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu, manylinux: '2_28', test: pytest }
+          - { name: musllinux x86_64, runner: ubuntu-latest, target: x86_64-unknown-linux-musl, manylinux: musllinux_1_2, test: alpine }
+          - { name: musllinux aarch64, runner: ubuntu-24.04-arm, target: aarch64-unknown-linux-musl, manylinux: musllinux_1_2, test: alpine }
+          - { name: macOS arm64, runner: macos-latest, target: aarch64-apple-darwin, manylinux: '', test: pytest }
+          - { name: macOS x86_64, runner: macos-15-intel, target: x86_64-apple-darwin, manylinux: '', test: pytest }
+          - { name: Windows x64, runner: windows-latest, target: x86_64-pc-windows-msvc, manylinux: '', test: pytest }
+          - { name: Windows arm64, runner: windows-11-arm, target: aarch64-pc-windows-msvc, manylinux: '', test: pytest }
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      # The oldest CPython the wheel supports: an abi3 wheel built against it installs on every later one, and the tests run on it.
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.11'
+      - id: rust
+        uses: ./.github/actions/setup-rust
+      - name: Build the wheel
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+        with:
+          maturin-version: v1.16.0
+          working-directory: rust/bindings/crossmap-py
+          target: ${{ matrix.target }}
+          manylinux: ${{ matrix.manylinux }}
+          # STOPGAP, with the trilean checkout in setup-rust: the container sees trilean's unreleased crates at the path rust/Cargo.toml names. Removed in the commit that takes them from crates.io.
+          docker-options: -v ${{ steps.rust.outputs.trilean-checkout }}:${{ steps.rust.outputs.trilean-checkout }}
+          args: --release --locked --out dist
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.artifact-prefix }}wheel-${{ matrix.target }}
+          path: rust/bindings/crossmap-py/dist/*.whl
+          if-no-files-found: error
+      # The test tools come from a hashed requirements file generated from pyproject.toml's test group, and the wheel is installed apart from them, so nothing resolves at install time.
+      - name: Install the wheel and the test tools into a fresh environment
+        id: venv
+        if: matrix.test == 'pytest'
+        working-directory: rust/bindings/crossmap-py
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          case "$RUNNER_OS" in
+            Windows) venv_python="$RUNNER_TEMP/venv/Scripts/python.exe" ;;
+            *) venv_python="$RUNNER_TEMP/venv/bin/python" ;;
+          esac
+          "$venv_python" -m pip install --quiet --require-hashes --only-binary :all: -r tests/requirements.txt
+          "$venv_python" -m pip install --quiet --no-deps --no-index dist/*.whl
+          echo "python=$venv_python" >> "$GITHUB_OUTPUT"
+      - name: Run the suite against the installed wheel
+        if: matrix.test == 'pytest'
+        working-directory: rust/bindings/crossmap-py
+        env:
+          VENV_PYTHON: ${{ steps.venv.outputs.python }}
+        run: '"$VENV_PYTHON" -m pytest'
+      # The type stubs and sources checked by the tools the package's pyproject.toml configures, once, on the runner every other check also uses.
+      - name: Lint and typecheck the Python sources
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        working-directory: rust/bindings/crossmap-py
+        env:
+          VENV_PYTHON: ${{ steps.venv.outputs.python }}
+        run: |
+          "$VENV_PYTHON" -m ruff check .
+          "$VENV_PYTHON" -m ruff format --check .
+          "$VENV_PYTHON" -m mypy python tests
+      # A musllinux wheel loads only against musl, so it is installed and tested in Alpine's Python image, pinned by digest, with the checkout mounted for the corpus the suite reads. The container is run directly rather than as the job's container, because GitHub's JavaScript actions do not run in an Alpine container.
+      - name: Run the suite against the wheel installed in Alpine
+        if: matrix.test == 'alpine'
+        env:
+          # python:3.13-alpine, a multi-platform index, so the runner's own architecture is pulled.
+          IMAGE: python:3.13-alpine@sha256:9ef1a599f863231c3d91e941389bfdc4a2d6070557243d54df1a4e57015b960e
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work/rust/bindings/crossmap-py "$IMAGE" sh -euc '
+            python -m venv /tmp/venv
+            /tmp/venv/bin/python -m pip install --quiet --require-hashes --only-binary :all: -r tests/requirements.txt
+            /tmp/venv/bin/python -m pip install --quiet --no-deps --no-index dist/*.whl
+            /tmp/venv/bin/python -m pytest
+          '
+
+  # The source distribution, which carries the binding crate and the workspace crates it needs, proven by building a wheel from it with nothing but the sdist and importing that wheel.
+  sdist:
+    name: Python sdist
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.11'
+      - uses: ./.github/actions/setup-rust
+      - name: Build the sdist
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+        with:
+          maturin-version: v1.16.0
+          working-directory: rust/bindings/crossmap-py
+          command: sdist
+          args: --out dist
+      - name: Build a wheel from the sdist alone and import it
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/python" -m pip install --quiet --require-hashes --only-binary :all: -r rust/bindings/crossmap-py/tests/build-requirements.txt
+          "$RUNNER_TEMP/venv/bin/python" -m pip wheel --quiet --no-deps --no-build-isolation --wheel-dir "$RUNNER_TEMP/from-sdist" rust/bindings/crossmap-py/dist/*.tar.gz
+          "$RUNNER_TEMP/venv/bin/python" -m pip install --quiet --no-deps --no-index "$RUNNER_TEMP"/from-sdist/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/venv/bin/python" -c 'import crosswalk_codec; print(crosswalk_codec.__version__)'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.artifact-prefix }}sdist
+          path: rust/bindings/crossmap-py/dist/*.tar.gz
+          if-no-files-found: error
+
+  # Every registry's own pre-publish check over exactly what would be uploaded, with no credential: `cargo publish --dry-run` packages the crates and builds each from its package, `twine check --strict` reads the wheels' and the sdist's metadata as PyPI would, and `npm publish --dry-run` packs and checks the tarball. The crate packages and the schema the packaged crate generates are kept for the verify job.
+  publish-dry-run:
+    name: Publish dry run
+    needs: [npm, wheels, sdist]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-rust
+      - name: Package and verify the crates without uploading
+        run: sh scripts/rust.sh publish-dry-run
+      # The schema as the packaged crate generates it, built from the .crate file alone in an empty directory, so it is the published crate's and not the workspace's.
+      - name: Generate the schema from the packaged crate
+        run: sh scripts/rust.sh packaged-schema > "$RUNNER_TEMP/crate.schema.json"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.artifact-prefix }}crates
+          path: |
+            rust/target/package/*.crate
+            ${{ runner.temp }}/crate.schema.json
+          if-no-files-found: error
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: ${{ inputs.artifact-prefix }}{wheel-*,sdist}
+          path: ${{ runner.temp }}/python
+          merge-multiple: true
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: 0.12.19
+          enable-cache: false
+      - name: Check the wheels and the sdist as PyPI reads them
+        run: uvx twine@7.0.0 check --strict "$RUNNER_TEMP"/python/*
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ inputs.artifact-prefix }}npm
+          path: ${{ runner.temp }}/npm
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      # Pinned, as in the publish job: the dry run is the same npm the release publishes with.
+      - name: Install the npm the publish job uses
+        run: npm install -g npm@11.20.0 # zizmor: ignore[adhoc-packages]
+      # Provenance needs the OIDC token only the publish job holds, so the dry run leaves it out; everything else npm checks before uploading runs.
+      - name: Check the tarball as npm publishes it
+        run: npm publish --dry-run --provenance=false "$RUNNER_TEMP"/npm/*.tgz
+
+  # The three artefacts carry one version, the one the repository's manifests hold at this commit, and one schema: the crate's generated schema, the schema the wheel returns and the schema file in the npm tarball are byte for byte the repository's schemas/crossmap.schema.json.
+  verify:
+    name: Verify versions and schema
+    needs: [publish-dry-run]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: ${{ inputs.artifact-prefix }}*
+          path: ${{ runner.temp }}/artefacts
+          merge-multiple: true
+      - name: Check every artefact's version and schema
+        run: python3 -I scripts/verify-artefacts.py "$RUNNER_TEMP/artefacts"
