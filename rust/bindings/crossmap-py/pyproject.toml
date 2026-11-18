@@ -1,0 +1,80 @@
+[build-system]
+requires = ["maturin>=1.16,<2"]
+build-backend = "maturin"
+
+[project]
+name = "crosswalk-codec"
+description = "Bidirectional crosswalk codec: one rule document derives both encode and decode between two JSON shapes"
+readme = "README.md"
+# The oldest CPython still supported upstream; the wheel is built against its stable ABI (abi3), so it also installs on every later CPython.
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "ExaDev" }]
+keywords = ["codec", "crosswalk", "json", "transform"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Rust",
+  "Topic :: Software Development :: Libraries",
+  "Typing :: Typed",
+]
+# The version is the Rust workspace's, so the wheel, the crate and the npm package carry one version.
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/ExaDev/crossmap"
+Repository = "https://github.com/ExaDev/crossmap"
+Issues = "https://github.com/ExaDev/crossmap/issues"
+Changelog = "https://github.com/ExaDev/crossmap/blob/main/CHANGELOG.md"
+
+[project.scripts]
+crossmap = "crosswalk_codec._command:main"
+
+[dependency-groups]
+test = ["pytest>=9", "mypy>=1.19", "ruff>=0.14"]
+
+[tool.maturin]
+python-source = "python"
+module-name = "crosswalk_codec._native"
+manifest-path = "Cargo.toml"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The test helpers import as `tests.*`; the package itself comes only from the installed wheel, since its source sits
+# under `python/`, which is not on the path.
+pythonpath = ["."]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--import-mode=importlib", "-p", "no:cacheprovider"]
+xfail_strict = true
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  # Prose is never hard-wrapped, so a docstring or comment is one line per paragraph; the formatter keeps code short.
+  "E501",
+  # The project's documentation states what a function returns as a noun phrase, as the Rust and TypeScript sources do.
+  "D401",
+  # The licence is the repository's LICENSE file, not a header in every file.
+  "CPY001",
+  # The formatter owns these.
+  "COM812",
+  "ISC001",
+  # Conflict with D211 and D212, which are kept.
+  "D203",
+  "D213",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests are named for what they check, and the corpus runner mirrors the Rust runner's branching case by case.
+"tests/**" = ["D", "S101", "S603", "PLR2004", "C901", "PLR0911"]
