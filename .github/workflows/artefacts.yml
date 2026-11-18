@@ -41,7 +41,7 @@ jobs:
       - name: Check the manifest and the types
         run: pnpm --dir packages/crossmap run check:package
       - name: Typecheck the declarations
-        run: pnpm exec tsc -p tsconfig.wasm.json
+        run: pnpm --dir packages/crossmap run check:types
       - name: Test the packed tarball on Node 22
         run: pnpm --dir packages/crossmap run test
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

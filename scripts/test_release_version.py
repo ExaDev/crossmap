@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def copy_repository(into: Path) -> None:
     """Copies the script and every file it reads into `into`, at the same relative paths."""
-    files = ["scripts/release-version.py", "rust/Cargo.toml", "rust/Cargo.lock", "schemas/crossmap.schema.json", "package.json", "packages/crossmap/package.json"]
+    files = ["scripts/release-version.py", "rust/Cargo.toml", "rust/Cargo.lock", "schemas/crossmap.schema.json", "packages/crossmap/package.json"]
     files.extend(f"rust/{member}/Cargo.toml" for member in tomllib.loads((ROOT / "rust" / "Cargo.toml").read_text())["workspace"]["members"])
     for file in files:
         (into / file).parent.mkdir(parents=True, exist_ok=True)

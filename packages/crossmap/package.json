@@ -7,7 +7,8 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",
-    "publint": "0.3.25"
+    "publint": "0.3.25",
+    "typescript": "6.0.3"
   },
   "engines": {
     "node": ">=22"
@@ -51,6 +52,7 @@
   "scripts": {
     "build": "sh ../../scripts/rust.sh xtask npm crossmap",
     "check:package": "publint && attw --pack --profile esm-only",
+    "check:types": "tsc -p tsconfig.json",
     "test": "node scripts/test-packed.js"
   },
   "type": "module",
