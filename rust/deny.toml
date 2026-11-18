@@ -1,0 +1,103 @@
+# The allowlist the cargo-deny check enforces, after trilean's: a crate not listed under [bans] allow fails the check, so adding a dependency is a reviewed change to this file with the reason it is needed. The workspace's own crates are listed too, since cargo-deny applies the allowlist to every crate in the graph.
+
+[graph]
+all-features = true
+
+[advisories]
+# A published advisory against any crate in the graph fails the check. There is no ignore list: an advisory is fixed by updating or replacing the crate, or recorded here with its id and a reason.
+ignore = []
+
+[licenses]
+# Only permissive licences, so nothing in the graph restricts how the crates are redistributed. A licence that no crate in the graph uses fails the check, so this list is the set in use.
+unused-allowed-license = "deny"
+allow = [
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "CDLA-Permissive-2.0",
+    "ISC",
+    "MIT",
+    "Unicode-3.0",
+]
+
+[bans]
+multiple-versions = "deny"
+wildcards = "deny"
+# A workspace crate depends on a sibling by path, which the wildcard check would otherwise reject.
+allow-wildcard-paths = true
+
+allow = [
+    { crate = "crossmap", reason = "The codec." },
+    { crate = "crossmap-cli", reason = "The crossmap command." },
+    { crate = "crossmap-conformance", reason = "Runs the conformance corpus against the codec and the command." },
+    { crate = "trilean", reason = "The predicate trees `when` is written in, their reading and their three-valued evaluator." },
+    { crate = "trilean-regex", reason = "The regular expressions trilean's text comparisons evaluate." },
+    { crate = "json-shape", reason = "The ordered JSON value documents are read as, written as JavaScript writes it, and the reading of trilean's trees." },
+    { crate = "json-shape-derive", reason = "The derive json-shape and trilean are written with." },
+    { crate = "serde", reason = "The traits JSON is read and written through." },
+    { crate = "serde_core", reason = "The serialisation traits serde_json is written against." },
+    { crate = "serde_derive", reason = "serde's derive, which a dependency enables." },
+    { crate = "serde_json", reason = "Reads and writes JSON text." },
+    { crate = "itoa", reason = "serde_json formats integers with it." },
+    { crate = "memchr", reason = "serde_json scans strings with it." },
+    { crate = "zmij", reason = "serde_json formats floating point numbers with it." },
+    { crate = "syn", reason = "Parses the types json-shape-derive and the serde and thiserror derives expand." },
+    { crate = "quote", reason = "Writes the code the derives generate." },
+    { crate = "proc-macro2", reason = "The token types syn and quote are written against." },
+    { crate = "unicode-ident", reason = "proc-macro2 tells identifiers from other text with it." },
+    { crate = "thiserror", reason = "Derives the error type's Display and Error." },
+    { crate = "thiserror-impl", reason = "thiserror's derive." },
+    { crate = "ureq", reason = "The command's HTTP client for http and https arguments: blocking, no async runtime." },
+    { crate = "ureq-proto", reason = "The HTTP/1.1 protocol ureq speaks." },
+    { crate = "http", reason = "The request and response types ureq is written with." },
+    { crate = "httparse", reason = "Parses HTTP responses for ureq-proto." },
+    { crate = "bytes", reason = "http's byte buffers." },
+    { crate = "base64", reason = "Decodes base64 data: URLs, and ureq encodes credentials with it." },
+    { crate = "percent-encoding", reason = "Decodes data: and file: URLs." },
+    { crate = "utf8-zero", reason = "ureq decodes text with it." },
+    { crate = "log", reason = "ureq's and rustls's logging facade, inert without a logger." },
+    { crate = "rustls", reason = "TLS for https arguments, in Rust." },
+    { crate = "rustls-pki-types", reason = "The certificate and key types of rustls." },
+    { crate = "rustls-webpki", reason = "Verifies server certificates for rustls." },
+    { crate = "webpki-roots", reason = "The Mozilla root certificates https arguments are verified against, built in so the command needs no system store." },
+    { crate = "ring", reason = "The cryptography rustls's default provider is." },
+    { crate = "untrusted", reason = "ring and webpki parse untrusted input with it." },
+    { crate = "subtle", reason = "Constant-time comparison for rustls." },
+    { crate = "zeroize", reason = "Clears secrets from memory for rustls." },
+    { crate = "once_cell", reason = "Lazy statics in rustls." },
+    { crate = "getrandom", reason = "Randomness from the operating system, for ring and for proptest's seeding." },
+    { crate = "cfg-if", reason = "Code chosen by target in getrandom and ring." },
+    { crate = "libc", reason = "The system calls getrandom makes on Unix." },
+    { crate = "cc", reason = "Builds ring's C and assembly." },
+    { crate = "shlex", reason = "cc splits compiler flags with it." },
+    { crate = "find-msvc-tools", reason = "cc finds the compiler on Windows with it." },
+    { crate = "proptest", reason = "Test only: the property tests." },
+    { crate = "rand", reason = "Test only: proptest's random generation." },
+    { crate = "rand_core", reason = "Test only: the generator traits rand is written against." },
+    { crate = "rand_xorshift", reason = "Test only: proptest's default generator." },
+    { crate = "chacha20", reason = "Test only: the seeded generator the property tests run from." },
+    { crate = "cpufeatures", reason = "Test only: chacha20 chooses its implementation by CPU with it." },
+    { crate = "core_detect", reason = "Test only: CPU feature detection for chacha20." },
+    { crate = "num-traits", reason = "Test only: proptest's numeric strategies." },
+    { crate = "autocfg", reason = "Test only: num-traits's build script chooses what to compile by compiler version with it." },
+    { crate = "bitflags", reason = "Test only: proptest's configuration flags." },
+    { crate = "unarray", reason = "Test only: proptest builds arrays of strategies with it." },
+    { crate = "regex-syntax", reason = "Test only: proptest generates strings from regular expressions with it." },
+    { crate = "r-efi", reason = "getrandom on UEFI targets." },
+    { crate = "wasi", reason = "getrandom on WASI targets." },
+    { crate = "windows-sys", reason = "getrandom and ring on Windows." },
+    { crate = "windows-targets", reason = "The import libraries windows-sys links with." },
+    { crate = "windows_aarch64_gnullvm", reason = "windows-targets for that target." },
+    { crate = "windows_aarch64_msvc", reason = "windows-targets for that target." },
+    { crate = "windows_i686_gnu", reason = "windows-targets for that target." },
+    { crate = "windows_i686_gnullvm", reason = "windows-targets for that target." },
+    { crate = "windows_i686_msvc", reason = "windows-targets for that target." },
+    { crate = "windows_x86_64_gnu", reason = "windows-targets for that target." },
+    { crate = "windows_x86_64_gnullvm", reason = "windows-targets for that target." },
+    { crate = "windows_x86_64_msvc", reason = "windows-targets for that target." },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
