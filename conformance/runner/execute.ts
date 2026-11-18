@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { createServer, type Server } from "node:http";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import canonicalize from "canonicalize";
 import { z } from "zod";
@@ -209,7 +210,7 @@ async function cliCase(entry: CliCase): Promise<string[]> {
   const dir = mkdtempSync(join(tmpdir(), "crossmap-conformance-"));
   const started = entry.server === undefined ? undefined : await listen(entry.server);
   try {
-    return await runCliCase(entry, { dir, version: versionOf("package.json"), origin: started?.origin ?? "" });
+    return await runCliCase(entry, { dir, dirUrl: pathToFileURL(dir).href, version: versionOf("package.json"), origin: started?.origin ?? "" });
   } finally {
     started?.server.closeAllConnections();
     await new Promise<void>((resolve) => {

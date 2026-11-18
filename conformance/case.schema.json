@@ -965,7 +965,7 @@
                 "additionalProperties": {
                   "type": "string"
                 },
-                "description": "Files written into a fresh directory, named by `{dir}` in args and expectations.",
+                "description": "Files written into a fresh directory, named by `{dir}` (its path) and `{dirUrl}` (its `file:` URL) in args and expectations.",
                 "type": "object"
               },
               "from": {

@@ -160,6 +160,7 @@ dependencies = [
  "crossmap",
  "crossmap-cli",
  "jsonschema",
+ "percent-encoding",
  "serde_json",
 ]
 

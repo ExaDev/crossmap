@@ -328,7 +328,12 @@ def run_cli(case: Case, tmp_path: Path) -> list[str]:
         threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         origin = f"http://127.0.0.1:{server.server_address[1]}" if server is not None else ""
-        replacements = {"{dir}": str(tmp_path), "{origin}": origin, "{version}": crosswalk_codec.__version__}
+        replacements = {
+            "{dir}": str(tmp_path),
+            "{dirUrl}": tmp_path.as_uri(),
+            "{origin}": origin,
+            "{version}": crosswalk_codec.__version__,
+        }
 
         def substitute(text: str) -> str:
             for name, value in replacements.items():
