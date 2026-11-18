@@ -185,10 +185,9 @@ jobs:
           path: rust/bindings/crossmap-py/dist/*.tar.gz
           if-no-files-found: error
 
-  # Every registry's own pre-publish check over exactly what would be uploaded, with no credential: `cargo publish --dry-run` packages the crates and builds each from its package, `twine check --strict` reads the wheels' and the sdist's metadata as PyPI would, and `npm publish --dry-run` packs and checks the tarball. The crate packages and the schema the packaged crate generates are kept for the verify job.
-  publish-dry-run:
-    name: Publish dry run
-    needs: [npm, wheels, sdist]
+  # crates.io's own pre-publish check, with no credential: `cargo publish --dry-run` packages the crates and builds each from its package alone. The crates are packaged from source rather than from the other jobs' output, so this needs none of them. It first requires every path dependency outside the workspace to be on crates.io, because cargo packages one as a crates.io dependency: while one is not, the job fails naming it, and once it is, the same job runs the whole check with no change.
+  crates:
+    name: Crates publish dry run
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -197,19 +196,24 @@ jobs:
           ref: ${{ inputs.ref }}
           persist-credentials: false
       - uses: ./.github/actions/setup-rust
+      - name: Require every path dependency of the crates on crates.io
+        run: sh scripts/rust.sh published-dependencies
       - name: Package and verify the crates without uploading
         run: sh scripts/rust.sh publish-dry-run
-      # The schema as the packaged crate generates it, built from the .crate file alone in an empty directory, so it is the published crate's and not the workspace's.
-      # Written beside the .crate files, so the artifact has one root and its files land side by side when downloaded.
+      # The schema as the packaged crate generates it, built from the .crate file alone in an empty directory, so it is the published crate's and not the workspace's. Written beside the .crate files, which the next step reads together.
       - name: Generate the schema from the packaged crate
         run: sh scripts/rust.sh packaged-schema > rust/target/package/crate.schema.json
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: ${{ inputs.artifact-prefix }}crates
-          path: |
-            rust/target/package/*.crate
-            rust/target/package/crate.schema.json
-          if-no-files-found: error
+      # The crates against the version and schema the verify job checks the other artefacts against, so all three carry one of each.
+      - name: Check the crates' version and schema
+        run: python3 -I scripts/verify-artefacts.py rust/target/package crates
+
+  # PyPI's and npm's own pre-publish checks over exactly what would be uploaded, with no credential: `twine check --strict` reads the wheels' and the sdist's metadata as PyPI would, and `npm publish --dry-run` packs and checks the tarball.
+  publish-dry-run:
+    name: Publish dry run (PyPI and npm)
+    needs: [npm, wheels, sdist]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: ${{ inputs.artifact-prefix }}{wheel-*,sdist}
@@ -247,7 +251,7 @@ jobs:
             npm publish --dry-run --provenance=false "$tarball"
           fi
 
-  # The three artefacts carry one version, the one the repository's manifests hold at this commit, and one schema: the crate's generated schema, the schema the wheel returns and the schema file in the npm tarball are byte for byte the repository's schemas/crossmap.schema.json.
+  # The wheels, the sdist and the npm tarball carry one version, the one the repository's manifests hold at this commit, and one schema: the schema the wheel returns and the schema file in the npm tarball are byte for byte the repository's schemas/crossmap.schema.json. The crates job checks the crates against the same two, so all three artefacts agree.
   verify:
     name: Verify versions and schema
     needs: [publish-dry-run]
@@ -263,8 +267,8 @@ jobs:
           python-version: '3.11'
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: ${{ inputs.artifact-prefix }}*
+          pattern: ${{ inputs.artifact-prefix }}{wheel-*,sdist,npm}
           path: ${{ runner.temp }}/artefacts
           merge-multiple: true
-      - name: Check every artefact's version and schema
-        run: python3 -I scripts/verify-artefacts.py "$RUNNER_TEMP/artefacts"
+      - name: Check the Python and npm artefacts' version and schema
+        run: python3 -I scripts/verify-artefacts.py "$RUNNER_TEMP/artefacts" python npm
