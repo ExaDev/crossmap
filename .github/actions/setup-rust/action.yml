@@ -25,10 +25,10 @@ runs:
       id: trilean
       shell: bash
       env:
-        # ExaDev/trilean pull request 192's head: the crates as they will be published.
-        TRILEAN_COMMIT: 77d0d6c385f8c6e5aa1f2cc9d0686d386fb9de4d
+        # The trilean@3.0.0 release commit, which trilean-eval and trilean-json-shape 3.0.0 are published from.
+        TRILEAN_COMMIT: 38f3f88615b20a469b7503274329b2572b4fbd2b
       run: |
-        trilean="$(dirname "$(dirname "$GITHUB_WORKSPACE")")/trilean-worktrees/rust-crates-publish"
+        trilean="$(dirname "$(dirname "$GITHUB_WORKSPACE")")/trilean-worktrees/trilean-3.0.0"
         rm -rf "$trilean"
         git init --quiet "$trilean"
         git -C "$trilean" fetch --quiet --depth 1 https://github.com/ExaDev/trilean.git "$TRILEAN_COMMIT"
