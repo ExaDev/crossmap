@@ -95,7 +95,7 @@ jobs:
     uses: ./.github/workflows/artefacts.yml
     with:
       ref: ${{ github.sha }}
-      artifact-prefix: ''
+      artifact-prefix: check-
 
   actionlint:
     name: Actionlint
