@@ -8,6 +8,7 @@
 #   conformance             the conformance corpus alone: fails unless every case of the manifest executes and passes, none skipped
 #   deny                    cargo-deny's advisories, bans, licences and sources
 #   schema-check            fails when schemas/crossmap.schema.json is not what the crate generates
+#   published-dependencies  fails, naming them, while a published crate's path dependency outside the workspace is not on crates.io at its required version
 #   publish-dry-run         packages the published crates (crossmap, crossmap-cli) together and builds each from its package, without uploading
 #   publish                 publishes them to crates.io, with the token in CARGO_REGISTRY_TOKEN
 #   packaged-schema         prints the schema the packaged crossmap crate generates, built from its .crate file alone (run publish-dry-run first)
@@ -25,7 +26,9 @@ task=${1:-}
 [ "$#" -eq 0 ] || shift
 
 # The crates published to crates.io, in dependency order. The bindings and the test and build crates are not published.
-published="--package crossmap --package crossmap-cli"
+crates="crossmap crossmap-cli"
+# shellcheck disable=SC2086 # $crates is a list of names.
+published=$(printf -- '--package %s ' $crates)
 
 case "$task" in
   fmt) cargo fmt --all --check ;;
@@ -39,10 +42,18 @@ case "$task" in
     ;;
   deny) cargo deny --locked check ;;
   schema-check) cargo run --locked --package xtask -- schema --check ;;
-  # shellcheck disable=SC2086 # $published is a list of arguments.
-  publish-dry-run) cargo publish --locked --dry-run $published ;;
-  # shellcheck disable=SC2086
-  publish) cargo publish --locked $published ;;
+  published-dependencies)
+    # shellcheck disable=SC2086 # $crates is a list of names.
+    cargo metadata --locked --no-deps --format-version 1 | python3 -I ../scripts/published-dependencies.py $crates
+    ;;
+  publish-dry-run)
+    # shellcheck disable=SC2086 # $published is a list of arguments.
+    cargo publish --locked --dry-run $published
+    ;;
+  publish)
+    # shellcheck disable=SC2086 # $published is a list of arguments.
+    cargo publish --locked $published
+    ;;
   packaged-schema)
     version=$(cargo metadata --locked --no-deps --format-version 1 | python3 -I -c 'import json, sys; print(next(p["version"] for p in json.load(sys.stdin)["packages"] if p["name"] == "crossmap"))')
     crate="$PWD/target/package/crossmap-$version.crate"
@@ -64,7 +75,7 @@ case "$task" in
     fi
     ;;
   *)
-    echo "usage: rust.sh fmt|clippy|test|conformance|deny|schema-check|publish-dry-run|publish|packaged-schema|xtask|install-wasm-bindgen [arguments]" >&2
+    echo "usage: rust.sh fmt|clippy|test|conformance|deny|schema-check|published-dependencies|publish-dry-run|publish|packaged-schema|xtask|install-wasm-bindgen [arguments]" >&2
     exit 2
     ;;
 esac
