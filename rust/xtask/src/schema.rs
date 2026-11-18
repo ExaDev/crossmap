@@ -85,14 +85,26 @@ mod tests {
     }
 
     #[test]
-    fn the_typescript_package_pins_the_same_trilean() {
-        let manifest: Value =
-            serde_json::from_str(&read(&repository().join("package.json"))).unwrap_or(Value::Null);
-        let pinned = manifest
-            .get("dependencies")
-            .and_then(|dependencies| dependencies.get("trilean"))
+    fn the_trilean_pin_is_the_one_the_pre_port_schema_names() {
+        let pre_port: Value = serde_json::from_str(&read(
+            &repository().join("rust/tests/fixtures/pre-port-crossmap.schema.json"),
+        ))
+        .unwrap_or(Value::Null);
+        let reference = pre_port
+            .get("$defs")
+            .and_then(|definitions| definitions.get("When"))
+            .and_then(|when| when.get("$ref"))
             .and_then(Value::as_str);
-        assert_eq!(pinned, Some(TRILEAN_VERSION));
+        assert_eq!(
+            reference,
+            Some(
+                format!(
+                    "https://cdn.jsdelivr.net/npm/trilean@{TRILEAN_VERSION}/schemas/trilean.schema.json#/$defs/PredicateNode"
+                )
+                .as_str()
+            ),
+            "TRILEAN_VERSION is not the trilean release the pre-port schema's `when` reference names"
+        );
     }
 
     #[test]
