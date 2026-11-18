@@ -3,8 +3,8 @@ import js from '@eslint/js';
 import exadev from '@exadev/eslint-config';
 
 export default defineConfig(
-  // schemas/ is generated build output (see scripts/generate-json-schema.ts), not source to lint.
-  { ignores: ['dist', 'dist-cli', 'coverage', 'node_modules', 'reports', 'schemas'] },
+  // schemas/ is generated build output (see scripts/generate-json-schema.ts), not source to lint. rust/ and packages/ hold the npm package built from the Rust workspace: plain JavaScript shipped as written and its plain-Node tests, which this configuration's type-aware rules for the TypeScript implementation cannot read. Their declarations are typechecked by tsconfig.wasm.json, and the package's tests run them from the packed tarball.
+  { ignores: ['dist', 'dist-cli', 'coverage', 'node_modules', 'reports', 'schemas', 'rust', 'packages'] },
   {
     languageOptions: {
       parserOptions: { project: ['./tsconfig.json', './tsconfig.node.json'], tsconfigRootDir: import.meta.dirname },
