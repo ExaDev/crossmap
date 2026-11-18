@@ -15,6 +15,9 @@ reports/
 # Cargo build output of the Rust workspace.
 rust/target/
 
+# The schema the npm package's build copies in from schemas/.
+packages/crossmap/schemas/
+
 # Python bytecode and tool caches of the Python binding.
 __pycache__/
 .mypy_cache/

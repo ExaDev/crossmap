@@ -1,0 +1,48 @@
+name: Set up Rust
+description: Installs the toolchain rust/rust-toolchain.toml pins (with the wasm target it lists), restores the cargo cache, optionally installs the wasm-bindgen command line tool at the version rust/Cargo.lock pins, and checks out trilean's unreleased crates where rust/Cargo.toml's path dependencies point. Every job that runs cargo uses it, so the toolchain and the tools are named in one place. Requires checkout before use.
+
+inputs:
+  wasm-bindgen:
+    description: Whether to install the wasm-bindgen command line tool, which only the npm package's build runs.
+    required: false
+    default: 'false'
+
+outputs:
+  trilean-checkout:
+    description: STOPGAP, removed with the trilean checkout below. The absolute path of trilean's checkout, for a container that must mount it.
+    value: ${{ steps.trilean.outputs.path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install the pinned toolchain
+      shell: bash
+      working-directory: rust
+      run: rustup toolchain install
+
+    # STOPGAP until trilean's crates are on crates.io (`cargo search trilean-eval` finds the crate): rust/Cargo.toml takes trilean-eval and trilean-json-shape by path from a trilean checkout beside this repository's parent directory, where a development machine keeps trilean's worktree, and cargo cannot build without it. This step checks out the trilean commit those crates are released from at that path. It goes, with the path in rust/Cargo.toml, in the one commit that takes them from crates.io instead.
+    - name: Check out trilean's unreleased crates where rust/Cargo.toml points
+      id: trilean
+      shell: bash
+      env:
+        # ExaDev/trilean pull request 192's head: the crates as they will be published.
+        TRILEAN_COMMIT: 77d0d6c385f8c6e5aa1f2cc9d0686d386fb9de4d
+      run: |
+        trilean="$(dirname "$(dirname "$GITHUB_WORKSPACE")")/trilean-worktrees/rust-crates-publish"
+        rm -rf "$trilean"
+        git init --quiet "$trilean"
+        git -C "$trilean" fetch --quiet --depth 1 https://github.com/ExaDev/trilean.git "$TRILEAN_COMMIT"
+        git -C "$trilean" checkout --quiet --detach FETCH_HEAD
+        # For maturin's manylinux and musllinux containers, which mount only the workspace unless told to mount this too.
+        echo "path=$trilean" >> "$GITHUB_OUTPUT"
+
+    # The cache holds the registry, the build output and the binaries cargo installs, so wasm-bindgen is installed once for a given lock file and found again afterwards.
+    - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      with:
+        workspaces: rust
+
+    # The command line tool and the wasm-bindgen library the glue is generated for must be the same version, so the version is read from the lock file, never written here.
+    - name: Install wasm-bindgen at the locked version
+      if: inputs.wasm-bindgen == 'true'
+      shell: bash
+      run: sh scripts/rust.sh install-wasm-bindgen

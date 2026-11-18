@@ -44,78 +44,58 @@ jobs:
         if: github.event_name != 'pull_request'
         run: pnpm exec commitlint --last
 
-  lint:
-    name: Lint
-    needs: determine-runner
-    runs-on: ${{ fromJson(needs.determine-runner.outputs.selected-runner) }}
-    timeout-minutes: 10
+  # The Rust workspace: formatting, clippy with warnings denied, every crate's tests (the schema's byte comparison with the pre-port file among them), the conformance corpus with every case executed, the committed schema against what the crate generates, and the one release version every manifest carries. The commands are scripts/rust.sh's, which a contributor runs the same way.
+  rust:
+    name: Rust
+    # GitHub-hosted, not the resolved runner, as every cargo job here and in artefacts.yml: the fleet's runner image has no rustup, and the wheels need macOS and Windows runners the fleet does not have.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: ./.github/actions/setup-rust
+      # The Python binding links against the interpreter it is built for, which clippy and the tests compile it for.
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          node-version: '22'
-          cache: pnpm
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: .eslintcache
-          # eslint.config.ts and pnpm-lock.yaml both invalidate the cache: a rule change or a dependency bump can change lint results even for files whose own content did not change. The run id makes every run save its own entry (an existing key is never overwritten, so a fixed key would freeze the first run's cache), and restore-keys picks up the latest. The lint scripts use `--cache-strategy content` because a fresh checkout gives every file a new mtime, which the default metadata strategy reads as a change.
-          key: eslintcache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.ts') }}-${{ github.run_id }}
-          restore-keys: |
-            eslintcache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.ts') }}-
-            eslintcache-${{ runner.os }}-
-      # turbo's local task cache, keyed per task. hashFiles(pnpm-lock.yaml, turbo.json) puts the dependency set and the task graph into the key, so either changing starts a fresh cache lineage; the run id makes every run save its own entry, and restore-keys picks up the latest one.
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: .turbo
-          key: turbo-lint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-${{ github.run_id }}
-          restore-keys: |
-            turbo-lint-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-
-            turbo-lint-${{ runner.os }}-
-      - run: pnpm install --frozen-lockfile
-      # The check-only script: `pnpm lint` fixes in place, so it would exit 0 on a fixable violation that never reaches the commit.
-      - run: pnpm lint:check
+          python-version: '3.11'
+      - name: Formatting
+        run: sh scripts/rust.sh fmt
+      - name: Clippy, warnings denied
+        run: sh scripts/rust.sh clippy
+      - name: Tests
+        run: sh scripts/rust.sh test
+      - name: Conformance corpus, every case executed
+        run: sh scripts/rust.sh conformance
+      - name: The committed schema is what the crate generates
+        run: sh scripts/rust.sh schema-check
+      - name: Every manifest carries the one release version
+        run: python3 -I scripts/release-version.py check
+      - name: Test the release version script
+        run: python3 -I scripts/test_release_version.py
 
-  typecheck:
-    name: Typecheck
-    needs: determine-runner
-    runs-on: ${{ fromJson(needs.determine-runner.outputs.selected-runner) }}
-    timeout-minutes: 10
+  # The dependency allowlist, licences, sources and advisories in rust/deny.toml. cargo-deny is pinned to an exact release, installed as a prebuilt binary.
+  cargo-deny:
+    name: cargo-deny
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: ./.github/actions/setup-rust
+      - uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
         with:
-          node-version: '22'
-          cache: pnpm
-      # turbo's local task cache, keyed per task. hashFiles(pnpm-lock.yaml, turbo.json) puts the dependency set and the task graph into the key, so either changing starts a fresh cache lineage; the run id makes every run save its own entry, and restore-keys picks up the latest one.
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: .turbo
-          key: turbo-typecheck-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-${{ github.run_id }}
-          restore-keys: |
-            turbo-typecheck-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-
-            turbo-typecheck-${{ runner.os }}-
-      # tsc's incremental state, at its default locations beside each config (tsconfig.node.json inherits `incremental` from tsconfig.json and writes its own file). tsc rechecks a file when its hash, the compiler version or the options changed, so a stale entry costs work and never correctness; the lockfile hash only starts a fresh lineage when the TypeScript version may have changed. The run id makes every run save its own entry, as above.
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            tsconfig.tsbuildinfo
-            tsconfig.node.tsbuildinfo
-          key: tsbuildinfo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.run_id }}
-          restore-keys: |
-            tsbuildinfo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
-            tsbuildinfo-${{ runner.os }}-
-      - run: pnpm install --frozen-lockfile
-      # No separate build step: turbo.json makes _typecheck and _test depend on _build (the schema generation script's program imports the built dist, and the JSON Schema suite reads the schema the build generates), so both run it first, or replay it from the cache, and publint and attw below find dist/ in place.
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm exec publint
-      - run: pnpm exec attw --pack --profile esm-only
+          tool: cargo-deny@0.20.2
+      - run: sh scripts/rust.sh deny
+
+  # The npm package, the wheels and sdist and the crates of the commit under test, built, tested from their installed artefacts, put through each registry's publish dry run and checked to carry one version and one schema (artefacts.yml).
+  artefacts:
+    name: Artefacts
+    uses: ./.github/workflows/artefacts.yml
+    with:
+      ref: ${{ github.sha }}
+      artifact-prefix: ''
 
   actionlint:
     name: Actionlint
@@ -179,114 +159,9 @@ jobs:
       - name: Audit every workflow and action
         run: uvx zizmor@1.30.1 --offline --config .github/zizmor.yml --no-progress .
 
-  # The packed tarball, not the source tree, is what consumers install: this proves the published files and exports map work in a clean project on every Node line the package supports. The toolchain needs Node 22, so the package is built and packed on 22 and the consumer check runs on the Node under test.
-  package:
-    name: Package (Node ${{ matrix.node }})
-    needs: determine-runner
-    runs-on: ${{ fromJson(needs.determine-runner.outputs.selected-runner) }}
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ['22', '24']
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '22'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm pack --pack-destination "$RUNNER_TEMP/pack"
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ matrix.node }}
-      - name: Create a scratch project
-        run: |
-          mkdir "$RUNNER_TEMP/scratch"
-          cd "$RUNNER_TEMP/scratch"
-          npm init -y
-      # A consumer's install of the packed tarball is what this job checks, so it has no lockfile by design. It is a step of its own so that zizmor's adhoc-packages audit can be ignored on this one line: zizmor reads an ignore comment only as a YAML comment, never inside a multi-line run script.
-      - name: Install the tarball into the scratch project
-        working-directory: ${{ runner.temp }}/scratch
-        run: npm install "$RUNNER_TEMP"/pack/*.tgz # zizmor: ignore[adhoc-packages]
-      - name: Round-trip a crosswalk through the installed package
-        working-directory: ${{ runner.temp }}/scratch
-        run: |
-          cat > check.mjs <<'EOF'
-          import assert from 'node:assert/strict';
-          import { readFile } from 'node:fs/promises';
-          import { join } from 'node:path';
-          import { assertRoundTrip, decode, encode, parseCrosswalk } from 'crossmap';
-
-          const crosswalk = parseCrosswalk(JSON.parse(await readFile('crosswalk.json', 'utf8')));
-          const native = JSON.parse(await readFile('sample.json', 'utf8'));
-          const shared = encode(crosswalk, native);
-          assert.deepEqual(shared, JSON.parse(await readFile('shared.json', 'utf8')));
-          // decode answers the native shape over the mapped paths; the encode-side drop's path is gone by design, so the expected document omits it too.
-          assert.deepEqual(decode(crosswalk, shared), JSON.parse(await readFile('decoded.json', 'utf8')));
-          assertRoundTrip(crosswalk, [native]);
-          const schema = JSON.parse(await readFile(join(import.meta.dirname, 'node_modules/crossmap/schemas/crossmap.schema.json'), 'utf8'));
-          assert.match(schema.$defs.When.$ref, /trilean@\d+\.\d+\.\d+\/schemas\/trilean\.schema\.json#\/\$defs\/PredicateNode/);
-          EOF
-          cat > crosswalk.json <<'EOF'
-          {
-            "source": "meridian-freight/consignment",
-            "target": "shared/consignment/v1",
-            "rules": [
-              { "op": "move", "from": "consignmentId", "to": "id" },
-              { "op": "scale", "from": "weightGrams", "to": "weightKilograms", "factor": 0.001 },
-              { "op": "enum", "from": "state", "to": "status", "map": { "inbound": "IN_TRANSIT" }, "mapBack": { "IN_TRANSIT": "inbound" } },
-              { "op": "split", "from": "route", "to": "routeLegs", "separator": ">" },
-              { "op": "move", "from": "parcels[].code", "to": "items[].sku" }
-            ],
-            "oneWay": [
-              { "op": "drop", "from": "internalNotes", "direction": "encode" },
-              { "op": "default", "to": "origin", "value": "meridian-freight", "direction": "encode" }
-            ]
-          }
-          EOF
-          cat > sample.json <<'EOF'
-          {
-            "consignmentId": "MF-2041",
-            "weightGrams": 1250000,
-            "state": "inbound",
-            "route": "Bangor>Holyhead>Dublin",
-            "parcels": [{ "code": "P-1" }],
-            "internalNotes": "caller is a fictional tenant"
-          }
-          EOF
-          cat > shared.json <<'EOF'
-          {
-            "id": "MF-2041",
-            "weightKilograms": 1250,
-            "status": "IN_TRANSIT",
-            "routeLegs": ["Bangor", "Holyhead", "Dublin"],
-            "items": [{ "sku": "P-1" }],
-            "origin": "meridian-freight"
-          }
-          EOF
-          cat > decoded.json <<'EOF'
-          {
-            "consignmentId": "MF-2041",
-            "weightGrams": 1250000,
-            "state": "inbound",
-            "route": "Bangor>Holyhead>Dublin",
-            "parcels": [{ "code": "P-1" }]
-          }
-          EOF
-          node check.mjs
-          # The installed `crossmap` command, resolved from the scratch project's node_modules/.bin the way `npx` does: it must validate the crosswalk and print the same shared document the library produced.
-          npx --no-install crossmap validate crosswalk.json
-          npx --no-install crossmap encode crosswalk.json sample.json > encoded.json
-          node -e "require('node:assert/strict').deepEqual(JSON.parse(require('node:fs').readFileSync('encoded.json', 'utf8')), JSON.parse(require('node:fs').readFileSync('shared.json', 'utf8')))"
-
   required-checks:
     name: Required Checks
-    needs: [determine-runner, commitlint, lint, typecheck, package, actionlint, zizmor, release]
+    needs: [determine-runner, commitlint, rust, cargo-deny, artefacts, actionlint, zizmor]
     # Always runs, even if a dependency failed, so it reports that failure itself rather than being skipped: a required check that is silently absent blocks a PR indefinitely instead of failing it visibly.
     if: always()
     runs-on: ${{ fromJson(needs.determine-runner.outputs.selected-runner) }}
@@ -305,7 +180,7 @@ jobs:
 
   release:
     name: Release
-    needs: [commitlint, lint, typecheck, package]
+    needs: [required-checks]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     # Deliberately a GitHub-hosted runner, not the resolved one: npm trusted publishing only works from GitHub-hosted runners, so the OIDC token exchange cannot happen on the self-hosted fleet.
     runs-on: ubuntu-latest
