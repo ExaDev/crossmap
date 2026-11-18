@@ -1,0 +1,17 @@
+{
+  "rules": [
+    {
+      "from": "consignmentId",
+      "op": "move",
+      "to": "id"
+    },
+    {
+      "factor": 0.001,
+      "from": "weightGrams",
+      "op": "scale",
+      "to": "weightKilograms"
+    }
+  ],
+  "source": "meridian-freight/consignment",
+  "target": "shared/consignment/v1"
+}
