@@ -14,6 +14,9 @@ mod argument;
 #[cfg(feature = "read")]
 pub mod read_source;
 
+#[cfg(feature = "read")]
+use std::io::Write as _;
+
 use crossmap::{
     CrossmapError, Value, assert_round_trip, decode, encode, parse_crosswalk, stringify_pretty,
     validate_crosswalk,
@@ -47,6 +50,32 @@ pub trait CliIo: Sync {
     fn write_stderr(&mut self, text: &str);
     /// The version to report.
     fn version(&self) -> &str;
+}
+
+/// The process's own standard streams and the real readers: what the `crossmap` executable runs with, and what any other
+/// host of the command (the Python package's console script) runs with.
+#[cfg(feature = "read")]
+pub struct StandardStreams;
+
+#[cfg(feature = "read")]
+impl CliIo for StandardStreams {
+    fn read_text(&self, source: &str) -> Result<String, String> {
+        read_source(source, ReadLimits::default())
+    }
+
+    fn write_stdout(&mut self, text: &str) {
+        // A reader that closes early (`| head -c 0`) makes the write fail with a broken pipe. The result was computed
+        // either way, so that failure is dropped and the exit status the command settled on stands.
+        let _ = std::io::stdout().lock().write_all(text.as_bytes());
+    }
+
+    fn write_stderr(&mut self, text: &str) {
+        let _ = std::io::stderr().lock().write_all(text.as_bytes());
+    }
+
+    fn version(&self) -> &str {
+        VERSION
+    }
 }
 
 /// The usage text.
