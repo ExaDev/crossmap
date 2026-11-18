@@ -1,6 +1,6 @@
 [package]
 name = "xtask"
-description = "Writes the files the Rust crates generate for the repository, and checks that the committed copies are current."
+description = "Writes the files the Rust crates generate for the repository, checks that the committed copies are current, and builds the npm package from the wasm binding crate."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

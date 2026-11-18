@@ -1,0 +1,21 @@
+[package]
+name = "crossmap-wasm"
+description = "The wasm binding of crossmap and of its command's pure steps, which the npm package `crossmap` is built from."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+crossmap.workspace = true
+crossmap-cli.workspace = true
+js-sys.workspace = true
+wasm-bindgen.workspace = true
+
+[lints]
+workspace = true
