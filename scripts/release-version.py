@@ -1,9 +1,11 @@
 """The one release version of the crate, the wheel and the npm package, read from and written to every file that carries it.
 
-The version is `[workspace.package] version` in rust/Cargo.toml. Every workspace crate inherits it, the wheel takes it from the Python binding's crate (pyproject.toml declares the version dynamic), and the npm manifests and the lock file repeat it, so they are written with it and checked against it. The schema's `$id` names it too; the schema is regenerated from the crate after a `set`, never edited here.
+The version is `[workspace.package] version` in rust/Cargo.toml. Every workspace crate inherits it, the wheel takes it from the Python binding's crate (pyproject.toml declares the version dynamic), and the npm manifest and the lock file repeat it, so they are written with it and checked against it. The schema's `$id` names it too; the schema is regenerated from the crate after a `set`, never edited here.
 
 Usage:
-  release-version.py get           prints the version, after checking every file agrees with it release-version.py check         the same check, printing nothing on success release-version.py set <version> writes the version into every file that carries it (rust/Cargo.toml, its sibling crate requirements, rust/Cargo.lock, the npm manifests); run `sh scripts/rust.sh xtask schema` afterwards to regenerate the schema whose `$id` names it
+  release-version.py get            prints the version, after checking every file agrees with it
+  release-version.py check          the same check, printing nothing on success
+  release-version.py set <version>  writes the version into every file that carries it (rust/Cargo.toml, its sibling crate requirements, rust/Cargo.lock, the npm manifest); run `sh scripts/rust.sh xtask schema` afterwards to regenerate the schema whose `$id` names it
 
 Exits 1, naming each file, when they disagree, and 2 for bad usage.
 """
@@ -20,8 +22,8 @@ ROOT = Path(__file__).resolve().parent.parent
 WORKSPACE_MANIFEST = ROOT / "rust" / "Cargo.toml"
 LOCK = ROOT / "rust" / "Cargo.lock"
 SCHEMA = ROOT / "schemas" / "crossmap.schema.json"
-# The npm manifests that carry the version: the published package's, and the repository root's, which semantic-release reads the last release from.
-NPM_MANIFESTS = (ROOT / "packages" / "crossmap" / "package.json", ROOT / "package.json")
+# The published npm package's manifest. The repository root's package.json holds only the release tooling and no version: semantic-release reads the last release from the tags.
+NPM_MANIFEST = ROOT / "packages" / "crossmap" / "package.json"
 
 # A semantic version as semantic-release writes one: no leading `v`, an optional pre-release and build part.
 VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
@@ -69,10 +71,9 @@ def disagreements(version: str) -> list[str]:
     if not requirements:
         problems.append(f"{WORKSPACE_MANIFEST.relative_to(ROOT)}: no sibling crate requirement found")
     problems.extend(f"{WORKSPACE_MANIFEST.relative_to(ROOT)}: requirement ={found} on a sibling crate" for _, found, _ in requirements if found != version)
-    for manifest in NPM_MANIFESTS:
-        found = json.loads(manifest.read_text())["version"]
-        if found != version:
-            problems.append(f"{manifest.relative_to(ROOT)}: version {found}")
+    found_npm = json.loads(NPM_MANIFEST.read_text())["version"]
+    if found_npm != version:
+        problems.append(f"{NPM_MANIFEST.relative_to(ROOT)}: version {found_npm}")
     for name, found in sorted(locked_member_versions().items()):
         if found != version:
             problems.append(f"{LOCK.relative_to(ROOT)}: {name} {found}")
@@ -85,7 +86,7 @@ def disagreements(version: str) -> list[str]:
 
 
 def set_version(version: str) -> None:
-    """Writes `version` into rust/Cargo.toml, rust/Cargo.lock and the npm manifests."""
+    """Writes `version` into rust/Cargo.toml, rust/Cargo.lock and the npm manifest."""
     manifest = WORKSPACE_MANIFEST.read_text()
     written, count = WORKSPACE_VERSION_LINE.subn(lambda match: f"{match.group(1)}{version}{match.group(3)}", manifest)
     if count != 1:
@@ -102,13 +103,12 @@ def set_version(version: str) -> None:
             entries[at] = re.sub(r'^version = "[^"]+"$', f'version = "{version}"', entry, count=1, flags=re.MULTILINE)
     LOCK.write_text("\n[[package]]\n".join(entries))
 
-    for path in NPM_MANIFESTS:
-        text = path.read_text()
-        written, count = re.subn(r'^(  "version": ")[^"]+(")', lambda match: f"{match.group(1)}{version}{match.group(2)}", text, count=1, flags=re.MULTILINE)
-        if count != 1:
-            message = f"{path}: no top-level version field"
-            raise ValueError(message)
-        path.write_text(written)
+    text = NPM_MANIFEST.read_text()
+    written, count = re.subn(r'^(  "version": ")[^"]+(")', lambda match: f"{match.group(1)}{version}{match.group(2)}", text, count=1, flags=re.MULTILINE)
+    if count != 1:
+        message = f"{NPM_MANIFEST}: no top-level version field"
+        raise ValueError(message)
+    NPM_MANIFEST.write_text(written)
 
 
 def main(arguments: list[str]) -> int:

@@ -1,10 +1,10 @@
-# The root holds the TypeScript implementation and the repository's tooling; packages/crossmap is the npm package built from the Rust workspace's wasm binding, a member so its own development dependencies (the package checks) install with the root's under the settings below.
+# The root holds the repository's release tooling; packages/crossmap is the npm package built from the Rust workspace's wasm binding, a member so its own development dependencies (the package checks) install with the root's under the settings below.
 packages:
   - "packages/*"
 # Every dependency add or update writes an exact version, never a range: a floating range lets a routine `pnpm install` silently resolve to a version nobody has reviewed.
 saveExact: true
 
-# ExaDev's own packages are exempt from the minimum release age: the gate guards against a compromised third-party maintainer, which does not apply to a package this organisation publishes itself. CI never reads the global pnpm config, so the exemption is stated here. trilean and its exact-pinned dependency trilean-regex are unscoped but ours, so both are named without the @ scope.
+# ExaDev's own packages are exempt from the minimum release age: the gate guards against a compromised third-party maintainer, which does not apply to a package this organisation publishes itself. CI never reads the global pnpm config, so the exemption is stated here, for every ExaDev package this repository's tooling may take in, so one added is exempt from the start. trilean and its exact-pinned dependency trilean-regex are unscoped but ours, so both are named without the @ scope.
 minimumReleaseAgeExclude:
   - "@exadev/eslint-config"
   - "trilean"
@@ -12,7 +12,3 @@ minimumReleaseAgeExclude:
 
 # Seven days, matching the global install policy on the development machines: CI never reads a global pnpm config, so the gate is stated here where every install sees it.
 minimumReleaseAge: 10080
-
-# Every dependency in the tree that ships an install script, and whether it may run. pnpm fails the install outright while any is neither allowed nor refused. esbuild (tsdown's bundler) needs its script: it is how the package fetches its own platform's binary, and tsdown does not run at all without it.
-allowBuilds:
-  esbuild: true
