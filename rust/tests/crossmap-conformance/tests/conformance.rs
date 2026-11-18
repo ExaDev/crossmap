@@ -9,29 +9,19 @@ use std::io::{BufRead as _, BufReader, Read as _, Write as _};
 use std::net::TcpListener;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::{Arc, OnceLock};
 
+use crossmap::schema::{PACKAGE_VERSION, TRILEAN_VERSION, trilean_schema_id};
 use crossmap::{
     CrossmapError, CrosswalkIssue, PathStep, SyntaxIssue, TrailStep, Value, assert_round_trip,
-    decode, encode, format_path, parse_crosswalk, parse_path, read_path, rule_sides, stringify,
-    validate_crosswalk,
+    canonical_json, decode, encode, format_path, parse_crosswalk, parse_path, read_path,
+    rule_sides, stringify, validate_crosswalk,
 };
 use crossmap_cli::{CliIo, ReadLimits, is_url, read_source};
 
 /// The implementation this runner executes, which decides the skip list it honours.
 const IMPLEMENTATION: &str = "rust";
-
-/// The kinds that read the published JSON Schema, which the Rust crates do not write: a case of one of them is neither
-/// executed nor passed, but counted and listed by id in every run, as trilean's Rust runner counts a kind with no native
-/// executor. The run conforms only when every other case passes, and its summary gives the number of these apart.
-const KINDS_WITHOUT_RUST_EXECUTOR: [&str; 5] = [
-    "schema-canonical",
-    "schema-when-ref",
-    "schema-pointer",
-    "schema-rule-requires-to",
-    "schema-validates",
-];
 
 /// The files the corpus root may hold besides the package directory.
 const ROOT_FILES: [&str; 5] = [
@@ -602,6 +592,11 @@ fn execute(entry: &Value) -> Result<Vec<String>, String> {
             expect,
         ),
         "cli" => cli_case(entry, expect)?,
+        "schema-canonical"
+        | "schema-when-ref"
+        | "schema-pointer"
+        | "schema-rule-requires-to"
+        | "schema-validates" => schema_case(entry, kind, expect)?,
         other => vec![format!("unknown kind {other}")],
     })
 }
@@ -646,6 +641,154 @@ fn error_message(entry: &Value, expect: &Value) -> Result<Vec<String>, String> {
         &Value::String(built.to_string()),
         required(expect, "message")?,
     ))
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// JSON Schema cases.
+
+/// The repository's root, where the published schema is committed.
+fn repository() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..")
+}
+
+/// The published schema as its file holds it, and parsed.
+fn published_schema() -> Result<(String, Value), String> {
+    let path = repository().join("schemas").join("crossmap.schema.json");
+    let text = std::fs::read_to_string(&path)
+        .map_err(|error| format!("cannot read {}: {error}", path.display()))?;
+    let value = serde_json::from_str(&text)
+        .map_err(|error| format!("{} is not JSON: {error}", path.display()))?;
+    Ok((text, value))
+}
+
+/// The value an RFC 6901 pointer names in a document.
+fn pointer_get<'v>(document: &'v Value, pointer: &str) -> Option<&'v Value> {
+    pointer
+        .split('/')
+        .skip(1)
+        .map(|part| part.replace("~1", "/").replace("~0", "~"))
+        .try_fold(document, |node, part| match node {
+            Value::Array(items) => part
+                .parse::<usize>()
+                .ok()
+                .and_then(|index| items.get(index)),
+            other => other.get(&part),
+        })
+}
+
+fn to_serde(value: &Value) -> Result<serde_json::Value, String> {
+    serde_json::from_str(&stringify(value)).map_err(|error| error.to_string())
+}
+
+/// The JSON Schema 2020-12 validator of the published schema, with trilean's published schema registered at the
+/// address the `when` reference names, so validating needs no network. Built once per run.
+fn schema_validator() -> &'static Result<jsonschema::Validator, String> {
+    static VALIDATOR: OnceLock<Result<jsonschema::Validator, String>> = OnceLock::new();
+    VALIDATOR.get_or_init(|| {
+        let (_, schema) = published_schema()?;
+        let trilean_path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../fixtures/trilean.schema.json");
+        let trilean_text = std::fs::read_to_string(&trilean_path)
+            .map_err(|error| format!("cannot read {}: {error}", trilean_path.display()))?;
+        let trilean: serde_json::Value = serde_json::from_str(&trilean_text)
+            .map_err(|error| format!("{} is not JSON: {error}", trilean_path.display()))?;
+        let id = trilean_schema_id();
+        if trilean.get("$id").and_then(serde_json::Value::as_str) != Some(id.as_str()) {
+            return Err(format!(
+                "{} is not the trilean schema the `when` reference names, {id}",
+                trilean_path.display()
+            ));
+        }
+        let registry = jsonschema::Registry::new()
+            .add(id.as_str(), trilean)
+            .and_then(|registry| registry.prepare())
+            .map_err(|error| error.to_string())?;
+        jsonschema::options()
+            .with_draft(jsonschema::Draft::Draft202012)
+            .offline()
+            .with_registry(&registry)
+            .build(&to_serde(&schema)?)
+            .map_err(|error| error.to_string())
+    })
+}
+
+fn schema_case(entry: &Value, kind: &str, expect: &Value) -> Result<Vec<String>, String> {
+    let (file, schema) = published_schema()?;
+    let replacements = [
+        ("trileanVersion", TRILEAN_VERSION),
+        ("packageVersion", PACKAGE_VERSION),
+    ];
+    let expected = |value: &Value| match value {
+        Value::String(text) => Value::String(substitute(text, &replacements)),
+        other => other.clone(),
+    };
+    Ok(match kind {
+        "schema-canonical" => {
+            if canonical_json(&schema) == file {
+                Vec::new()
+            } else {
+                vec!["the schema file is not the RFC 8785 canonical form of its content".to_owned()]
+            }
+        }
+        "schema-when-ref" => same(
+            pointer_get(&schema, "/$defs/When/$ref").unwrap_or(&Value::Null),
+            &expected(expect),
+        ),
+        "schema-pointer" => {
+            let pointer = text(entry, "pointer").ok_or("the case has no pointer")?;
+            let found = pointer_get(&schema, pointer)
+                .cloned()
+                .unwrap_or(Value::Null);
+            let found = match found {
+                Value::Array(mut items) if get(entry, "sorted") == Some(&Value::Bool(true)) => {
+                    items.sort_by(|left, right| {
+                        utf16_order(&crossmap_display(left), &crossmap_display(right))
+                    });
+                    Value::Array(items)
+                }
+                other => other,
+            };
+            same(&found, &expected(expect))
+        }
+        "schema-rule-requires-to" => {
+            let op = text(entry, "op").ok_or("the case has no op")?;
+            let rules = pointer_get(&schema, "/$defs/Crosswalk/properties/rules/items/oneOf")
+                .and_then(Value::as_array)
+                .ok_or("the schema has no list of two-way rules")?;
+            match rules.iter().find(|rule| {
+                pointer_get(rule, "/properties/op/const").and_then(Value::as_str) == Some(op)
+            }) {
+                None => vec![format!("the schema has no rule for {op}")],
+                Some(rule) => {
+                    let requires = get(rule, "required")
+                        .and_then(Value::as_array)
+                        .is_some_and(|names| names.iter().any(|name| name.as_str() == Some("to")));
+                    same(&Value::Bool(requires), expect)
+                }
+            }
+        }
+        _ => {
+            let validator = schema_validator().as_ref().map_err(String::clone)?;
+            let accepted = validator.is_valid(&to_serde(required(entry, "document")?)?);
+            if Some(accepted) == expect.as_bool() {
+                Vec::new()
+            } else {
+                vec![format!(
+                    "the schema {} the document, expected it to {} it",
+                    if accepted { "accepts" } else { "rejects" },
+                    if accepted { "reject" } else { "accept" }
+                )]
+            }
+        }
+    })
+}
+
+/// The text JavaScript's `String` gives a JSON scalar, which a case's sorted array is ordered by.
+fn crossmap_display(value: &Value) -> String {
+    match value {
+        Value::String(text) => text.clone(),
+        other => stringify(other),
+    }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -914,7 +1057,6 @@ fn main() -> ExitCode {
     let filter = std::env::var("CROSSMAP_CONFORMANCE_FILTER").ok();
     let mut executed = 0;
     let mut skipped = 0;
-    let mut without_executor: Vec<String> = Vec::new();
     let mut passed = 0;
     let mut total = 0;
     let mut failures: Vec<String> = Vec::new();
@@ -929,10 +1071,6 @@ fn main() -> ExitCode {
                 continue;
             }
             if filter.as_deref().is_some_and(|filter| !id.contains(filter)) {
-                continue;
-            }
-            if KINDS_WITHOUT_RUST_EXECUTOR.contains(&text(entry, "kind").unwrap_or("")) {
-                without_executor.push(id.to_owned());
                 continue;
             }
             executed += 1;
@@ -959,17 +1097,9 @@ fn main() -> ExitCode {
     for failure in &failures {
         let _ = writeln!(out, "FAIL {failure}");
     }
-    if !without_executor.is_empty() {
-        let _ = writeln!(
-            out,
-            "not executed, no Rust executor for the kind: {}",
-            without_executor.join(", ")
-        );
-    }
     let _ = writeln!(
         out,
-        "conformance (rust): {passed} passed of {total} cases; {executed} executed, {skipped} skipped as marked, {} without a Rust executor, {} failed, {} corpus problems",
-        without_executor.len(),
+        "conformance (rust): {passed} passed of {total} cases; {executed} executed, {skipped} skipped as marked, {} failed, {} corpus problems",
         failures.len(),
         problems.len()
     );
@@ -977,7 +1107,7 @@ fn main() -> ExitCode {
         && failures.is_empty()
         && executed > 0
         && filter.is_none()
-        && executed + skipped + without_executor.len() == total
+        && executed + skipped == total
     {
         ExitCode::SUCCESS
     } else {
