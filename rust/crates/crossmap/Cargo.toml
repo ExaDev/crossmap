@@ -1,0 +1,22 @@
+[package]
+name = "crossmap"
+description = "A bidirectional crosswalk codec: one crosswalk document derives both directions between a dataset's native JSON shape and a shared target shape."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+json-shape.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+trilean.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
+[lints]
+workspace = true

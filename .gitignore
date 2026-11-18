@@ -12,3 +12,6 @@ reports/
 # The instruction files are tracked symlinks to README.md; a global ignore may otherwise exclude them.
 !CLAUDE.md
 !AGENTS.md
+
+# Cargo build output of the Rust workspace.
+rust/target/

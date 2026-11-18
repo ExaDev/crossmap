@@ -1,0 +1,39 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/crossmap",
+    "crates/crossmap-cli",
+    "tests/crossmap-conformance",
+]
+
+[workspace.package]
+version = "0.11.1"
+edition = "2024"
+rust-version = "1.99.1"
+license = "MIT"
+repository = "https://github.com/ExaDev/crossmap"
+
+[workspace.dependencies]
+crossmap = { path = "crates/crossmap" }
+crossmap-cli = { path = "crates/crossmap-cli" }
+# trilean's predicate trees, their reading and their three-valued evaluator, and the ordered JSON value they are read from. These are path dependencies on the trilean repository's working tree while its Rust evaluator is under review, and become crates.io versions once it is published.
+json-shape = { path = "../../../trilean-worktrees/rust-predicate-evaluator/rust/crates/json-shape" }
+trilean = { path = "../../../trilean-worktrees/rust-predicate-evaluator/rust/crates/trilean" }
+# `float_roundtrip` makes a number literal read as the nearest double, as `JSON.parse` reads it. `raw_value` lets the ordered value's `Serialize` write a number as the text `JSON.stringify` writes. Both as trilean's workspace sets them.
+serde_json = { version = "1", features = ["float_roundtrip", "raw_value"] }
+serde = "1"
+thiserror = "2"
+proptest = { version = "1", default-features = false, features = ["std"] }
+ureq = { version = "3", default-features = false, features = ["rustls"] }
+base64 = "0.23"
+percent-encoding = "2"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"

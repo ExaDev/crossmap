@@ -1,0 +1,27 @@
+[package]
+name = "crossmap-cli"
+description = "The crossmap command: applies a crosswalk to JSON documents read from files, standard input or URLs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+name = "crossmap_cli"
+path = "src/lib.rs"
+
+[[bin]]
+name = "crossmap"
+path = "src/main.rs"
+
+[dependencies]
+base64.workspace = true
+crossmap.workspace = true
+percent-encoding.workspace = true
+serde_json.workspace = true
+ureq.workspace = true
+
+[lints]
+workspace = true
