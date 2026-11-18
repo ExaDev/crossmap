@@ -1,0 +1,86 @@
+{
+  "cases": [
+    {
+      "error": {
+        "class": "CrosswalkStructureError",
+        "issues": [
+          {
+            "message": "wildcard mismatch",
+            "ruleIndex": 2
+          },
+          {
+            "message": "two rules write the same to path: id",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "expect": {
+        "message": "crosswalk structure error: rule 2: wildcard mismatch; two rules write the same to path: id"
+      },
+      "from": "src/errors.unit.test.ts: CrosswalkStructureError > prefixes an issue in one rule with its index and leaves a between-rule issue unnumbered",
+      "id": "validate.error-messages.1",
+      "kind": "error-message"
+    },
+    {
+      "error": {
+        "class": "RuleApplicationError",
+        "message": "boom",
+        "path": "a.b",
+        "ruleIndex": 3
+      },
+      "expect": {
+        "message": "rule 3 (a.b): boom"
+      },
+      "from": "src/errors.ts: RuleApplicationError wording with a rule index",
+      "id": "validate.error-messages.2",
+      "kind": "error-message"
+    },
+    {
+      "error": {
+        "class": "RuleApplicationError",
+        "message": "boom",
+        "path": "point[0]",
+        "ruleIndex": -1
+      },
+      "expect": {
+        "message": "point[0]: boom"
+      },
+      "from": "src/errors.ts: RuleApplicationError wording without a rule (negative index)",
+      "id": "validate.error-messages.3",
+      "kind": "error-message"
+    },
+    {
+      "error": {
+        "class": "RoundTripMismatchError",
+        "message": "differs",
+        "path": "a.b",
+        "sampleIndex": 1
+      },
+      "expect": {
+        "message": "sample 1 (a.b): differs"
+      },
+      "from": "src/errors.ts: RoundTripMismatchError wording",
+      "id": "validate.error-messages.4",
+      "kind": "error-message"
+    },
+    {
+      "error": {
+        "class": "CrosswalkSyntaxError",
+        "issues": [
+          {
+            "message": "one"
+          },
+          {
+            "message": "two"
+          }
+        ]
+      },
+      "expect": {
+        "message": "crosswalk syntax error: one; two"
+      },
+      "from": "src/errors.ts: CrosswalkSyntaxError wording",
+      "id": "validate.error-messages.5",
+      "kind": "error-message"
+    }
+  ]
+}

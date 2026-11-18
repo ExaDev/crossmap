@@ -1,0 +1,111 @@
+{
+  "cases": [
+    {
+      "expect": true,
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > is exactly the RFC 8785 canonical form of its own content",
+      "id": "json-schema.schema.1",
+      "kind": "schema-canonical"
+    },
+    {
+      "expect": "https://cdn.jsdelivr.net/npm/trilean@{trileanVersion}/schemas/trilean.schema.json#/$defs/PredicateNode",
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > refs trilean's published predicate schema at the installed version",
+      "id": "json-schema.schema.2",
+      "kind": "schema-when-ref"
+    },
+    {
+      "expect": [
+        "source",
+        "target"
+      ],
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > describes the documents parseCrosswalk accepts: source and target are the only required fields",
+      "id": "json-schema.schema.3",
+      "kind": "schema-pointer",
+      "pointer": "/$defs/Crosswalk/required",
+      "sorted": true
+    },
+    {
+      "expect": false,
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > describes the documents parseCrosswalk accepts: a move rule may leave out its to",
+      "id": "json-schema.schema.4",
+      "kind": "schema-rule-requires-to",
+      "op": "move"
+    },
+    {
+      "expect": false,
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > describes the documents parseCrosswalk accepts: a scale rule may leave out its to",
+      "id": "json-schema.schema.5",
+      "kind": "schema-rule-requires-to",
+      "op": "scale"
+    },
+    {
+      "expect": false,
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > describes the documents parseCrosswalk accepts: a enum rule may leave out its to",
+      "id": "json-schema.schema.6",
+      "kind": "schema-rule-requires-to",
+      "op": "enum"
+    },
+    {
+      "expect": false,
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > describes the documents parseCrosswalk accepts: a format rule may leave out its to",
+      "id": "json-schema.schema.7",
+      "kind": "schema-rule-requires-to",
+      "op": "format"
+    },
+    {
+      "expect": false,
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > describes the documents parseCrosswalk accepts: a split rule may leave out its to",
+      "id": "json-schema.schema.8",
+      "kind": "schema-rule-requires-to",
+      "op": "split"
+    },
+    {
+      "expect": true,
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > describes the documents parseCrosswalk accepts: a template rule requires its to",
+      "id": "json-schema.schema.9",
+      "kind": "schema-rule-requires-to",
+      "op": "template"
+    },
+    {
+      "expect": true,
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > describes the documents parseCrosswalk accepts: a copy rule requires its to",
+      "id": "json-schema.schema.10",
+      "kind": "schema-rule-requires-to",
+      "op": "copy"
+    },
+    {
+      "expect": "array",
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > describes the keep list as an array of path strings",
+      "id": "json-schema.schema.11",
+      "kind": "schema-pointer",
+      "pointer": "/$defs/Crosswalk/properties/keep/type"
+    },
+    {
+      "expect": "string",
+      "from": "src/../scripts/generate-json-schema.unit.test.ts: the built JSON Schema > describes a kept path as a string",
+      "id": "json-schema.schema.12",
+      "kind": "schema-pointer",
+      "pointer": "/$defs/Crosswalk/properties/keep/items/type"
+    },
+    {
+      "expect": "https://json-schema.org/draft/2020-12/schema",
+      "from": "scripts/generate-json-schema.ts: the schema declares JSON Schema 2020-12",
+      "id": "json-schema.schema.13",
+      "kind": "schema-pointer",
+      "pointer": "/$schema"
+    },
+    {
+      "expect": "https://cdn.jsdelivr.net/npm/crossmap@{packageVersion}/schemas/crossmap.schema.json",
+      "from": "scripts/generate-json-schema.ts: the schema's own address is version-pinned on the package version",
+      "id": "json-schema.schema.14",
+      "kind": "schema-pointer",
+      "pointer": "/$id"
+    },
+    {
+      "expect": "#/$defs/Crosswalk",
+      "from": "scripts/generate-json-schema.ts: the root is a reference to the Crosswalk definition",
+      "id": "json-schema.schema.15",
+      "kind": "schema-pointer",
+      "pointer": "/$ref"
+    }
+  ]
+}

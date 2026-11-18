@@ -1,0 +1,868 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (move)",
+      "id": "round-trip.corpus.1",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "a": 1
+        },
+        {
+          "a": {
+            "nested": true
+          }
+        },
+        {
+          "a": [
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (scale)",
+      "id": "round-trip.corpus.2",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "cents": 199
+        },
+        {
+          "cents": 0
+        },
+        {
+          "cents": -42
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "status",
+            "map": {
+              "closed": "CLOSED",
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (enum)",
+      "id": "round-trip.corpus.3",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "status": "open"
+        },
+        {
+          "status": "closed"
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "at",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "atMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (format isoDateTime)",
+      "id": "round-trip.corpus.4",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "at": "2026-10-18T10:15:00.000Z"
+        },
+        {
+          "at": "2024-02-29T23:59:59.999Z"
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "count",
+            "kind": "numberText",
+            "op": "format",
+            "to": "countText"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (format numberText)",
+      "id": "round-trip.corpus.5",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "count": "1234"
+        },
+        {
+          "count": "-7.5"
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "on",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "onMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (format isoDate)",
+      "id": "round-trip.corpus.6",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "on": "2026-10-18"
+        },
+        {
+          "on": "2024-02-29"
+        },
+        {
+          "on": "1969-12-31"
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "flag",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "isSet"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (format booleanText)",
+      "id": "round-trip.corpus.7",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "flag": "true"
+        },
+        {
+          "flag": "false"
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "raw",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "value"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (format jsonText)",
+      "id": "round-trip.corpus.8",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "raw": "{\"a\":[1,null,\"x\"]}"
+        },
+        {
+          "raw": "\"text\""
+        },
+        {
+          "raw": "[]"
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (split)",
+      "id": "round-trip.corpus.9",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "names": "alpha,beta"
+        },
+        {
+          "names": "solo"
+        },
+        {
+          "names": ""
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          }
+        ],
+        "rules": [
+          {
+            "from": "kept",
+            "op": "move",
+            "to": "kept"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (drop)",
+      "id": "round-trip.corpus.10",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "internal": "x",
+          "kept": 1
+        },
+        {
+          "kept": 2
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "name"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (default encode-direction)",
+      "id": "round-trip.corpus.11",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "name": "parcel"
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "op": "default",
+            "to": "origin",
+            "value": "migration"
+          }
+        ],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "name"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (default decode-direction)",
+      "id": "round-trip.corpus.12",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "name": "parcel"
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          },
+          {
+            "factor": 1,
+            "from": "papers[].citations",
+            "op": "scale",
+            "to": "nodes[].citationCount"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (wildcard arity one)",
+      "id": "round-trip.corpus.13",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "papers": [
+            {
+              "citations": 3,
+              "id": "p1"
+            },
+            {
+              "citations": 9,
+              "id": "p2"
+            }
+          ]
+        },
+        {
+          "papers": [
+            {
+              "citations": 0,
+              "id": "only"
+            }
+          ]
+        },
+        {
+          "papers": []
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "people[].family",
+              "given": "people[].given"
+            },
+            "op": "template",
+            "template": "{family}, {given} {{verified}}",
+            "to": "names[]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (template)",
+      "id": "round-trip.corpus.14",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "people": [
+            {
+              "family": "Lovelace",
+              "given": "Ada"
+            },
+            {
+              "family": "",
+              "given": "Alan, OBE"
+            }
+          ]
+        },
+        {
+          "people": []
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].id",
+            "op": "copy",
+            "to": [
+              "nodes[].id",
+              "labels[].text"
+            ]
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (copy)",
+      "id": "round-trip.corpus.15",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "items": [
+            {
+              "id": "a"
+            },
+            {
+              "id": {
+                "nested": [
+                  1
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "items": []
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "orders[].lines[].qty",
+            "op": "aggregate",
+            "to": "sales[].units"
+          },
+          {
+            "direction": "decode",
+            "fn": "max",
+            "from": "sales[].lines[].qty",
+            "op": "aggregate",
+            "to": "largestLine"
+          }
+        ],
+        "rules": [
+          {
+            "from": "orders[].lines[].qty",
+            "op": "move",
+            "to": "sales[].lines[].qty"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (aggregate)",
+      "id": "round-trip.corpus.16",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "orders": [
+            {
+              "lines": [
+                {
+                  "qty": 1
+                },
+                {
+                  "qty": 2
+                }
+              ]
+            },
+            {
+              "lines": [
+                {
+                  "qty": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "qty",
+            "op": "move",
+            "to": "qty"
+          },
+          {
+            "from": "bonus",
+            "op": "move",
+            "to": "perk",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (when applied)",
+      "id": "round-trip.corpus.17",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "bonus": "yes",
+          "qty": 10
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "qty",
+            "op": "move",
+            "to": "qty"
+          },
+          {
+            "from": "bonus",
+            "op": "move",
+            "to": "perk",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (when skipped)",
+      "id": "round-trip.corpus.18",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].kind",
+            "op": "move",
+            "to": "shapes[].kind"
+          },
+          {
+            "from": "items[].radius",
+            "op": "move",
+            "to": "shapes[].r",
+            "when": {
+              "kind": "textCompare",
+              "left": {
+                "key": "items[].kind",
+                "kind": "reference"
+              },
+              "op": "equals",
+              "right": {
+                "kind": "textLiteral",
+                "value": "circle"
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (when per element)",
+      "id": "round-trip.corpus.19",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "items": [
+            {
+              "kind": "circle",
+              "radius": 2
+            },
+            {
+              "kind": "square"
+            }
+          ]
+        },
+        {
+          "items": []
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "street",
+            "op": "move",
+            "to": "address.street"
+          },
+          {
+            "from": "meta.owner.name",
+            "op": "move",
+            "to": "ownerName"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (nest and flatten)",
+      "id": "round-trip.corpus.20",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "meta": {
+            "owner": {
+              "name": "Ann"
+            }
+          },
+          "street": "High St"
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "grid[][]",
+            "op": "move",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (array of arrays)",
+      "id": "round-trip.corpus.21",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "grid": [
+            [
+              "a",
+              "b"
+            ],
+            [],
+            [
+              "c"
+            ]
+          ]
+        },
+        {
+          "grid": []
+        },
+        {
+          "grid": [
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "point[0]",
+            "op": "move",
+            "to": "lat"
+          },
+          {
+            "from": "point[1]",
+            "op": "move",
+            "to": "lon"
+          },
+          {
+            "from": "rows[][0]",
+            "op": "move",
+            "to": "items[].name"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (fixed index)",
+      "id": "round-trip.corpus.22",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "point": [
+            "52.2N",
+            "0.1E"
+          ],
+          "rows": [
+            [
+              "a"
+            ],
+            [
+              "b"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "[\"dc:title\"]",
+            "op": "move",
+            "to": "[\"a.b\"][\"[x]\"]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > every corpus cell round-trips over every sample (quoted key)",
+      "id": "round-trip.corpus.23",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "dc:title": "Maps"
+        }
+      ]
+    }
+  ]
+}

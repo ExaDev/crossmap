@@ -1,0 +1,318 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "label"
+          },
+          {
+            "factor": 100,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          },
+          {
+            "from": "status",
+            "map": {
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          },
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ";",
+            "to": "nameParts"
+          },
+          {
+            "from": "count",
+            "kind": "numberText",
+            "op": "format",
+            "to": "countText"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "cents": 450,
+        "count": "12",
+        "name": "parcel",
+        "names": "a;b",
+        "status": "open"
+      },
+      "expect": {
+        "output": {
+          "countText": 12,
+          "label": "parcel",
+          "nameParts": [
+            "a",
+            "b"
+          ],
+          "state": "OPEN",
+          "units": 45000
+        }
+      },
+      "from": "src/executor.unit.test.ts: decode > inverts encode over the mapped paths (encode half)",
+      "id": "executor.decode.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "label"
+          },
+          {
+            "factor": 100,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          },
+          {
+            "from": "status",
+            "map": {
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          },
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ";",
+            "to": "nameParts"
+          },
+          {
+            "from": "count",
+            "kind": "numberText",
+            "op": "format",
+            "to": "countText"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "countText": 12,
+        "label": "parcel",
+        "nameParts": [
+          "a",
+          "b"
+        ],
+        "state": "OPEN",
+        "units": 45000
+      },
+      "expect": {
+        "output": {
+          "cents": 450,
+          "count": "12",
+          "name": "parcel",
+          "names": "a;b",
+          "status": "open"
+        }
+      },
+      "from": "src/executor.unit.test.ts: decode > inverts encode over the mapped paths (decode half)",
+      "id": "executor.decode.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "kind",
+            "op": "move",
+            "to": "kind"
+          },
+          {
+            "from": "secret",
+            "op": "move",
+            "to": "hidden",
+            "when": {
+              "kind": "textCompare",
+              "left": {
+                "key": "kind",
+                "kind": "reference"
+              },
+              "op": "equals",
+              "right": {
+                "kind": "textLiteral",
+                "value": "special"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "hidden": "s",
+        "kind": "special"
+      },
+      "expect": {
+        "output": {
+          "kind": "special",
+          "secret": "s"
+        }
+      },
+      "from": "src/executor.unit.test.ts: decode > evaluates when against the decode input (applies)",
+      "id": "executor.decode.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "kind",
+            "op": "move",
+            "to": "kind"
+          },
+          {
+            "from": "secret",
+            "op": "move",
+            "to": "hidden",
+            "when": {
+              "kind": "textCompare",
+              "left": {
+                "key": "kind",
+                "kind": "reference"
+              },
+              "op": "equals",
+              "right": {
+                "kind": "textLiteral",
+                "value": "special"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "hidden": "s",
+        "kind": "plain"
+      },
+      "expect": {
+        "output": {
+          "kind": "plain"
+        }
+      },
+      "from": "src/executor.unit.test.ts: decode > evaluates when against the decode input (skips)",
+      "id": "executor.decode.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "op": "default",
+            "to": "origin",
+            "value": "migration"
+          }
+        ],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "name"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "name": "parcel"
+      },
+      "expect": {
+        "output": {
+          "name": "parcel",
+          "origin": "migration"
+        }
+      },
+      "from": "src/executor.unit.test.ts: decode > inserts a decode-direction default into the decode output",
+      "id": "executor.decode.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "op": "default",
+            "to": "origin",
+            "value": "migration"
+          }
+        ],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "name"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "name": "parcel"
+      },
+      "expect": {
+        "output": {
+          "name": "parcel"
+        }
+      },
+      "from": "src/executor.unit.test.ts: decode > a decode-direction default does not apply on encode",
+      "id": "executor.decode.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {},
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "x",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/executor.unit.test.ts: decode > throws RuleApplicationError when the decode read side is absent",
+      "id": "executor.decode.7",
+      "kind": "run"
+    }
+  ]
+}

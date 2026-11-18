@@ -1,0 +1,105 @@
+{
+  "cases": [
+    {
+      "expect": {
+        "from": [
+          "meta"
+        ],
+        "to": [
+          "info"
+        ]
+      },
+      "from": "src/sides.unit.test.ts: ruleSides > gives the one path on each side of a rule that has one (move)",
+      "id": "crosswalk.rule-sides.1",
+      "kind": "rule-sides",
+      "rule": {
+        "from": "meta",
+        "op": "move",
+        "to": "info"
+      }
+    },
+    {
+      "expect": {
+        "from": [
+          "a"
+        ],
+        "to": [
+          "b"
+        ]
+      },
+      "from": "src/sides.unit.test.ts: ruleSides > gives the one path on each side of a rule that has one (scale)",
+      "id": "crosswalk.rule-sides.2",
+      "kind": "rule-sides",
+      "rule": {
+        "factor": 2,
+        "from": "a",
+        "op": "scale",
+        "to": "b"
+      }
+    },
+    {
+      "expect": {
+        "from": [
+          "a"
+        ],
+        "to": [
+          "b"
+        ]
+      },
+      "from": "src/sides.unit.test.ts: ruleSides > gives the one path on each side of a rule that has one (split)",
+      "id": "crosswalk.rule-sides.3",
+      "kind": "rule-sides",
+      "rule": {
+        "from": "a",
+        "op": "split",
+        "separator": ",",
+        "to": "b"
+      }
+    },
+    {
+      "expect": {
+        "from": [
+          "people[].family",
+          "people[].given"
+        ],
+        "to": [
+          "names[]"
+        ]
+      },
+      "from": "src/sides.unit.test.ts: ruleSides > gives a template's fields in its record's key order",
+      "id": "crosswalk.rule-sides.4",
+      "kind": "rule-sides",
+      "rule": {
+        "from": {
+          "family": "people[].family",
+          "given": "people[].given"
+        },
+        "op": "template",
+        "template": "{family}, {given}",
+        "to": "names[]"
+      }
+    },
+    {
+      "expect": {
+        "from": [
+          "items[].id"
+        ],
+        "to": [
+          "nodes[].id",
+          "labels[].text"
+        ]
+      },
+      "from": "src/sides.unit.test.ts: ruleSides > gives a copy's every target",
+      "id": "crosswalk.rule-sides.5",
+      "kind": "rule-sides",
+      "rule": {
+        "from": "items[].id",
+        "op": "copy",
+        "to": [
+          "nodes[].id",
+          "labels[].text"
+        ]
+      }
+    }
+  ]
+}

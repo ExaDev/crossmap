@@ -1,0 +1,236 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 3,
+            "from": "v",
+            "op": "scale",
+            "to": "w"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "RoundTripMismatchError",
+          "path": "v",
+          "sampleIndex": 0
+        }
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > throws RoundTripMismatchError for a broken correspondence (0.1 * 3 / 3 !== 0.1)",
+      "id": "round-trip.failures.1",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "v": 0.1
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x"
+          },
+          {
+            "from": "a",
+            "op": "move",
+            "to": "y"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkStructureError"
+        }
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > throws CrosswalkStructureError without running any sample",
+      "id": "round-trip.failures.2",
+      "kind": "round-trip",
+      "samples": []
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "decode",
+            "op": "default",
+            "to": "origin",
+            "value": "migration"
+          }
+        ],
+        "rules": [
+          {
+            "from": "kept",
+            "op": "move",
+            "to": "kept"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "src/roundtrip.unit.test.ts: assertRoundTrip > excludes a dropped path and a decode-default path from the comparison",
+      "id": "round-trip.failures.3",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "internal": "secret",
+          "kept": 1
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "a"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "RoundTripMismatchError",
+          "path": "",
+          "sampleIndex": 0
+        }
+      },
+      "from": "README.md: Round trips > a field no rule maps does not survive encode, so a sample carrying one fails its own round trip",
+      "id": "round-trip.failures.4",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "a": 1,
+          "extra": 2
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "origin",
+            "value": "x"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "a"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "RoundTripMismatchError",
+          "path": "",
+          "sampleIndex": 0
+        }
+      },
+      "from": "README.md: Round trips > a sample that populates the target of an encode-direction default differs from its round trip",
+      "id": "round-trip.failures.5",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "a": 1,
+          "origin": "y"
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "a"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "RoundTripMismatchError",
+          "path": "",
+          "sampleIndex": 1
+        }
+      },
+      "from": "README.md: Round trips > the second sample is the one reported (sample index)",
+      "id": "round-trip.failures.6",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "a": 1
+        },
+        {
+          "a": 2,
+          "extra": 1
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "a",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "RoundTripMismatchError",
+          "path": "",
+          "sampleIndex": 0
+        }
+      },
+      "from": "README.md: Round trips > a when must not read a field its own rule moves",
+      "id": "round-trip.failures.7",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "a": 1
+        }
+      ]
+    }
+  ]
+}

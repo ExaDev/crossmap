@@ -1,0 +1,552 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a.b",
+            "op": "move",
+            "to": "x.y"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": {
+          "b": 1
+        }
+      },
+      "expect": {
+        "output": {
+          "x": {
+            "y": 1
+          }
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > moves values into a fresh output without mutating the input",
+      "id": "executor.encode.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x"
+          },
+          {
+            "from": "b",
+            "op": "move",
+            "to": "y"
+          },
+          {
+            "factor": 2,
+            "from": "c",
+            "op": "scale",
+            "to": "z"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "b": 2,
+        "c": 3
+      },
+      "expect": {
+        "output": {
+          "x": 1,
+          "y": 2,
+          "z": 6
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > is order-independent across rules (written order)",
+      "id": "executor.encode.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 2,
+            "from": "c",
+            "op": "scale",
+            "to": "z"
+          },
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x"
+          },
+          {
+            "from": "b",
+            "op": "move",
+            "to": "y"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "b": 2,
+        "c": 3
+      },
+      "expect": {
+        "output": {
+          "x": 1,
+          "y": 2,
+          "z": 6
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > is order-independent across rules (shuffled order)",
+      "id": "executor.encode.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "absent",
+            "op": "move",
+            "to": "x"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {},
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "absent",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > throws RuleApplicationError for a missing from path",
+      "id": "executor.encode.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x"
+          },
+          {
+            "from": "a",
+            "op": "move",
+            "to": "y"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkStructureError",
+          "messageContains": [
+            "two rules use the same from path: a"
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > throws CrosswalkStructureError for a structurally invalid crosswalk",
+      "id": "executor.encode.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          },
+          {
+            "from": "papers[].title",
+            "op": "move",
+            "to": "nodes[].title"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "papers": [
+          {
+            "id": "p1",
+            "title": "T1"
+          },
+          {
+            "id": "p2",
+            "title": "T2"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "nodes": [
+            {
+              "ref": "p1",
+              "title": "T1"
+            },
+            {
+              "ref": "p2",
+              "title": "T2"
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > maps wildcards index-aligned and materialises the target array",
+      "id": "executor.encode.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "papers": []
+      },
+      "expect": {
+        "output": {
+          "nodes": []
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > materialises an empty array for an existing empty source array",
+      "id": "executor.encode.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "flag",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "flag": true
+      },
+      "expect": {
+        "output": {
+          "x": 1
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > skips a rule whose when evaluates definite false or indeterminate (exists, flag true)",
+      "id": "executor.encode.8",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "flag",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "flag": false
+      },
+      "expect": {
+        "output": {
+          "x": 1
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > (exists, flag false: the key exists)",
+      "id": "executor.encode.9",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "not",
+              "operand": {
+                "kind": "exists",
+                "operand": {
+                  "key": "flag",
+                  "kind": "reference"
+                }
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "flag": false
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/executor.unit.test.ts: encode > (not exists, flag present)",
+      "id": "executor.encode.10",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "flag",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/executor.unit.test.ts: encode > (exists, flag absent)",
+      "id": "executor.encode.11",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "name"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "name": "parcel"
+      },
+      "expect": {
+        "output": {
+          "locale": "en-GB",
+          "name": "parcel"
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > inserts an encode-direction default, in that direction only (encode)",
+      "id": "executor.encode.12",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "name"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "locale": "en-GB",
+        "name": "parcel"
+      },
+      "expect": {
+        "output": {
+          "name": "parcel"
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode > inserts an encode-direction default, in that direction only (decode)",
+      "id": "executor.encode.13",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "meta.id",
+            "op": "move",
+            "to": "id"
+          },
+          {
+            "from": "edges[].source",
+            "op": "move",
+            "to": "links[].src"
+          },
+          {
+            "from": "edges[].target",
+            "op": "move",
+            "to": "links[].dst"
+          },
+          {
+            "from": "edges[].type",
+            "op": "move",
+            "to": "links[].rel"
+          },
+          {
+            "from": "edges[].weight",
+            "op": "move",
+            "to": "links[].w"
+          },
+          {
+            "from": "edges[].timestamp",
+            "op": "move",
+            "to": "links[].at"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "edges": [
+          {
+            "source": "n0",
+            "target": "n1",
+            "timestamp": 1700000000,
+            "type": "cites",
+            "weight": 0
+          },
+          {
+            "source": "n1",
+            "target": "n2",
+            "timestamp": 1700000001,
+            "type": "cites",
+            "weight": 1
+          },
+          {
+            "source": "n2",
+            "target": "n0",
+            "timestamp": 1700000002,
+            "type": "cites",
+            "weight": 2
+          }
+        ],
+        "meta": {
+          "id": "g"
+        }
+      },
+      "expect": {
+        "output": {
+          "id": "g",
+          "links": [
+            {
+              "at": 1700000000,
+              "dst": "n1",
+              "rel": "cites",
+              "src": "n0",
+              "w": 0
+            },
+            {
+              "at": 1700000001,
+              "dst": "n2",
+              "rel": "cites",
+              "src": "n1",
+              "w": 1
+            },
+            {
+              "at": 1700000002,
+              "dst": "n0",
+              "rel": "cites",
+              "src": "n2",
+              "w": 2
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: encode over a large wildcard array > writes the same result over a small array",
+      "id": "executor.encode.14",
+      "kind": "run"
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "a": "p[].a",
+              "b": "q[].b"
+            },
+            "op": "template",
+            "template": "{a}/{b}",
+            "to": "t[]"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "from path q[].b iterates different arrays from the rule's other from paths: the fields of one element must come from one element",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on multi-path rules > rejects template fields from different arrays",
+      "id": "validate.multi-path.1",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "p[].a",
+            "op": "copy",
+            "to": [
+              "n[].a",
+              "flat"
+            ]
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "to path flat has 0 wildcards where the first from has 1: mapping is index-aligned, one wildcard to one",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on multi-path rules > checks every copy target's wildcards",
+      "id": "validate.multi-path.2",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "copy",
+            "to": [
+              "x",
+              "y"
+            ]
+          },
+          {
+            "from": "b",
+            "op": "move",
+            "to": "y"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "two rules write the same to path: y",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on multi-path rules > checks every copy target's uniqueness",
+      "id": "validate.multi-path.3",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "a": "a",
+              "b": "b"
+            },
+            "op": "template",
+            "template": "{a}/{b}",
+            "to": "t"
+          },
+          {
+            "from": "b",
+            "op": "move",
+            "to": "u"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "two rules use the same from path: b",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on multi-path rules > counts every template field as a read",
+      "id": "validate.multi-path.4",
+      "kind": "validate"
+    }
+  ]
+}

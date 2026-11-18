@@ -1,0 +1,378 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "people[].family",
+              "given": "people[].given"
+            },
+            "op": "template",
+            "template": "{family}, {given}",
+            "to": "names[]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "people": [
+          {
+            "family": "Lovelace",
+            "given": "Ada"
+          },
+          {
+            "family": "Turing",
+            "given": "Alan"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "names": [
+            "Lovelace, Ada",
+            "Turing, Alan"
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: template and copy > renders several fields into one and splits them back, per element (encode half)",
+      "id": "executor.template-copy.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "people[].family",
+              "given": "people[].given"
+            },
+            "op": "template",
+            "template": "{family}, {given}",
+            "to": "names[]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "names": [
+          "Lovelace, Ada",
+          "Turing, Alan"
+        ]
+      },
+      "expect": {
+        "output": {
+          "people": [
+            {
+              "family": "Lovelace",
+              "given": "Ada"
+            },
+            {
+              "family": "Turing",
+              "given": "Alan"
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: template and copy > renders several fields into one and splits them back, per element (decode half)",
+      "id": "executor.template-copy.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "people[].family",
+              "given": "people[].given"
+            },
+            "op": "template",
+            "template": "{family}, {given}",
+            "to": "names[]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "people": []
+      },
+      "expect": {
+        "output": {
+          "names": []
+        }
+      },
+      "from": "src/executor.unit.test.ts: template and copy > renders an empty array of elements to an empty array",
+      "id": "executor.template-copy.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "a": "a",
+              "b": "b"
+            },
+            "op": "template",
+            "template": "{a}/{b}",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "x/y",
+        "b": "z"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "a, b",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/executor.unit.test.ts: template and copy > throws RuleApplicationError when a template value holds its boundary",
+      "id": "executor.template-copy.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "a": "p[].a",
+              "b": "p[].b"
+            },
+            "op": "template",
+            "template": "{a}/{b}",
+            "to": "t[]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "p": [
+          {
+            "a": "x",
+            "b": "y"
+          },
+          {
+            "a": "x"
+          }
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "the path is absent from the document"
+          ],
+          "path": "p[].b",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/executor.unit.test.ts: template and copy > throws RuleApplicationError when template fields sit in different elements (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "executor.template-copy.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].id",
+            "op": "copy",
+            "to": [
+              "nodes[].id",
+              "labels[].text"
+            ]
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "items": [
+          {
+            "id": "a"
+          },
+          {
+            "id": "b"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "labels": [
+            {
+              "text": "a"
+            },
+            {
+              "text": "b"
+            }
+          ],
+          "nodes": [
+            {
+              "id": "a"
+            },
+            {
+              "id": "b"
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: template and copy > writes one value to several places and reads it back when the copies agree (encode half)",
+      "id": "executor.template-copy.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].id",
+            "op": "copy",
+            "to": [
+              "nodes[].id",
+              "labels[].text"
+            ]
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "labels": [
+          {
+            "text": "a"
+          },
+          {
+            "text": "b"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "a"
+          },
+          {
+            "id": "b"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "items": [
+            {
+              "id": "a"
+            },
+            {
+              "id": "b"
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: template and copy > writes one value to several places and reads it back when the copies agree (decode half)",
+      "id": "executor.template-copy.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].id",
+            "op": "copy",
+            "to": [
+              "nodes[].id",
+              "labels[].text"
+            ]
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "labels": [
+          {
+            "text": "b"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "a"
+          }
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "the copies disagree"
+          ],
+          "path": "nodes[].id, labels[].text",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/executor.unit.test.ts: template and copy > throws RuleApplicationError when the copies disagree (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "executor.template-copy.8",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].id",
+            "op": "copy",
+            "to": [
+              "nodes[].id",
+              "labels[].text"
+            ]
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "labels": [],
+        "nodes": [
+          {
+            "id": "a"
+          }
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "addresses different elements"
+          ],
+          "path": "labels[].text",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/executor.unit.test.ts: template and copy > throws RuleApplicationError when the copies no longer pair up (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "executor.template-copy.9",
+      "kind": "run"
+    }
+  ]
+}

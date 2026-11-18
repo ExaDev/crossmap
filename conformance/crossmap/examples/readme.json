@@ -1,0 +1,838 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "rows[].batteryPct",
+            "op": "drop"
+          }
+        ],
+        "rules": [
+          {
+            "from": "rows[].sensor",
+            "op": "move",
+            "to": "observations[].deviceId"
+          },
+          {
+            "from": "rows[].takenAt",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "observations[].takenAtMs"
+          },
+          {
+            "from": "rows[].level",
+            "kind": "numberText",
+            "op": "format",
+            "to": "observations[].level"
+          },
+          {
+            "factor": 1000,
+            "from": "rows[].depthM",
+            "op": "scale",
+            "to": "observations[].depthMm"
+          },
+          {
+            "from": "rows[].flag",
+            "map": {
+              "ok": "GOOD",
+              "sus": "SUSPECT"
+            },
+            "mapBack": {
+              "GOOD": "ok",
+              "SUSPECT": "sus"
+            },
+            "op": "enum",
+            "to": "observations[].quality"
+          }
+        ],
+        "source": "field-sensors/reading",
+        "target": "observations/v1"
+      },
+      "direction": "encode",
+      "document": {
+        "rows": [
+          {
+            "batteryPct": 91,
+            "depthM": 3,
+            "flag": "ok",
+            "level": "12.5",
+            "sensor": "S-01",
+            "takenAt": "2026-10-18T09:30:00.000Z"
+          },
+          {
+            "batteryPct": 40,
+            "depthM": 5,
+            "flag": "sus",
+            "level": "7",
+            "sensor": "S-02",
+            "takenAt": "2026-10-18T09:45:00.000Z"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "observations": [
+            {
+              "depthMm": 3000,
+              "deviceId": "S-01",
+              "level": 12.5,
+              "quality": "GOOD",
+              "takenAtMs": 1792315800000
+            },
+            {
+              "depthMm": 5000,
+              "deviceId": "S-02",
+              "level": 7,
+              "quality": "SUSPECT",
+              "takenAtMs": 1792316700000
+            }
+          ]
+        }
+      },
+      "from": "README.md: Rows of a table > encode(readings, table)",
+      "id": "examples.readme.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "rows[].batteryPct",
+            "op": "drop"
+          }
+        ],
+        "rules": [
+          {
+            "from": "rows[].sensor",
+            "op": "move",
+            "to": "observations[].deviceId"
+          },
+          {
+            "from": "rows[].takenAt",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "observations[].takenAtMs"
+          },
+          {
+            "from": "rows[].level",
+            "kind": "numberText",
+            "op": "format",
+            "to": "observations[].level"
+          },
+          {
+            "factor": 1000,
+            "from": "rows[].depthM",
+            "op": "scale",
+            "to": "observations[].depthMm"
+          },
+          {
+            "from": "rows[].flag",
+            "map": {
+              "ok": "GOOD",
+              "sus": "SUSPECT"
+            },
+            "mapBack": {
+              "GOOD": "ok",
+              "SUSPECT": "sus"
+            },
+            "op": "enum",
+            "to": "observations[].quality"
+          }
+        ],
+        "source": "field-sensors/reading",
+        "target": "observations/v1"
+      },
+      "direction": "decode",
+      "document": {
+        "observations": [
+          {
+            "depthMm": 3000,
+            "deviceId": "S-01",
+            "level": 12.5,
+            "quality": "GOOD",
+            "takenAtMs": 1792315800000
+          },
+          {
+            "depthMm": 5000,
+            "deviceId": "S-02",
+            "level": 7,
+            "quality": "SUSPECT",
+            "takenAtMs": 1792316700000
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "rows": [
+            {
+              "depthM": 3,
+              "flag": "ok",
+              "level": "12.5",
+              "sensor": "S-01",
+              "takenAt": "2026-10-18T09:30:00.000Z"
+            },
+            {
+              "depthM": 5,
+              "flag": "sus",
+              "level": "7",
+              "sensor": "S-02",
+              "takenAt": "2026-10-18T09:45:00.000Z"
+            }
+          ]
+        }
+      },
+      "from": "README.md: Rows of a table > decode gives the rows back, except batteryPct (the drop rule declared it lossy)",
+      "id": "examples.readme.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "rows[].batteryPct",
+            "op": "drop"
+          }
+        ],
+        "rules": [
+          {
+            "from": "rows[].sensor",
+            "op": "move",
+            "to": "observations[].deviceId"
+          },
+          {
+            "from": "rows[].takenAt",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "observations[].takenAtMs"
+          },
+          {
+            "from": "rows[].level",
+            "kind": "numberText",
+            "op": "format",
+            "to": "observations[].level"
+          },
+          {
+            "factor": 1000,
+            "from": "rows[].depthM",
+            "op": "scale",
+            "to": "observations[].depthMm"
+          },
+          {
+            "from": "rows[].flag",
+            "map": {
+              "ok": "GOOD",
+              "sus": "SUSPECT"
+            },
+            "mapBack": {
+              "GOOD": "ok",
+              "SUSPECT": "sus"
+            },
+            "op": "enum",
+            "to": "observations[].quality"
+          }
+        ],
+        "source": "field-sensors/reading",
+        "target": "observations/v1"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "README.md: Rows of a table > assertRoundTrip(readings, [table])",
+      "id": "examples.readme.3",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "rows": [
+            {
+              "batteryPct": 91,
+              "depthM": 3,
+              "flag": "ok",
+              "level": "12.5",
+              "sensor": "S-01",
+              "takenAt": "2026-10-18T09:30:00.000Z"
+            },
+            {
+              "batteryPct": 40,
+              "depthM": 5,
+              "flag": "sus",
+              "level": "7",
+              "sensor": "S-02",
+              "takenAt": "2026-10-18T09:45:00.000Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].key",
+            "op": "move",
+            "to": "nodes[].id"
+          },
+          {
+            "from": "papers[].venue",
+            "op": "move",
+            "to": "nodes[].type"
+          },
+          {
+            "from": "cites[].citing",
+            "op": "move",
+            "to": "edges[].source"
+          },
+          {
+            "from": "cites[].cited",
+            "op": "move",
+            "to": "edges[].target"
+          },
+          {
+            "from": "cites[].kind",
+            "map": {
+              "direct": "CITES",
+              "survey": "CITES_IN_SURVEY"
+            },
+            "mapBack": {
+              "CITES": "direct",
+              "CITES_IN_SURVEY": "survey"
+            },
+            "op": "enum",
+            "to": "edges[].type"
+          }
+        ],
+        "source": "reading-group/export",
+        "target": "graph/v1"
+      },
+      "direction": "encode",
+      "document": {
+        "cites": [
+          {
+            "cited": "p1",
+            "citing": "p2",
+            "kind": "direct"
+          },
+          {
+            "cited": "p1",
+            "citing": "p3",
+            "kind": "survey"
+          }
+        ],
+        "papers": [
+          {
+            "key": "p1",
+            "venue": "journal"
+          },
+          {
+            "key": "p2",
+            "venue": "workshop"
+          },
+          {
+            "key": "p3",
+            "venue": "journal"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "edges": [
+            {
+              "source": "p2",
+              "target": "p1",
+              "type": "CITES"
+            },
+            {
+              "source": "p3",
+              "target": "p1",
+              "type": "CITES_IN_SURVEY"
+            }
+          ],
+          "nodes": [
+            {
+              "id": "p1",
+              "type": "journal"
+            },
+            {
+              "id": "p2",
+              "type": "workshop"
+            },
+            {
+              "id": "p3",
+              "type": "journal"
+            }
+          ]
+        }
+      },
+      "from": "README.md: A graph > encode(network, exported)",
+      "id": "examples.readme.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].key",
+            "op": "move",
+            "to": "nodes[].id"
+          },
+          {
+            "from": "papers[].venue",
+            "op": "move",
+            "to": "nodes[].type"
+          },
+          {
+            "from": "cites[].citing",
+            "op": "move",
+            "to": "edges[].source"
+          },
+          {
+            "from": "cites[].cited",
+            "op": "move",
+            "to": "edges[].target"
+          },
+          {
+            "from": "cites[].kind",
+            "map": {
+              "direct": "CITES",
+              "survey": "CITES_IN_SURVEY"
+            },
+            "mapBack": {
+              "CITES": "direct",
+              "CITES_IN_SURVEY": "survey"
+            },
+            "op": "enum",
+            "to": "edges[].type"
+          }
+        ],
+        "source": "reading-group/export",
+        "target": "graph/v1"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "README.md: A graph > assertRoundTrip(network, [exported])",
+      "id": "examples.readme.5",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "cites": [
+            {
+              "cited": "p1",
+              "citing": "p2",
+              "kind": "direct"
+            },
+            {
+              "cited": "p1",
+              "citing": "p3",
+              "kind": "survey"
+            }
+          ],
+          "papers": [
+            {
+              "key": "p1",
+              "venue": "journal"
+            },
+            {
+              "key": "p2",
+              "venue": "workshop"
+            },
+            {
+              "key": "p3",
+              "venue": "journal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "staffNotes",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "origin",
+            "value": "branch-library"
+          }
+        ],
+        "rules": [
+          {
+            "from": "recordId",
+            "op": "move",
+            "to": "id"
+          },
+          {
+            "from": "subjects",
+            "op": "split",
+            "separator": ";",
+            "to": "topics"
+          },
+          {
+            "from": "copies[].barcode",
+            "op": "move",
+            "to": "holdings[].barcode"
+          },
+          {
+            "from": "digital",
+            "op": "move",
+            "to": "digital"
+          },
+          {
+            "from": "licence.url",
+            "op": "move",
+            "to": "access.licenceUrl",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "digital",
+                "kind": "reference"
+              },
+              "op": "eq",
+              "right": {
+                "kind": "booleanLiteral",
+                "value": true
+              }
+            }
+          }
+        ],
+        "source": "branch-library/record",
+        "target": "catalogue/v2"
+      },
+      "direction": "encode",
+      "document": {
+        "copies": [
+          {
+            "barcode": "0041"
+          },
+          {
+            "barcode": "0042"
+          }
+        ],
+        "digital": true,
+        "licence": {
+          "url": "https://example.org/licence"
+        },
+        "recordId": "BL-1042",
+        "staffNotes": "re-bind spine",
+        "subjects": "maps;local history"
+      },
+      "expect": {
+        "output": {
+          "access": {
+            "licenceUrl": "https://example.org/licence"
+          },
+          "digital": true,
+          "holdings": [
+            {
+              "barcode": "0041"
+            },
+            {
+              "barcode": "0042"
+            }
+          ],
+          "id": "BL-1042",
+          "origin": "branch-library",
+          "topics": [
+            "maps",
+            "local history"
+          ]
+        }
+      },
+      "from": "README.md: A nested record with an optional block > encode(catalogue, record)",
+      "id": "examples.readme.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "staffNotes",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "origin",
+            "value": "branch-library"
+          }
+        ],
+        "rules": [
+          {
+            "from": "recordId",
+            "op": "move",
+            "to": "id"
+          },
+          {
+            "from": "subjects",
+            "op": "split",
+            "separator": ";",
+            "to": "topics"
+          },
+          {
+            "from": "copies[].barcode",
+            "op": "move",
+            "to": "holdings[].barcode"
+          },
+          {
+            "from": "digital",
+            "op": "move",
+            "to": "digital"
+          },
+          {
+            "from": "licence.url",
+            "op": "move",
+            "to": "access.licenceUrl",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "digital",
+                "kind": "reference"
+              },
+              "op": "eq",
+              "right": {
+                "kind": "booleanLiteral",
+                "value": true
+              }
+            }
+          }
+        ],
+        "source": "branch-library/record",
+        "target": "catalogue/v2"
+      },
+      "direction": "decode",
+      "document": {
+        "access": {
+          "licenceUrl": "https://example.org/licence"
+        },
+        "digital": true,
+        "holdings": [
+          {
+            "barcode": "0041"
+          },
+          {
+            "barcode": "0042"
+          }
+        ],
+        "id": "BL-1042",
+        "origin": "branch-library",
+        "topics": [
+          "maps",
+          "local history"
+        ]
+      },
+      "expect": {
+        "output": {
+          "copies": [
+            {
+              "barcode": "0041"
+            },
+            {
+              "barcode": "0042"
+            }
+          ],
+          "digital": true,
+          "licence": {
+            "url": "https://example.org/licence"
+          },
+          "recordId": "BL-1042",
+          "subjects": "maps;local history"
+        }
+      },
+      "from": "README.md: A nested record with an optional block > decode(catalogue, entry) is the record again, except staffNotes",
+      "id": "examples.readme.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "staffNotes",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "origin",
+            "value": "branch-library"
+          }
+        ],
+        "rules": [
+          {
+            "from": "recordId",
+            "op": "move",
+            "to": "id"
+          },
+          {
+            "from": "subjects",
+            "op": "split",
+            "separator": ";",
+            "to": "topics"
+          },
+          {
+            "from": "copies[].barcode",
+            "op": "move",
+            "to": "holdings[].barcode"
+          },
+          {
+            "from": "digital",
+            "op": "move",
+            "to": "digital"
+          },
+          {
+            "from": "licence.url",
+            "op": "move",
+            "to": "access.licenceUrl",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "digital",
+                "kind": "reference"
+              },
+              "op": "eq",
+              "right": {
+                "kind": "booleanLiteral",
+                "value": true
+              }
+            }
+          }
+        ],
+        "source": "branch-library/record",
+        "target": "catalogue/v2"
+      },
+      "direction": "encode",
+      "document": {
+        "copies": [
+          {
+            "barcode": "0043"
+          }
+        ],
+        "digital": false,
+        "recordId": "BL-1043",
+        "subjects": "maps"
+      },
+      "expect": {
+        "output": {
+          "digital": false,
+          "holdings": [
+            {
+              "barcode": "0043"
+            }
+          ],
+          "id": "BL-1043",
+          "origin": "branch-library",
+          "topics": [
+            "maps"
+          ]
+        }
+      },
+      "from": "README.md: A nested record with an optional block > a print-only record has no licence block; the gated rule is skipped, not an error",
+      "id": "examples.readme.8",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "staffNotes",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "origin",
+            "value": "branch-library"
+          }
+        ],
+        "rules": [
+          {
+            "from": "recordId",
+            "op": "move",
+            "to": "id"
+          },
+          {
+            "from": "subjects",
+            "op": "split",
+            "separator": ";",
+            "to": "topics"
+          },
+          {
+            "from": "copies[].barcode",
+            "op": "move",
+            "to": "holdings[].barcode"
+          },
+          {
+            "from": "digital",
+            "op": "move",
+            "to": "digital"
+          },
+          {
+            "from": "licence.url",
+            "op": "move",
+            "to": "access.licenceUrl",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "digital",
+                "kind": "reference"
+              },
+              "op": "eq",
+              "right": {
+                "kind": "booleanLiteral",
+                "value": true
+              }
+            }
+          }
+        ],
+        "source": "branch-library/record",
+        "target": "catalogue/v2"
+      },
+      "expect": {
+        "ok": true
+      },
+      "from": "README.md: A nested record with an optional block > assertRoundTrip(catalogue, [record, printOnly])",
+      "id": "examples.readme.9",
+      "kind": "round-trip",
+      "samples": [
+        {
+          "copies": [
+            {
+              "barcode": "0041"
+            },
+            {
+              "barcode": "0042"
+            }
+          ],
+          "digital": true,
+          "licence": {
+            "url": "https://example.org/licence"
+          },
+          "recordId": "BL-1042",
+          "staffNotes": "re-bind spine",
+          "subjects": "maps;local history"
+        },
+        {
+          "copies": [
+            {
+              "barcode": "0043"
+            }
+          ],
+          "digital": false,
+          "recordId": "BL-1043",
+          "subjects": "maps"
+        }
+      ]
+    }
+  ]
+}

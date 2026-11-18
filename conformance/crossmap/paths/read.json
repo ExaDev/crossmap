@@ -1,0 +1,422 @@
+{
+  "cases": [
+    {
+      "document": {
+        "a": {
+          "b": 1
+        }
+      },
+      "expect": {
+        "empties": [],
+        "found": true,
+        "matches": [
+          {
+            "trail": [
+              {
+                "key": "a",
+                "kind": "key"
+              },
+              {
+                "key": "b",
+                "kind": "key"
+              }
+            ],
+            "value": 1
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: readLocus > reads a wildcard-free path",
+      "id": "paths.read.1",
+      "kind": "path-read",
+      "path": "a.b"
+    },
+    {
+      "document": {
+        "papers": [
+          {
+            "id": 1
+          },
+          {
+            "id": 2
+          }
+        ]
+      },
+      "expect": {
+        "empties": [],
+        "found": true,
+        "matches": [
+          {
+            "trail": [
+              {
+                "key": "papers",
+                "kind": "key"
+              },
+              {
+                "index": 0,
+                "kind": "index"
+              },
+              {
+                "key": "id",
+                "kind": "key"
+              }
+            ],
+            "value": 1
+          },
+          {
+            "trail": [
+              {
+                "key": "papers",
+                "kind": "key"
+              },
+              {
+                "index": 1,
+                "kind": "index"
+              },
+              {
+                "key": "id",
+                "kind": "key"
+              }
+            ],
+            "value": 2
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: readLocus > reads one match per element across a wildcard",
+      "id": "paths.read.2",
+      "kind": "path-read",
+      "path": "papers[].id"
+    },
+    {
+      "document": {
+        "grid": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "expect": {
+        "empties": [],
+        "found": true,
+        "matches": [
+          {
+            "trail": [
+              {
+                "key": "grid",
+                "kind": "key"
+              },
+              {
+                "index": 0,
+                "kind": "index"
+              },
+              {
+                "index": 0,
+                "kind": "index"
+              }
+            ],
+            "value": 0
+          },
+          {
+            "trail": [
+              {
+                "key": "grid",
+                "kind": "key"
+              },
+              {
+                "index": 0,
+                "kind": "index"
+              },
+              {
+                "index": 1,
+                "kind": "index"
+              }
+            ],
+            "value": 1
+          },
+          {
+            "trail": [
+              {
+                "key": "grid",
+                "kind": "key"
+              },
+              {
+                "index": 1,
+                "kind": "index"
+              },
+              {
+                "index": 0,
+                "kind": "index"
+              }
+            ],
+            "value": 2
+          },
+          {
+            "trail": [
+              {
+                "key": "grid",
+                "kind": "key"
+              },
+              {
+                "index": 1,
+                "kind": "index"
+              },
+              {
+                "index": 1,
+                "kind": "index"
+              }
+            ],
+            "value": 1
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: readLocus > reads nested wildcards in row-major order",
+      "id": "paths.read.3",
+      "kind": "path-read",
+      "path": "grid[][]"
+    },
+    {
+      "document": {
+        "pair": [
+          "x",
+          "y"
+        ]
+      },
+      "expect": {
+        "empties": [],
+        "found": true,
+        "matches": [
+          {
+            "trail": [
+              {
+                "key": "pair",
+                "kind": "key"
+              },
+              {
+                "index": 1,
+                "kind": "index"
+              }
+            ],
+            "value": "y"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: readLocus > reads one fixed element",
+      "id": "paths.read.4",
+      "kind": "path-read",
+      "path": "pair[1]"
+    },
+    {
+      "document": {
+        "a.b": {
+          "[]": 3
+        }
+      },
+      "expect": {
+        "empties": [],
+        "found": true,
+        "matches": [
+          {
+            "trail": [
+              {
+                "key": "a.b",
+                "kind": "key"
+              },
+              {
+                "key": "[]",
+                "kind": "key"
+              }
+            ],
+            "value": 3
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: readLocus > reads a key that needs quoting",
+      "id": "paths.read.5",
+      "kind": "path-read",
+      "path": "[\"a.b\"][\"[]\"]"
+    },
+    {
+      "document": {
+        "p": []
+      },
+      "expect": {
+        "empties": [
+          {
+            "trail": [
+              {
+                "key": "p",
+                "kind": "key"
+              }
+            ],
+            "wildcard": 0
+          }
+        ],
+        "found": true,
+        "matches": []
+      },
+      "from": "src/paths.unit.test.ts: readLocus > reports every empty array a wildcard meets, with the wildcard's ordinal",
+      "id": "paths.read.6",
+      "kind": "path-read",
+      "path": "p[].t[]"
+    },
+    {
+      "document": {
+        "p": [
+          {
+            "t": [
+              "x"
+            ]
+          },
+          {
+            "t": []
+          }
+        ]
+      },
+      "expect": {
+        "empties": [
+          {
+            "trail": [
+              {
+                "key": "p",
+                "kind": "key"
+              },
+              {
+                "index": 1,
+                "kind": "index"
+              },
+              {
+                "key": "t",
+                "kind": "key"
+              }
+            ],
+            "wildcard": 1
+          }
+        ],
+        "found": true,
+        "matches": [
+          {
+            "trail": [
+              {
+                "key": "p",
+                "kind": "key"
+              },
+              {
+                "index": 0,
+                "kind": "index"
+              },
+              {
+                "key": "t",
+                "kind": "key"
+              },
+              {
+                "index": 0,
+                "kind": "index"
+              }
+            ],
+            "value": "x"
+          }
+        ]
+      },
+      "from": "src/paths.unit.test.ts: readLocus > reports every empty array a wildcard meets, with the wildcard's ordinal",
+      "id": "paths.read.7",
+      "kind": "path-read",
+      "path": "p[].t[]"
+    },
+    {
+      "document": {
+        "a": {}
+      },
+      "expect": {
+        "found": false
+      },
+      "from": "src/paths.unit.test.ts: readLocus > returns undefined for a missing key",
+      "id": "paths.read.8",
+      "kind": "path-read",
+      "path": "a.b"
+    },
+    {
+      "document": {},
+      "expect": {
+        "found": false
+      },
+      "from": "src/paths.unit.test.ts: readLocus > returns undefined for a wildcard over a missing array",
+      "id": "paths.read.9",
+      "kind": "path-read",
+      "path": "a[].b"
+    },
+    {
+      "document": {
+        "a": [
+          1
+        ]
+      },
+      "expect": {
+        "found": false
+      },
+      "from": "src/paths.unit.test.ts: readLocus > returns undefined for a key step meeting an array",
+      "id": "paths.read.10",
+      "kind": "path-read",
+      "path": "a.b"
+    },
+    {
+      "document": {
+        "a": {
+          "b": 1
+        }
+      },
+      "expect": {
+        "found": false
+      },
+      "from": "src/paths.unit.test.ts: readLocus > returns undefined for a wildcard step meeting a record",
+      "id": "paths.read.11",
+      "kind": "path-read",
+      "path": "a[]"
+    },
+    {
+      "document": {
+        "a": [
+          1
+        ]
+      },
+      "expect": {
+        "found": false
+      },
+      "from": "src/paths.unit.test.ts: readLocus > returns undefined for an index past the end",
+      "id": "paths.read.12",
+      "kind": "path-read",
+      "path": "a[1]"
+    },
+    {
+      "document": {
+        "a": {
+          "0": 1
+        }
+      },
+      "expect": {
+        "found": false
+      },
+      "from": "src/paths.unit.test.ts: readLocus > returns undefined for an index step meeting a record",
+      "id": "paths.read.13",
+      "kind": "path-read",
+      "path": "a[0]"
+    },
+    {
+      "document": {
+        "a": [
+          1
+        ]
+      },
+      "expect": {
+        "found": false
+      },
+      "from": "src/paths.unit.test.ts: readLocus > returns undefined for a record key spelled as a digit meeting an array",
+      "id": "paths.read.14",
+      "kind": "path-read",
+      "path": "a.0"
+    }
+  ]
+}

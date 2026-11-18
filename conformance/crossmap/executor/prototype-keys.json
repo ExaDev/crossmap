@@ -1,0 +1,249 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "a.b",
+            "op": "move",
+            "to": "__proto__.polluted"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/prototype-keys.unit.test.ts: keys that name members of Object.prototype > refuses a __proto__ segment in a path (target side)",
+      "id": "executor.prototype-keys.1",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "__proto__.x",
+            "op": "move",
+            "to": "b.x"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/prototype-keys.unit.test.ts: keys that name members of Object.prototype > refuses a __proto__ segment in a path (leading from)",
+      "id": "executor.prototype-keys.2",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "a.__proto__",
+            "op": "move",
+            "to": "b.c"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/prototype-keys.unit.test.ts: keys that name members of Object.prototype > refuses a __proto__ segment in a path (trailing from)",
+      "id": "executor.prototype-keys.3",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "a.__proto__x",
+            "op": "move",
+            "to": "b.x__proto__"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [
+            {
+              "from": "a.__proto__x",
+              "op": "move",
+              "to": "b.x__proto__"
+            }
+          ],
+          "source": "n",
+          "target": "s"
+        }
+      },
+      "from": "src/prototype-keys.unit.test.ts: keys that name members of Object.prototype > still accepts a segment that merely contains or extends the word (__proto__x) (original asserted acceptance or rejection only; expectation recorded from the TypeScript implementation)",
+      "id": "executor.prototype-keys.4",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "__proto",
+            "op": "move",
+            "to": "proto__"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [
+            {
+              "from": "__proto",
+              "op": "move",
+              "to": "proto__"
+            }
+          ],
+          "source": "n",
+          "target": "s"
+        }
+      },
+      "from": "src/prototype-keys.unit.test.ts: keys that name members of Object.prototype > still accepts a segment that merely contains or extends the word (__proto) (original asserted acceptance or rejection only; expectation recorded from the TypeScript implementation)",
+      "id": "executor.prototype-keys.5",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "valueOf",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "valueOf",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/prototype-keys.unit.test.ts: keys that name members of Object.prototype > treats a name inherited from Object.prototype as absent (valueOf)",
+      "id": "executor.prototype-keys.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "constructor.name",
+            "op": "move",
+            "to": "b.name"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "constructor.name",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/prototype-keys.unit.test.ts: keys that name members of Object.prototype > treats a name inherited from Object.prototype as absent (constructor.name)",
+      "id": "executor.prototype-keys.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "k",
+            "map": {
+              "a": "A"
+            },
+            "mapBack": {
+              "A": "a"
+            },
+            "op": "enum",
+            "to": "v"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "k": "constructor"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "k",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/prototype-keys.unit.test.ts: keys that name members of Object.prototype > does not map an enum value that only the prototype chain names (encode)",
+      "id": "executor.prototype-keys.8",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "k",
+            "map": {
+              "a": "A"
+            },
+            "mapBack": {
+              "A": "a"
+            },
+            "op": "enum",
+            "to": "v"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "v": "toString"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "v",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/prototype-keys.unit.test.ts: keys that name members of Object.prototype > does not map an enum value that only the prototype chain names (decode)",
+      "id": "executor.prototype-keys.9",
+      "kind": "run"
+    }
+  ]
+}

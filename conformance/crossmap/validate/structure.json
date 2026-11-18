@@ -1,0 +1,607 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          },
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > accepts a valid crosswalk",
+      "id": "validate.structure.1",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "node.id"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "to path node.id has 0 wildcards where the first from has 1: mapping is index-aligned, one wildcard to one",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects a to path whose wildcards differ from its from path (messages recorded from the TypeScript implementation)",
+      "id": "validate.structure.2",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "grid[].row",
+            "op": "move",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "to path cells[][] has 2 wildcards where the first from has 1: mapping is index-aligned, one wildcard to one",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects a to path with more wildcards than its from path",
+      "id": "validate.structure.3",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b.a"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > accepts a change of depth around equal wildcards: nesting",
+      "id": "validate.structure.4",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a.b.c",
+            "op": "move",
+            "to": "c"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > accepts a change of depth around equal wildcards: flattening",
+      "id": "validate.structure.5",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a[].b.c",
+            "op": "move",
+            "to": "x[].c"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > accepts a change of depth around equal wildcards: flattening inside a wildcard",
+      "id": "validate.structure.6",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a[].b",
+            "op": "move",
+            "to": "a.b[]"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > accepts a change of depth around equal wildcards: moving a wildcard under a record",
+      "id": "validate.structure.7",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "grid[][]",
+            "op": "move",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > accepts a change of depth around equal wildcards: an array of arrays",
+      "id": "validate.structure.8",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          },
+          {
+            "from": "books[].id",
+            "op": "move",
+            "to": "nodes[].title"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "two source arrays (papers[], books[]) feed the one target array nodes[]: the merge is not index-invertible",
+            "ruleIndex": 1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects two source arrays feeding one target wildcard root (messages recorded from the TypeScript implementation)",
+      "id": "validate.structure.9",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "p[].a[].v",
+            "op": "move",
+            "to": "n[].l[].v"
+          },
+          {
+            "from": "p[].b[].w",
+            "op": "move",
+            "to": "n[].l[].w"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "two source arrays (p[].a[], p[].b[]) feed the one target array n[].l[]: the merge is not index-invertible",
+            "ruleIndex": 1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects two inner source arrays feeding one inner target array under a shared outer pair",
+      "id": "validate.structure.10",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "x",
+            "op": "move",
+            "to": "a.b"
+          },
+          {
+            "from": "y",
+            "op": "move",
+            "to": "[\"a\"][\"b\"]"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "two rules write the same to path: a.b",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects one path spelled two ways",
+      "id": "validate.structure.11",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "p[].x",
+            "op": "move",
+            "to": "n[].x"
+          },
+          {
+            "from": "q",
+            "op": "move",
+            "to": "n[0].y"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "the array n is addressed both by a fixed index and by a wildcard",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects an array addressed both by index and by wildcard on the to side",
+      "id": "validate.structure.12",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a[0].y",
+            "op": "move",
+            "to": "first"
+          },
+          {
+            "from": "a[].x",
+            "op": "move",
+            "to": "items[].x"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "the array a is addressed both by a fixed index and by a wildcard",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects an array addressed both by index and by wildcard on the from side",
+      "id": "validate.structure.13",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "n[0].z",
+            "value": 1
+          }
+        ],
+        "rules": [
+          {
+            "from": "p[].x",
+            "op": "move",
+            "to": "n[].x"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "the array n is addressed both by a fixed index and by a wildcard",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects an array addressed both by index and by wildcard in a default's to",
+      "id": "validate.structure.14",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "lat",
+            "op": "move",
+            "to": "point[0]"
+          },
+          {
+            "from": "lon",
+            "op": "move",
+            "to": "point[1]"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > accepts fixed indices into an array no wildcard iterates",
+      "id": "validate.structure.15",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          },
+          {
+            "from": "papers[].title",
+            "op": "move",
+            "to": "nodes[].title"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > accepts two rules sharing one wildcard root pair",
+      "id": "validate.structure.16",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "b",
+            "value": 1
+          }
+        ],
+        "rules": [
+          {
+            "from": "x",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "two rules write the same to path: b",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects a repeated to path across two-way and one-way rules (messages recorded from the TypeScript implementation)",
+      "id": "validate.structure.17",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "x",
+            "op": "drop"
+          }
+        ],
+        "rules": [
+          {
+            "from": "x",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "two rules use the same from path: x",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects a repeated from path across two-way and one-way rules (messages recorded from the TypeScript implementation)",
+      "id": "validate.structure.18",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "x",
+            "op": "move",
+            "to": "y",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "rows[].flag",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "when reference rows[].flag contains 1 wildcards where its rule's from has 0",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects a wildcard inside a when reference (messages recorded from the TypeScript implementation)",
+      "id": "validate.structure.19",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "x",
+            "op": "move",
+            "to": "y",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "meta[\"rows[]\"]",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > accepts a quoted key whose text contains brackets inside a when reference",
+      "id": "validate.structure.20",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "x",
+            "op": "move",
+            "to": "y",
+            "when": {
+              "collection": "rows[]",
+              "item": {
+                "kind": "compare",
+                "left": {
+                  "key": "flag",
+                  "kind": "reference"
+                },
+                "op": "eq",
+                "right": {
+                  "kind": "numberLiteral",
+                  "value": 1
+                }
+              },
+              "kind": "some"
+            }
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "when reference rows[] contains 1 wildcards where its rule's from has 0",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects a wildcard inside a when collection reference (messages recorded from the TypeScript implementation)",
+      "id": "validate.structure.21",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "rows[].flag",
+            "value": 1
+          }
+        ],
+        "rules": [],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "a default rule's to path must be wildcard-free: rows[].flag",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk > rejects a wildcard in a default rule's to path (messages recorded from the TypeScript implementation)",
+      "id": "validate.structure.22",
+      "kind": "validate"
+    }
+  ]
+}

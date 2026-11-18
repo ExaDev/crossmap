@@ -1,0 +1,1103 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          },
+          {
+            "factor": 0.01,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          },
+          {
+            "from": "status",
+            "map": {
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          },
+          {
+            "from": "when",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "whenIso"
+          },
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          },
+          {
+            "from": {
+              "family": "family",
+              "given": "given"
+            },
+            "op": "template",
+            "template": "{family}, {given}",
+            "to": "display"
+          },
+          {
+            "from": "id",
+            "op": "copy",
+            "to": [
+              "ref",
+              "meta.ref"
+            ]
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [
+            {
+              "direction": "encode",
+              "from": "internal",
+              "op": "drop"
+            },
+            {
+              "direction": "encode",
+              "op": "default",
+              "to": "locale",
+              "value": "en-GB"
+            }
+          ],
+          "rules": [
+            {
+              "from": "a",
+              "op": "move",
+              "to": "b"
+            },
+            {
+              "factor": 0.01,
+              "from": "cents",
+              "op": "scale",
+              "to": "units"
+            },
+            {
+              "from": "status",
+              "map": {
+                "open": "OPEN"
+              },
+              "mapBack": {
+                "OPEN": "open"
+              },
+              "op": "enum",
+              "to": "state"
+            },
+            {
+              "from": "when",
+              "kind": "isoDateTime",
+              "op": "format",
+              "to": "whenIso"
+            },
+            {
+              "from": "names",
+              "op": "split",
+              "separator": ",",
+              "to": "nameParts"
+            },
+            {
+              "from": {
+                "family": "family",
+                "given": "given"
+              },
+              "op": "template",
+              "template": "{family}, {given}",
+              "to": "display"
+            },
+            {
+              "from": "id",
+              "op": "copy",
+              "to": [
+                "ref",
+                "meta.ref"
+              ]
+            }
+          ],
+          "source": "native",
+          "target": "shared"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > accepts a crosswalk using every op (original asserted acceptance only; the parsed form is recorded) (original asserted acceptance or rejection only; expectation recorded from the TypeScript implementation)",
+      "id": "crosswalk.schema.1",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": [],
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a non-object",
+      "id": "crosswalk.schema.2",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "extra": 1,
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          },
+          {
+            "factor": 0.01,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          },
+          {
+            "from": "status",
+            "map": {
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          },
+          {
+            "from": "when",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "whenIso"
+          },
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          },
+          {
+            "from": {
+              "family": "family",
+              "given": "given"
+            },
+            "op": "template",
+            "template": "{family}, {given}",
+            "to": "display"
+          },
+          {
+            "from": "id",
+            "op": "copy",
+            "to": [
+              "ref",
+              "meta.ref"
+            ]
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects an unknown top-level field",
+      "id": "crosswalk.schema.3",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "teleport",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects an unknown op",
+      "id": "crosswalk.schema.4",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b",
+            "why": "x"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects an unknown rule field",
+      "id": "crosswalk.schema.5",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a..b",
+            "op": "move",
+            "to": "c"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a malformed path (a..b)",
+      "id": "crosswalk.schema.6",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": ".a",
+            "op": "move",
+            "to": "c"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a malformed path (.a)",
+      "id": "crosswalk.schema.7",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "factor": 0,
+            "from": "a",
+            "op": "scale",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a zero factor",
+      "id": "crosswalk.schema.8",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "map": {
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "OPEN": "closed"
+            },
+            "op": "enum",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a mapBack that does not invert map",
+      "id": "crosswalk.schema.9",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "map": {
+              "closed": "S",
+              "open": "S"
+            },
+            "mapBack": {
+              "S": "open"
+            },
+            "op": "enum",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a non-injective map",
+      "id": "crosswalk.schema.10",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "map": {
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a mapBack entry map never produces",
+      "id": "crosswalk.schema.11",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "upperCase",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects an unknown format kind",
+      "id": "crosswalk.schema.12",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": {
+              "family": "f",
+              "given": "g"
+            },
+            "op": "template",
+            "template": "{given}",
+            "to": "t"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "from field family appears in no placeholder, so encode would lose it"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a template with an unused field",
+      "id": "crosswalk.schema.13",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": {
+              "given": "g"
+            },
+            "op": "template",
+            "template": "{given} {nick}",
+            "to": "t"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "placeholder {nick} names no from field"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a template with an unknown placeholder",
+      "id": "crosswalk.schema.14",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": {
+              "given": "g"
+            },
+            "op": "template",
+            "template": "{given} {given}",
+            "to": "t"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "placeholder {given} appears twice: decode could not tell which occurrence holds the value"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a template with a repeated placeholder",
+      "id": "crosswalk.schema.15",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": {
+              "family": "f",
+              "given": "g"
+            },
+            "op": "template",
+            "template": "{given}{family}",
+            "to": "t"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "placeholders {given} and {family} are adjacent: with no literal between them, decode cannot tell where one ends"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a template with adjacent placeholders",
+      "id": "crosswalk.schema.16",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": {},
+            "op": "template",
+            "template": "fixed",
+            "to": "t"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "a template needs at least one placeholder"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a template with no placeholder",
+      "id": "crosswalk.schema.17",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": {
+              "given": "g"
+            },
+            "op": "template",
+            "template": "{given} }",
+            "to": "t"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "a lone } at position 8: write }} for a literal brace"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a template with a lone closing brace",
+      "id": "crosswalk.schema.18",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": {
+              "__proto__": "a"
+            },
+            "op": "template",
+            "template": "<{__proto__}>",
+            "to": "t"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a template field named __proto__",
+      "id": "crosswalk.schema.19",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "copy",
+            "to": [
+              "b"
+            ]
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a copy to one path",
+      "id": "crosswalk.schema.20",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "split",
+            "separator": "",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects an empty separator",
+      "id": "crosswalk.schema.21",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "from": "a",
+            "op": "drop"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          },
+          {
+            "factor": 0.01,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          },
+          {
+            "from": "status",
+            "map": {
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          },
+          {
+            "from": "when",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "whenIso"
+          },
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          },
+          {
+            "from": {
+              "family": "family",
+              "given": "given"
+            },
+            "op": "template",
+            "template": "{family}, {given}",
+            "to": "display"
+          },
+          {
+            "from": "id",
+            "op": "copy",
+            "to": [
+              "ref",
+              "meta.ref"
+            ]
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a drop rule whose direction is decode",
+      "id": "crosswalk.schema.22",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "key": "a",
+                "kind": "reference"
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [
+            {
+              "direction": "encode",
+              "from": "internal",
+              "op": "drop"
+            },
+            {
+              "direction": "encode",
+              "op": "default",
+              "to": "locale",
+              "value": "en-GB"
+            }
+          ],
+          "rules": [
+            {
+              "from": "a",
+              "op": "move",
+              "to": "b",
+              "when": {
+                "kind": "exists",
+                "operand": {
+                  "key": "a",
+                  "kind": "reference"
+                }
+              }
+            }
+          ],
+          "source": "native",
+          "target": "shared"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > accepts a when predicate from the trilean grammar",
+      "id": "crosswalk.schema.23",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b",
+            "when": {
+              "kind": "exists",
+              "operand": {
+                "kind": "nope"
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: CrosswalkSchema > rejects a when predicate outside the trilean grammar",
+      "id": "crosswalk.schema.24",
+      "kind": "parse"
+    }
+  ]
+}

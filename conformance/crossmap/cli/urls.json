@@ -1,0 +1,704 @@
+{
+  "cases": [
+    {
+      "args": [
+        "encode",
+        "{origin}/crosswalk.json",
+        "{dir}/doc.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stdoutJson": {
+          "id": "MF-2041",
+          "weightKilograms": 1250
+        }
+      },
+      "files": {
+        "doc.json": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}"
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > encodes a local document with a remote crosswalk",
+      "id": "cli.urls.1",
+      "kind": "cli",
+      "server": {
+        "/bad-crosswalk.json": {
+          "body": "{\"rules\":\"none\"}",
+          "status": 200
+        },
+        "/crosswalk.json": {
+          "body": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+          "status": 200
+        },
+        "/document.json": {
+          "body": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}",
+          "status": 200
+        },
+        "/from": {
+          "body": "",
+          "headers": {
+            "location": "/crosswalk.json"
+          },
+          "status": 302
+        },
+        "/gone": {
+          "body": "gone",
+          "status": 410
+        },
+        "/not-json": {
+          "body": "<html>",
+          "status": 200
+        },
+        "/samples.json": {
+          "body": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]",
+          "status": 200
+        },
+        "/shared.json": {
+          "body": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}",
+          "status": 200
+        }
+      }
+    },
+    {
+      "args": [
+        "encode",
+        "{dir}/cw.json",
+        "{origin}/document.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stdoutJson": {
+          "id": "MF-2041",
+          "weightKilograms": 1250
+        }
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}"
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > encodes a remote document with a local crosswalk",
+      "id": "cli.urls.2",
+      "kind": "cli",
+      "server": {
+        "/bad-crosswalk.json": {
+          "body": "{\"rules\":\"none\"}",
+          "status": 200
+        },
+        "/crosswalk.json": {
+          "body": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+          "status": 200
+        },
+        "/document.json": {
+          "body": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}",
+          "status": 200
+        },
+        "/from": {
+          "body": "",
+          "headers": {
+            "location": "/crosswalk.json"
+          },
+          "status": 302
+        },
+        "/gone": {
+          "body": "gone",
+          "status": 410
+        },
+        "/not-json": {
+          "body": "<html>",
+          "status": 200
+        },
+        "/samples.json": {
+          "body": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]",
+          "status": 200
+        },
+        "/shared.json": {
+          "body": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}",
+          "status": 200
+        }
+      }
+    },
+    {
+      "args": [
+        "encode",
+        "{origin}/crosswalk.json",
+        "{origin}/document.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stdoutJson": {
+          "id": "MF-2041",
+          "weightKilograms": 1250
+        }
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > encodes when both the crosswalk and the document are remote",
+      "id": "cli.urls.3",
+      "kind": "cli",
+      "server": {
+        "/bad-crosswalk.json": {
+          "body": "{\"rules\":\"none\"}",
+          "status": 200
+        },
+        "/crosswalk.json": {
+          "body": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+          "status": 200
+        },
+        "/document.json": {
+          "body": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}",
+          "status": 200
+        },
+        "/from": {
+          "body": "",
+          "headers": {
+            "location": "/crosswalk.json"
+          },
+          "status": 302
+        },
+        "/gone": {
+          "body": "gone",
+          "status": 410
+        },
+        "/not-json": {
+          "body": "<html>",
+          "status": 200
+        },
+        "/samples.json": {
+          "body": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]",
+          "status": 200
+        },
+        "/shared.json": {
+          "body": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}",
+          "status": 200
+        }
+      }
+    },
+    {
+      "args": [
+        "decode",
+        "{origin}/crosswalk.json",
+        "{origin}/shared.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stdoutJson": {
+          "consignmentId": "MF-2041",
+          "weightGrams": 1250000
+        }
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > decodes from URLs",
+      "id": "cli.urls.4",
+      "kind": "cli",
+      "server": {
+        "/bad-crosswalk.json": {
+          "body": "{\"rules\":\"none\"}",
+          "status": 200
+        },
+        "/crosswalk.json": {
+          "body": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+          "status": 200
+        },
+        "/document.json": {
+          "body": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}",
+          "status": 200
+        },
+        "/from": {
+          "body": "",
+          "headers": {
+            "location": "/crosswalk.json"
+          },
+          "status": 302
+        },
+        "/gone": {
+          "body": "gone",
+          "status": 410
+        },
+        "/not-json": {
+          "body": "<html>",
+          "status": 200
+        },
+        "/samples.json": {
+          "body": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]",
+          "status": 200
+        },
+        "/shared.json": {
+          "body": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}",
+          "status": 200
+        }
+      }
+    },
+    {
+      "args": [
+        "validate",
+        "{origin}/crosswalk.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stdout": ""
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > validates from a URL",
+      "id": "cli.urls.5",
+      "kind": "cli",
+      "server": {
+        "/bad-crosswalk.json": {
+          "body": "{\"rules\":\"none\"}",
+          "status": 200
+        },
+        "/crosswalk.json": {
+          "body": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+          "status": 200
+        },
+        "/document.json": {
+          "body": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}",
+          "status": 200
+        },
+        "/from": {
+          "body": "",
+          "headers": {
+            "location": "/crosswalk.json"
+          },
+          "status": 302
+        },
+        "/gone": {
+          "body": "gone",
+          "status": 410
+        },
+        "/not-json": {
+          "body": "<html>",
+          "status": 200
+        },
+        "/samples.json": {
+          "body": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]",
+          "status": 200
+        },
+        "/shared.json": {
+          "body": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}",
+          "status": 200
+        }
+      }
+    },
+    {
+      "args": [
+        "round-trip",
+        "{origin}/crosswalk.json",
+        "{origin}/samples.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stdout": ""
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > round-trips from URLs",
+      "id": "cli.urls.6",
+      "kind": "cli",
+      "server": {
+        "/bad-crosswalk.json": {
+          "body": "{\"rules\":\"none\"}",
+          "status": 200
+        },
+        "/crosswalk.json": {
+          "body": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+          "status": 200
+        },
+        "/document.json": {
+          "body": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}",
+          "status": 200
+        },
+        "/from": {
+          "body": "",
+          "headers": {
+            "location": "/crosswalk.json"
+          },
+          "status": 302
+        },
+        "/gone": {
+          "body": "gone",
+          "status": 410
+        },
+        "/not-json": {
+          "body": "<html>",
+          "status": 200
+        },
+        "/samples.json": {
+          "body": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]",
+          "status": 200
+        },
+        "/shared.json": {
+          "body": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}",
+          "status": 200
+        }
+      }
+    },
+    {
+      "args": [
+        "encode",
+        "{dir}/cw.json",
+        "data:application/json,%7B%22consignmentId%22%3A%22MF-2041%22%2C%22weightGrams%22%3A1250000%7D"
+      ],
+      "expect": {
+        "status": 0,
+        "stdoutJson": {
+          "id": "MF-2041",
+          "weightKilograms": 1250
+        }
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}"
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > reads a data: URL",
+      "id": "cli.urls.7",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "file://{dir}/cw.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stdout": ""
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}"
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > reads a file: URL",
+      "id": "cli.urls.8",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "{origin}/gone"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "cannot read {origin}/gone: HTTP 410"
+          ]
+        },
+        "stdout": ""
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > exits 2 naming the URL and the status for a non-2xx response",
+      "id": "cli.urls.9",
+      "kind": "cli",
+      "server": {
+        "/bad-crosswalk.json": {
+          "body": "{\"rules\":\"none\"}",
+          "status": 200
+        },
+        "/crosswalk.json": {
+          "body": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+          "status": 200
+        },
+        "/document.json": {
+          "body": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}",
+          "status": 200
+        },
+        "/from": {
+          "body": "",
+          "headers": {
+            "location": "/crosswalk.json"
+          },
+          "status": 302
+        },
+        "/gone": {
+          "body": "gone",
+          "status": 410
+        },
+        "/not-json": {
+          "body": "<html>",
+          "status": 200
+        },
+        "/samples.json": {
+          "body": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]",
+          "status": 200
+        },
+        "/shared.json": {
+          "body": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}",
+          "status": 200
+        }
+      }
+    },
+    {
+      "args": [
+        "validate",
+        "{origin}/not-json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "{origin}/not-json is not valid JSON"
+          ]
+        }
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > exits 2 naming the URL for a body that is not JSON",
+      "id": "cli.urls.10",
+      "kind": "cli",
+      "server": {
+        "/bad-crosswalk.json": {
+          "body": "{\"rules\":\"none\"}",
+          "status": 200
+        },
+        "/crosswalk.json": {
+          "body": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+          "status": 200
+        },
+        "/document.json": {
+          "body": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}",
+          "status": 200
+        },
+        "/from": {
+          "body": "",
+          "headers": {
+            "location": "/crosswalk.json"
+          },
+          "status": 302
+        },
+        "/gone": {
+          "body": "gone",
+          "status": 410
+        },
+        "/not-json": {
+          "body": "<html>",
+          "status": 200
+        },
+        "/samples.json": {
+          "body": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]",
+          "status": 200
+        },
+        "/shared.json": {
+          "body": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}",
+          "status": 200
+        }
+      }
+    },
+    {
+      "args": [
+        "validate",
+        "http://127.0.0.1:1/crosswalk.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "cannot read http://127.0.0.1:1/crosswalk.json: "
+          ]
+        }
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > exits 2 naming the URL when nothing is listening",
+      "id": "cli.urls.11",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "{origin}/bad-crosswalk.json"
+      ],
+      "expect": {
+        "status": 1,
+        "stderr": {
+          "startsWith": "crosswalk syntax error: "
+        }
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > keeps exit 1 for a remote crosswalk the codec rejects",
+      "id": "cli.urls.12",
+      "kind": "cli",
+      "server": {
+        "/bad-crosswalk.json": {
+          "body": "{\"rules\":\"none\"}",
+          "status": 200
+        },
+        "/crosswalk.json": {
+          "body": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+          "status": 200
+        },
+        "/document.json": {
+          "body": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}",
+          "status": 200
+        },
+        "/from": {
+          "body": "",
+          "headers": {
+            "location": "/crosswalk.json"
+          },
+          "status": 302
+        },
+        "/gone": {
+          "body": "gone",
+          "status": 410
+        },
+        "/not-json": {
+          "body": "<html>",
+          "status": 200
+        },
+        "/samples.json": {
+          "body": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]",
+          "status": 200
+        },
+        "/shared.json": {
+          "body": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}",
+          "status": 200
+        }
+      }
+    },
+    {
+      "args": [
+        "validate",
+        "ftp://example.test/crosswalk.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "cannot read ftp://example.test/crosswalk.json: unsupported scheme",
+            "http:, https:, data:, file:"
+          ]
+        }
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > exits 2 for a scheme it does not read (ftp://example.test/crosswalk.json)",
+      "id": "cli.urls.13",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "s3://bucket/crosswalk.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "cannot read s3://bucket/crosswalk.json: unsupported scheme",
+            "http:, https:, data:, file:"
+          ]
+        }
+      },
+      "from": "test/cli.e2e.test.ts: the crossmap command reading URLs > exits 2 for a scheme it does not read (s3://bucket/crosswalk.json)",
+      "id": "cli.urls.14",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "{origin}/from"
+      ],
+      "expect": {
+        "status": 0,
+        "stdout": ""
+      },
+      "from": "cli/read-source.unit.test.ts: readSource > follows a redirect",
+      "id": "cli.urls.15",
+      "kind": "cli",
+      "server": {
+        "/bad-crosswalk.json": {
+          "body": "{\"rules\":\"none\"}",
+          "status": 200
+        },
+        "/crosswalk.json": {
+          "body": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+          "status": 200
+        },
+        "/document.json": {
+          "body": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}",
+          "status": 200
+        },
+        "/from": {
+          "body": "",
+          "headers": {
+            "location": "/crosswalk.json"
+          },
+          "status": 302
+        },
+        "/gone": {
+          "body": "gone",
+          "status": 410
+        },
+        "/not-json": {
+          "body": "<html>",
+          "status": 200
+        },
+        "/samples.json": {
+          "body": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]",
+          "status": 200
+        },
+        "/shared.json": {
+          "body": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}",
+          "status": 200
+        }
+      }
+    },
+    {
+      "args": [
+        "validate",
+        "data:application/json,{\"source\":%20\"a\",\"target\":\"b\"}"
+      ],
+      "expect": {
+        "status": 0,
+        "stdout": ""
+      },
+      "from": "cli/read-source.unit.test.ts: readSource > reads a data URL, percent-encoded",
+      "id": "cli.urls.16",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "data:application/json;base64,eyJzb3VyY2UiOiJhIiwidGFyZ2V0IjoiYiJ9"
+      ],
+      "expect": {
+        "status": 0,
+        "stdout": ""
+      },
+      "from": "cli/read-source.unit.test.ts: readSource > reads a data URL, base64",
+      "id": "cli.urls.17",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "file://{dir}/absent.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "cannot read file://{dir}/absent.json: "
+          ]
+        }
+      },
+      "from": "cli/read-source.unit.test.ts: readSource > rejects a file URL for a missing file",
+      "id": "cli.urls.18",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "file://example.test/x.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "cannot read file://example.test/x.json: "
+          ]
+        }
+      },
+      "from": "cli/read-source.unit.test.ts: readSource > rejects a file URL naming a remote host",
+      "id": "cli.urls.19",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "git+ssh://example.test/x"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "cannot read git+ssh://example.test/x: unsupported scheme git+ssh: (supported: http:, https:, data:, file:, plain paths and -)"
+          ]
+        }
+      },
+      "from": "cli/read-source.unit.test.ts: readSource > rejects an unsupported scheme listing the supported ones (git+ssh)",
+      "id": "cli.urls.20",
+      "kind": "cli"
+    }
+  ]
+}

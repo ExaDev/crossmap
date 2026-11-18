@@ -1,0 +1,3141 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1
+      },
+      "expect": {
+        "output": {
+          "b": 1
+        }
+      },
+      "from": "src/corpus.ts: move (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "b": 1
+      },
+      "expect": {
+        "output": {
+          "a": 1
+        }
+      },
+      "from": "src/corpus.ts: move (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "a": {
+          "nested": true
+        }
+      },
+      "expect": {
+        "output": {
+          "b": {
+            "nested": true
+          }
+        }
+      },
+      "from": "src/corpus.ts: move (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "b": {
+          "nested": true
+        }
+      },
+      "expect": {
+        "output": {
+          "a": {
+            "nested": true
+          }
+        }
+      },
+      "from": "src/corpus.ts: move (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "a": [
+          1,
+          2
+        ]
+      },
+      "expect": {
+        "output": {
+          "b": [
+            1,
+            2
+          ]
+        }
+      },
+      "from": "src/corpus.ts: move (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "b": [
+          1,
+          2
+        ]
+      },
+      "expect": {
+        "output": {
+          "a": [
+            1,
+            2
+          ]
+        }
+      },
+      "from": "src/corpus.ts: move (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "cents": 199
+      },
+      "expect": {
+        "output": {
+          "units": 19900
+        }
+      },
+      "from": "src/corpus.ts: scale (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "units": 19900
+      },
+      "expect": {
+        "output": {
+          "cents": 199
+        }
+      },
+      "from": "src/corpus.ts: scale (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.8",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "cents": 0
+      },
+      "expect": {
+        "output": {
+          "units": 0
+        }
+      },
+      "from": "src/corpus.ts: scale (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.9",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "units": 0
+      },
+      "expect": {
+        "output": {
+          "cents": 0
+        }
+      },
+      "from": "src/corpus.ts: scale (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.10",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "cents": -42
+      },
+      "expect": {
+        "output": {
+          "units": -4200
+        }
+      },
+      "from": "src/corpus.ts: scale (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.11",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 100,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "units": -4200
+      },
+      "expect": {
+        "output": {
+          "cents": -42
+        }
+      },
+      "from": "src/corpus.ts: scale (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.12",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "status",
+            "map": {
+              "closed": "CLOSED",
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "status": "open"
+      },
+      "expect": {
+        "output": {
+          "state": "OPEN"
+        }
+      },
+      "from": "src/corpus.ts: enum (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.13",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "status",
+            "map": {
+              "closed": "CLOSED",
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "state": "OPEN"
+      },
+      "expect": {
+        "output": {
+          "status": "open"
+        }
+      },
+      "from": "src/corpus.ts: enum (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.14",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "status",
+            "map": {
+              "closed": "CLOSED",
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "status": "closed"
+      },
+      "expect": {
+        "output": {
+          "state": "CLOSED"
+        }
+      },
+      "from": "src/corpus.ts: enum (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.15",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "status",
+            "map": {
+              "closed": "CLOSED",
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "CLOSED": "closed",
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "state": "CLOSED"
+      },
+      "expect": {
+        "output": {
+          "status": "closed"
+        }
+      },
+      "from": "src/corpus.ts: enum (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.16",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "at",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "atMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "at": "2026-10-18T10:15:00.000Z"
+      },
+      "expect": {
+        "output": {
+          "atMs": 1792318500000
+        }
+      },
+      "from": "src/corpus.ts: format isoDateTime (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.17",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "at",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "atMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "atMs": 1792318500000
+      },
+      "expect": {
+        "output": {
+          "at": "2026-10-18T10:15:00.000Z"
+        }
+      },
+      "from": "src/corpus.ts: format isoDateTime (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.18",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "at",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "atMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "at": "2024-02-29T23:59:59.999Z"
+      },
+      "expect": {
+        "output": {
+          "atMs": 1709251199999
+        }
+      },
+      "from": "src/corpus.ts: format isoDateTime (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.19",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "at",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "atMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "atMs": 1709251199999
+      },
+      "expect": {
+        "output": {
+          "at": "2024-02-29T23:59:59.999Z"
+        }
+      },
+      "from": "src/corpus.ts: format isoDateTime (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.20",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "count",
+            "kind": "numberText",
+            "op": "format",
+            "to": "countText"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "count": "1234"
+      },
+      "expect": {
+        "output": {
+          "countText": 1234
+        }
+      },
+      "from": "src/corpus.ts: format numberText (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.21",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "count",
+            "kind": "numberText",
+            "op": "format",
+            "to": "countText"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "countText": 1234
+      },
+      "expect": {
+        "output": {
+          "count": "1234"
+        }
+      },
+      "from": "src/corpus.ts: format numberText (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.22",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "count",
+            "kind": "numberText",
+            "op": "format",
+            "to": "countText"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "count": "-7.5"
+      },
+      "expect": {
+        "output": {
+          "countText": -7.5
+        }
+      },
+      "from": "src/corpus.ts: format numberText (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.23",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "count",
+            "kind": "numberText",
+            "op": "format",
+            "to": "countText"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "countText": -7.5
+      },
+      "expect": {
+        "output": {
+          "count": "-7.5"
+        }
+      },
+      "from": "src/corpus.ts: format numberText (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.24",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "on",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "onMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "on": "2026-10-18"
+      },
+      "expect": {
+        "output": {
+          "onMs": 1792281600000
+        }
+      },
+      "from": "src/corpus.ts: format isoDate (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.25",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "on",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "onMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "onMs": 1792281600000
+      },
+      "expect": {
+        "output": {
+          "on": "2026-10-18"
+        }
+      },
+      "from": "src/corpus.ts: format isoDate (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.26",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "on",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "onMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "on": "2024-02-29"
+      },
+      "expect": {
+        "output": {
+          "onMs": 1709164800000
+        }
+      },
+      "from": "src/corpus.ts: format isoDate (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.27",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "on",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "onMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "onMs": 1709164800000
+      },
+      "expect": {
+        "output": {
+          "on": "2024-02-29"
+        }
+      },
+      "from": "src/corpus.ts: format isoDate (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.28",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "on",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "onMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "on": "1969-12-31"
+      },
+      "expect": {
+        "output": {
+          "onMs": -86400000
+        }
+      },
+      "from": "src/corpus.ts: format isoDate (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.29",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "on",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "onMs"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "onMs": -86400000
+      },
+      "expect": {
+        "output": {
+          "on": "1969-12-31"
+        }
+      },
+      "from": "src/corpus.ts: format isoDate (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.30",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "flag",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "isSet"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "flag": "true"
+      },
+      "expect": {
+        "output": {
+          "isSet": true
+        }
+      },
+      "from": "src/corpus.ts: format booleanText (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.31",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "flag",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "isSet"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "isSet": true
+      },
+      "expect": {
+        "output": {
+          "flag": "true"
+        }
+      },
+      "from": "src/corpus.ts: format booleanText (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.32",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "flag",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "isSet"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "flag": "false"
+      },
+      "expect": {
+        "output": {
+          "isSet": false
+        }
+      },
+      "from": "src/corpus.ts: format booleanText (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.33",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "flag",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "isSet"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "isSet": false
+      },
+      "expect": {
+        "output": {
+          "flag": "false"
+        }
+      },
+      "from": "src/corpus.ts: format booleanText (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.34",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "raw",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "value"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "raw": "{\"a\":[1,null,\"x\"]}"
+      },
+      "expect": {
+        "output": {
+          "value": {
+            "a": [
+              1,
+              null,
+              "x"
+            ]
+          }
+        }
+      },
+      "from": "src/corpus.ts: format jsonText (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.35",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "raw",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "value"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "value": {
+          "a": [
+            1,
+            null,
+            "x"
+          ]
+        }
+      },
+      "expect": {
+        "output": {
+          "raw": "{\"a\":[1,null,\"x\"]}"
+        }
+      },
+      "from": "src/corpus.ts: format jsonText (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.36",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "raw",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "value"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "raw": "\"text\""
+      },
+      "expect": {
+        "output": {
+          "value": "text"
+        }
+      },
+      "from": "src/corpus.ts: format jsonText (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.37",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "raw",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "value"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "value": "text"
+      },
+      "expect": {
+        "output": {
+          "raw": "\"text\""
+        }
+      },
+      "from": "src/corpus.ts: format jsonText (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.38",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "raw",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "value"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "raw": "[]"
+      },
+      "expect": {
+        "output": {
+          "value": []
+        }
+      },
+      "from": "src/corpus.ts: format jsonText (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.39",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "raw",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "value"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "value": []
+      },
+      "expect": {
+        "output": {
+          "raw": "[]"
+        }
+      },
+      "from": "src/corpus.ts: format jsonText (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.40",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "names": "alpha,beta"
+      },
+      "expect": {
+        "output": {
+          "nameParts": [
+            "alpha",
+            "beta"
+          ]
+        }
+      },
+      "from": "src/corpus.ts: split (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.41",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "nameParts": [
+          "alpha",
+          "beta"
+        ]
+      },
+      "expect": {
+        "output": {
+          "names": "alpha,beta"
+        }
+      },
+      "from": "src/corpus.ts: split (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.42",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "names": "solo"
+      },
+      "expect": {
+        "output": {
+          "nameParts": [
+            "solo"
+          ]
+        }
+      },
+      "from": "src/corpus.ts: split (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.43",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "nameParts": [
+          "solo"
+        ]
+      },
+      "expect": {
+        "output": {
+          "names": "solo"
+        }
+      },
+      "from": "src/corpus.ts: split (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.44",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "names": ""
+      },
+      "expect": {
+        "output": {
+          "nameParts": [
+            ""
+          ]
+        }
+      },
+      "from": "src/corpus.ts: split (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.45",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "nameParts": [
+          ""
+        ]
+      },
+      "expect": {
+        "output": {
+          "names": ""
+        }
+      },
+      "from": "src/corpus.ts: split (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.46",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          }
+        ],
+        "rules": [
+          {
+            "from": "kept",
+            "op": "move",
+            "to": "kept"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "internal": "x",
+        "kept": 1
+      },
+      "expect": {
+        "output": {
+          "kept": 1
+        }
+      },
+      "from": "src/corpus.ts: drop (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.47",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          }
+        ],
+        "rules": [
+          {
+            "from": "kept",
+            "op": "move",
+            "to": "kept"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "kept": 1
+      },
+      "expect": {
+        "output": {
+          "kept": 1
+        }
+      },
+      "from": "src/corpus.ts: drop (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.48",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          }
+        ],
+        "rules": [
+          {
+            "from": "kept",
+            "op": "move",
+            "to": "kept"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "kept": 2
+      },
+      "expect": {
+        "output": {
+          "kept": 2
+        }
+      },
+      "from": "src/corpus.ts: drop (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.49",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          }
+        ],
+        "rules": [
+          {
+            "from": "kept",
+            "op": "move",
+            "to": "kept"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "kept": 2
+      },
+      "expect": {
+        "output": {
+          "kept": 2
+        }
+      },
+      "from": "src/corpus.ts: drop (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.50",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "name"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "name": "parcel"
+      },
+      "expect": {
+        "output": {
+          "locale": "en-GB",
+          "name": "parcel"
+        }
+      },
+      "from": "src/corpus.ts: default encode-direction (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.51",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "name"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "locale": "en-GB",
+        "name": "parcel"
+      },
+      "expect": {
+        "output": {
+          "name": "parcel"
+        }
+      },
+      "from": "src/corpus.ts: default encode-direction (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.52",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "op": "default",
+            "to": "origin",
+            "value": "migration"
+          }
+        ],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "name"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "name": "parcel"
+      },
+      "expect": {
+        "output": {
+          "name": "parcel"
+        }
+      },
+      "from": "src/corpus.ts: default decode-direction (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.53",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "op": "default",
+            "to": "origin",
+            "value": "migration"
+          }
+        ],
+        "rules": [
+          {
+            "from": "name",
+            "op": "move",
+            "to": "name"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "name": "parcel"
+      },
+      "expect": {
+        "output": {
+          "name": "parcel",
+          "origin": "migration"
+        }
+      },
+      "from": "src/corpus.ts: default decode-direction (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.54",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          },
+          {
+            "factor": 1,
+            "from": "papers[].citations",
+            "op": "scale",
+            "to": "nodes[].citationCount"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "papers": [
+          {
+            "citations": 3,
+            "id": "p1"
+          },
+          {
+            "citations": 9,
+            "id": "p2"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "nodes": [
+            {
+              "citationCount": 3,
+              "ref": "p1"
+            },
+            {
+              "citationCount": 9,
+              "ref": "p2"
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: wildcard arity one (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.55",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          },
+          {
+            "factor": 1,
+            "from": "papers[].citations",
+            "op": "scale",
+            "to": "nodes[].citationCount"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "nodes": [
+          {
+            "citationCount": 3,
+            "ref": "p1"
+          },
+          {
+            "citationCount": 9,
+            "ref": "p2"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "papers": [
+            {
+              "citations": 3,
+              "id": "p1"
+            },
+            {
+              "citations": 9,
+              "id": "p2"
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: wildcard arity one (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.56",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          },
+          {
+            "factor": 1,
+            "from": "papers[].citations",
+            "op": "scale",
+            "to": "nodes[].citationCount"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "papers": [
+          {
+            "citations": 0,
+            "id": "only"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "nodes": [
+            {
+              "citationCount": 0,
+              "ref": "only"
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: wildcard arity one (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.57",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          },
+          {
+            "factor": 1,
+            "from": "papers[].citations",
+            "op": "scale",
+            "to": "nodes[].citationCount"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "nodes": [
+          {
+            "citationCount": 0,
+            "ref": "only"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "papers": [
+            {
+              "citations": 0,
+              "id": "only"
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: wildcard arity one (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.58",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          },
+          {
+            "factor": 1,
+            "from": "papers[].citations",
+            "op": "scale",
+            "to": "nodes[].citationCount"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "papers": []
+      },
+      "expect": {
+        "output": {
+          "nodes": []
+        }
+      },
+      "from": "src/corpus.ts: wildcard arity one (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.59",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "papers[].id",
+            "op": "move",
+            "to": "nodes[].ref"
+          },
+          {
+            "factor": 1,
+            "from": "papers[].citations",
+            "op": "scale",
+            "to": "nodes[].citationCount"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "nodes": []
+      },
+      "expect": {
+        "output": {
+          "papers": []
+        }
+      },
+      "from": "src/corpus.ts: wildcard arity one (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.60",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "people[].family",
+              "given": "people[].given"
+            },
+            "op": "template",
+            "template": "{family}, {given} {{verified}}",
+            "to": "names[]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "people": [
+          {
+            "family": "Lovelace",
+            "given": "Ada"
+          },
+          {
+            "family": "",
+            "given": "Alan, OBE"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "names": [
+            "Lovelace, Ada {verified}",
+            ", Alan, OBE {verified}"
+          ]
+        }
+      },
+      "from": "src/corpus.ts: template (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.61",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "people[].family",
+              "given": "people[].given"
+            },
+            "op": "template",
+            "template": "{family}, {given} {{verified}}",
+            "to": "names[]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "names": [
+          "Lovelace, Ada {verified}",
+          ", Alan, OBE {verified}"
+        ]
+      },
+      "expect": {
+        "output": {
+          "people": [
+            {
+              "family": "Lovelace",
+              "given": "Ada"
+            },
+            {
+              "family": "",
+              "given": "Alan, OBE"
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: template (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.62",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "people[].family",
+              "given": "people[].given"
+            },
+            "op": "template",
+            "template": "{family}, {given} {{verified}}",
+            "to": "names[]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "people": []
+      },
+      "expect": {
+        "output": {
+          "names": []
+        }
+      },
+      "from": "src/corpus.ts: template (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.63",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "people[].family",
+              "given": "people[].given"
+            },
+            "op": "template",
+            "template": "{family}, {given} {{verified}}",
+            "to": "names[]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "names": []
+      },
+      "expect": {
+        "output": {
+          "people": []
+        }
+      },
+      "from": "src/corpus.ts: template (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.64",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].id",
+            "op": "copy",
+            "to": [
+              "nodes[].id",
+              "labels[].text"
+            ]
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "items": [
+          {
+            "id": "a"
+          },
+          {
+            "id": {
+              "nested": [
+                1
+              ]
+            }
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "labels": [
+            {
+              "text": "a"
+            },
+            {
+              "text": {
+                "nested": [
+                  1
+                ]
+              }
+            }
+          ],
+          "nodes": [
+            {
+              "id": "a"
+            },
+            {
+              "id": {
+                "nested": [
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: copy (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.65",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].id",
+            "op": "copy",
+            "to": [
+              "nodes[].id",
+              "labels[].text"
+            ]
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "labels": [
+          {
+            "text": "a"
+          },
+          {
+            "text": {
+              "nested": [
+                1
+              ]
+            }
+          }
+        ],
+        "nodes": [
+          {
+            "id": "a"
+          },
+          {
+            "id": {
+              "nested": [
+                1
+              ]
+            }
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "items": [
+            {
+              "id": "a"
+            },
+            {
+              "id": {
+                "nested": [
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: copy (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.66",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].id",
+            "op": "copy",
+            "to": [
+              "nodes[].id",
+              "labels[].text"
+            ]
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "items": []
+      },
+      "expect": {
+        "output": {
+          "labels": [],
+          "nodes": []
+        }
+      },
+      "from": "src/corpus.ts: copy (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.67",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].id",
+            "op": "copy",
+            "to": [
+              "nodes[].id",
+              "labels[].text"
+            ]
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "labels": [],
+        "nodes": []
+      },
+      "expect": {
+        "output": {
+          "items": []
+        }
+      },
+      "from": "src/corpus.ts: copy (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.68",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "orders[].lines[].qty",
+            "op": "aggregate",
+            "to": "sales[].units"
+          },
+          {
+            "direction": "decode",
+            "fn": "max",
+            "from": "sales[].lines[].qty",
+            "op": "aggregate",
+            "to": "largestLine"
+          }
+        ],
+        "rules": [
+          {
+            "from": "orders[].lines[].qty",
+            "op": "move",
+            "to": "sales[].lines[].qty"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "orders": [
+          {
+            "lines": [
+              {
+                "qty": 1
+              },
+              {
+                "qty": 2
+              }
+            ]
+          },
+          {
+            "lines": [
+              {
+                "qty": 0
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "sales": [
+            {
+              "lines": [
+                {
+                  "qty": 1
+                },
+                {
+                  "qty": 2
+                }
+              ],
+              "units": 3
+            },
+            {
+              "lines": [
+                {
+                  "qty": 0
+                }
+              ],
+              "units": 0
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: aggregate (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.69",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "sum",
+            "from": "orders[].lines[].qty",
+            "op": "aggregate",
+            "to": "sales[].units"
+          },
+          {
+            "direction": "decode",
+            "fn": "max",
+            "from": "sales[].lines[].qty",
+            "op": "aggregate",
+            "to": "largestLine"
+          }
+        ],
+        "rules": [
+          {
+            "from": "orders[].lines[].qty",
+            "op": "move",
+            "to": "sales[].lines[].qty"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "sales": [
+          {
+            "lines": [
+              {
+                "qty": 1
+              },
+              {
+                "qty": 2
+              }
+            ],
+            "units": 3
+          },
+          {
+            "lines": [
+              {
+                "qty": 0
+              }
+            ],
+            "units": 0
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "largestLine": 2,
+          "orders": [
+            {
+              "lines": [
+                {
+                  "qty": 1
+                },
+                {
+                  "qty": 2
+                }
+              ]
+            },
+            {
+              "lines": [
+                {
+                  "qty": 0
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: aggregate (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.70",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "qty",
+            "op": "move",
+            "to": "qty"
+          },
+          {
+            "from": "bonus",
+            "op": "move",
+            "to": "perk",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "bonus": "yes",
+        "qty": 10
+      },
+      "expect": {
+        "output": {
+          "perk": "yes",
+          "qty": 10
+        }
+      },
+      "from": "src/corpus.ts: when applied (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.71",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "qty",
+            "op": "move",
+            "to": "qty"
+          },
+          {
+            "from": "bonus",
+            "op": "move",
+            "to": "perk",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "perk": "yes",
+        "qty": 10
+      },
+      "expect": {
+        "output": {
+          "bonus": "yes",
+          "qty": 10
+        }
+      },
+      "from": "src/corpus.ts: when applied (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.72",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "qty",
+            "op": "move",
+            "to": "qty"
+          },
+          {
+            "from": "bonus",
+            "op": "move",
+            "to": "perk",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "qty": 1
+      },
+      "expect": {
+        "output": {
+          "qty": 1
+        }
+      },
+      "from": "src/corpus.ts: when skipped (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.73",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "qty",
+            "op": "move",
+            "to": "qty"
+          },
+          {
+            "from": "bonus",
+            "op": "move",
+            "to": "perk",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "qty": 1
+      },
+      "expect": {
+        "output": {
+          "qty": 1
+        }
+      },
+      "from": "src/corpus.ts: when skipped (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.74",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].kind",
+            "op": "move",
+            "to": "shapes[].kind"
+          },
+          {
+            "from": "items[].radius",
+            "op": "move",
+            "to": "shapes[].r",
+            "when": {
+              "kind": "textCompare",
+              "left": {
+                "key": "items[].kind",
+                "kind": "reference"
+              },
+              "op": "equals",
+              "right": {
+                "kind": "textLiteral",
+                "value": "circle"
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "items": [
+          {
+            "kind": "circle",
+            "radius": 2
+          },
+          {
+            "kind": "square"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "shapes": [
+            {
+              "kind": "circle",
+              "r": 2
+            },
+            {
+              "kind": "square"
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: when per element (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.75",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].kind",
+            "op": "move",
+            "to": "shapes[].kind"
+          },
+          {
+            "from": "items[].radius",
+            "op": "move",
+            "to": "shapes[].r",
+            "when": {
+              "kind": "textCompare",
+              "left": {
+                "key": "items[].kind",
+                "kind": "reference"
+              },
+              "op": "equals",
+              "right": {
+                "kind": "textLiteral",
+                "value": "circle"
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "shapes": [
+          {
+            "kind": "circle",
+            "r": 2
+          },
+          {
+            "kind": "square"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "items": [
+            {
+              "kind": "circle",
+              "radius": 2
+            },
+            {
+              "kind": "square"
+            }
+          ]
+        }
+      },
+      "from": "src/corpus.ts: when per element (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.76",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].kind",
+            "op": "move",
+            "to": "shapes[].kind"
+          },
+          {
+            "from": "items[].radius",
+            "op": "move",
+            "to": "shapes[].r",
+            "when": {
+              "kind": "textCompare",
+              "left": {
+                "key": "items[].kind",
+                "kind": "reference"
+              },
+              "op": "equals",
+              "right": {
+                "kind": "textLiteral",
+                "value": "circle"
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "items": []
+      },
+      "expect": {
+        "output": {
+          "shapes": []
+        }
+      },
+      "from": "src/corpus.ts: when per element (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.77",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "items[].kind",
+            "op": "move",
+            "to": "shapes[].kind"
+          },
+          {
+            "from": "items[].radius",
+            "op": "move",
+            "to": "shapes[].r",
+            "when": {
+              "kind": "textCompare",
+              "left": {
+                "key": "items[].kind",
+                "kind": "reference"
+              },
+              "op": "equals",
+              "right": {
+                "kind": "textLiteral",
+                "value": "circle"
+              }
+            }
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "shapes": []
+      },
+      "expect": {
+        "output": {
+          "items": []
+        }
+      },
+      "from": "src/corpus.ts: when per element (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.78",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "street",
+            "op": "move",
+            "to": "address.street"
+          },
+          {
+            "from": "meta.owner.name",
+            "op": "move",
+            "to": "ownerName"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "meta": {
+          "owner": {
+            "name": "Ann"
+          }
+        },
+        "street": "High St"
+      },
+      "expect": {
+        "output": {
+          "address": {
+            "street": "High St"
+          },
+          "ownerName": "Ann"
+        }
+      },
+      "from": "src/corpus.ts: nest and flatten (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.79",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "street",
+            "op": "move",
+            "to": "address.street"
+          },
+          {
+            "from": "meta.owner.name",
+            "op": "move",
+            "to": "ownerName"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "address": {
+          "street": "High St"
+        },
+        "ownerName": "Ann"
+      },
+      "expect": {
+        "output": {
+          "meta": {
+            "owner": {
+              "name": "Ann"
+            }
+          },
+          "street": "High St"
+        }
+      },
+      "from": "src/corpus.ts: nest and flatten (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.80",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "grid[][]",
+            "op": "move",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "grid": [
+          [
+            "a",
+            "b"
+          ],
+          [],
+          [
+            "c"
+          ]
+        ]
+      },
+      "expect": {
+        "output": {
+          "cells": [
+            [
+              "a",
+              "b"
+            ],
+            [],
+            [
+              "c"
+            ]
+          ]
+        }
+      },
+      "from": "src/corpus.ts: array of arrays (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.81",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "grid[][]",
+            "op": "move",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "cells": [
+          [
+            "a",
+            "b"
+          ],
+          [],
+          [
+            "c"
+          ]
+        ]
+      },
+      "expect": {
+        "output": {
+          "grid": [
+            [
+              "a",
+              "b"
+            ],
+            [],
+            [
+              "c"
+            ]
+          ]
+        }
+      },
+      "from": "src/corpus.ts: array of arrays (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.82",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "grid[][]",
+            "op": "move",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "grid": []
+      },
+      "expect": {
+        "output": {
+          "cells": []
+        }
+      },
+      "from": "src/corpus.ts: array of arrays (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.83",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "grid[][]",
+            "op": "move",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "cells": []
+      },
+      "expect": {
+        "output": {
+          "grid": []
+        }
+      },
+      "from": "src/corpus.ts: array of arrays (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.84",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "grid[][]",
+            "op": "move",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "grid": [
+          []
+        ]
+      },
+      "expect": {
+        "output": {
+          "cells": [
+            []
+          ]
+        }
+      },
+      "from": "src/corpus.ts: array of arrays (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.85",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "grid[][]",
+            "op": "move",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "cells": [
+          []
+        ]
+      },
+      "expect": {
+        "output": {
+          "grid": [
+            []
+          ]
+        }
+      },
+      "from": "src/corpus.ts: array of arrays (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.86",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "point[0]",
+            "op": "move",
+            "to": "lat"
+          },
+          {
+            "from": "point[1]",
+            "op": "move",
+            "to": "lon"
+          },
+          {
+            "from": "rows[][0]",
+            "op": "move",
+            "to": "items[].name"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "point": [
+          "52.2N",
+          "0.1E"
+        ],
+        "rows": [
+          [
+            "a"
+          ],
+          [
+            "b"
+          ]
+        ]
+      },
+      "expect": {
+        "output": {
+          "items": [
+            {
+              "name": "a"
+            },
+            {
+              "name": "b"
+            }
+          ],
+          "lat": "52.2N",
+          "lon": "0.1E"
+        }
+      },
+      "from": "src/corpus.ts: fixed index (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.87",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "point[0]",
+            "op": "move",
+            "to": "lat"
+          },
+          {
+            "from": "point[1]",
+            "op": "move",
+            "to": "lon"
+          },
+          {
+            "from": "rows[][0]",
+            "op": "move",
+            "to": "items[].name"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "items": [
+          {
+            "name": "a"
+          },
+          {
+            "name": "b"
+          }
+        ],
+        "lat": "52.2N",
+        "lon": "0.1E"
+      },
+      "expect": {
+        "output": {
+          "point": [
+            "52.2N",
+            "0.1E"
+          ],
+          "rows": [
+            [
+              "a"
+            ],
+            [
+              "b"
+            ]
+          ]
+        }
+      },
+      "from": "src/corpus.ts: fixed index (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.88",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "[\"dc:title\"]",
+            "op": "move",
+            "to": "[\"a.b\"][\"[x]\"]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "encode",
+      "document": {
+        "dc:title": "Maps"
+      },
+      "expect": {
+        "output": {
+          "a.b": {
+            "[x]": "Maps"
+          }
+        }
+      },
+      "from": "src/corpus.ts: quoted key (encode half; the output is recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.89",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "[\"dc:title\"]",
+            "op": "move",
+            "to": "[\"a.b\"][\"[x]\"]"
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "direction": "decode",
+      "document": {
+        "a.b": {
+          "[x]": "Maps"
+        }
+      },
+      "expect": {
+        "output": {
+          "dc:title": "Maps"
+        }
+      },
+      "from": "src/corpus.ts: quoted key (decode half: decode of the encoding is the sample, minus paths a one-way rule touches) (output recorded from the TypeScript implementation)",
+      "id": "round-trip.corpus-samples.90",
+      "kind": "run"
+    }
+  ]
+}

@@ -1,0 +1,556 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "qty": 10
+      },
+      "expect": {
+        "output": {
+          "x": 1
+        }
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > applies on a definite true comparison",
+      "id": "when.predicates.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "qty": 3
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > skips on a definite false comparison",
+      "id": "when.predicates.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > skips on an indeterminate comparison over a missing reference",
+      "id": "when.predicates.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "meta": {
+          "a": 1
+        }
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > skips on an indeterminate comparison over a non-scalar reference (record)",
+      "id": "when.predicates.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "tags": [
+          1
+        ]
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > skips on an indeterminate comparison over a non-scalar reference (array)",
+      "id": "when.predicates.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "qty",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "order": {
+          "header": {
+            "total": 10
+          }
+        }
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > reads nested wildcard-free paths (reference to qty is still absent)",
+      "id": "when.predicates.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "key": "order.header.total",
+                "kind": "reference"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "order": {
+          "header": {
+            "total": 10
+          }
+        }
+      },
+      "expect": {
+        "output": {
+          "x": 1
+        }
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > reads nested wildcard-free paths (nested reference applies)",
+      "id": "when.predicates.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "not",
+              "operand": {
+                "kind": "compare",
+                "left": {
+                  "key": "qty",
+                  "kind": "reference"
+                },
+                "op": "gt",
+                "right": {
+                  "kind": "numberLiteral",
+                  "value": 5
+                }
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > skips when a not-value meets not-known logic",
+      "id": "when.predicates.8",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "collection": "lines",
+              "item": {
+                "kind": "compare",
+                "left": {
+                  "key": "qty",
+                  "kind": "reference"
+                },
+                "op": "gt",
+                "right": {
+                  "kind": "numberLiteral",
+                  "value": 5
+                }
+              },
+              "kind": "some"
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "lines": [
+          {
+            "qty": 1
+          },
+          {
+            "qty": 9
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "x": 1
+        }
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > evaluates a some over a path-resolved collection with item field references (true)",
+      "id": "when.predicates.9",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "collection": "lines",
+              "item": {
+                "kind": "compare",
+                "left": {
+                  "key": "qty",
+                  "kind": "reference"
+                },
+                "op": "gt",
+                "right": {
+                  "kind": "numberLiteral",
+                  "value": 5
+                }
+              },
+              "kind": "some"
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "lines": [
+          {
+            "qty": 1
+          },
+          {
+            "qty": 2
+          }
+        ]
+      },
+      "expect": {
+        "output": {}
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > evaluates a some over a path-resolved collection with item field references (false)",
+      "id": "when.predicates.10",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "collection": "lines",
+              "item": {
+                "kind": "compare",
+                "left": {
+                  "key": "qty",
+                  "kind": "reference"
+                },
+                "op": "gt",
+                "right": {
+                  "kind": "numberLiteral",
+                  "value": 5
+                }
+              },
+              "kind": "some"
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1
+      },
+      "expect": {
+        "error": {
+          "class": "Error",
+          "messageContains": [
+            "resolved to nothing"
+          ]
+        }
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > throws for a some over a missing collection (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "when.predicates.11",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "collection": "lines",
+              "item": {
+                "kind": "compare",
+                "left": {
+                  "key": "qty",
+                  "kind": "reference"
+                },
+                "op": "gt",
+                "right": {
+                  "kind": "numberLiteral",
+                  "value": 5
+                }
+              },
+              "kind": "some"
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "lines": [
+          9
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "Error",
+          "messageContains": [
+            "non-record element"
+          ]
+        }
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > throws for a collection with a non-record element (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "when.predicates.12",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x",
+            "when": {
+              "kind": "compare",
+              "left": {
+                "keys": [
+                  {
+                    "key": "code",
+                    "kind": "reference"
+                  }
+                ],
+                "kind": "lookup",
+                "table": "codes"
+              },
+              "op": "gt",
+              "right": {
+                "kind": "numberLiteral",
+                "value": 5
+              }
+            }
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1,
+        "code": "a"
+      },
+      "expect": {
+        "error": {
+          "class": "Error",
+          "messageContains": [
+            "lookup tables are not supported"
+          ]
+        }
+      },
+      "from": "src/when.unit.test.ts: evaluateWhen > throws for a lookup node, which v1 does not support (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "when.predicates.13",
+      "kind": "run"
+    }
+  ]
+}

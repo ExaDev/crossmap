@@ -1,0 +1,984 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "2026-10-18T10:15:00.000Z"
+      },
+      "expect": {
+        "output": {
+          "b": 1792318500000
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDateTime > parses an ISO timestamp to epoch milliseconds",
+      "id": "ops.format.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": 1792318500000
+      },
+      "expect": {
+        "output": {
+          "a": "2026-10-18T10:15:00.000Z"
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDateTime > renders epoch milliseconds back",
+      "id": "ops.format.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "2026-10-18"
+      },
+      "expect": {
+        "output": {
+          "b": 1792281600000
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDateTime > accepts a date-only form on encode",
+      "id": "ops.format.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "2026-10-18T10:15:00+01:00"
+      },
+      "expect": {
+        "output": {
+          "b": 1792314900000
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDateTime > accepts an offset form on encode",
+      "id": "ops.format.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "18/10/2026"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "not an ISO-8601"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDateTime > throws for a non-ISO string on encode (day-first)",
+      "id": "ops.format.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "next Tuesday"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "not an ISO-8601"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDateTime > throws for a non-ISO string on encode (prose)",
+      "id": "ops.format.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "2026-02-30"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "nonexistent"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDateTime > throws for a well-shaped but nonexistent instant",
+      "id": "ops.format.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 0
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "applies to strings"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDateTime > throws for a non-string on encode",
+      "id": "ops.format.8",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": "0"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "finite numbers"
+          ],
+          "path": "b",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDateTime > throws for a non-number on decode",
+      "id": "ops.format.9",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "numberText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "1234"
+      },
+      "expect": {
+        "output": {
+          "b": 1234
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format numberText > parses decimal text to a number (whole)",
+      "id": "ops.format.10",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "numberText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": 1234
+      },
+      "expect": {
+        "output": {
+          "a": "1234"
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format numberText > renders a number back (whole)",
+      "id": "ops.format.11",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "numberText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "-7.5"
+      },
+      "expect": {
+        "output": {
+          "b": -7.5
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format numberText > parses decimal text to a number (decimal)",
+      "id": "ops.format.12",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "numberText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": -7.5
+      },
+      "expect": {
+        "output": {
+          "a": "-7.5"
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format numberText > renders a number back (decimal)",
+      "id": "ops.format.13",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "numberText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "12x"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "decimal number"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format numberText > throws for non-decimal text",
+      "id": "ops.format.14",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "numberText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": ""
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "decimal number"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format numberText > throws for empty text",
+      "id": "ops.format.15",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "2026-10-18"
+      },
+      "expect": {
+        "output": {
+          "b": 1792281600000
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDate > parses a calendar date to its UTC midnight",
+      "id": "ops.format.16",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": 1792281600000
+      },
+      "expect": {
+        "output": {
+          "a": "2026-10-18"
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDate > renders the date back",
+      "id": "ops.format.17",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "2026-10-18T10:15:00Z"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDate > refuses 2026-10-18T10:15:00Z on encode",
+      "id": "ops.format.18",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "2026-02-30"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDate > refuses 2026-02-30 on encode",
+      "id": "ops.format.19",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "18/10/2026"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDate > refuses 18/10/2026 on encode",
+      "id": "ops.format.20",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "2026-1-8"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDate > refuses 2026-1-8 on encode",
+      "id": "ops.format.21",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "isoDate",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": 1792318500000
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "UTC midnight"
+          ],
+          "path": "b",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format isoDate > refuses an instant that is not a UTC midnight on decode",
+      "id": "ops.format.22",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "true"
+      },
+      "expect": {
+        "output": {
+          "b": true
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format booleanText > converts \"true\"",
+      "id": "ops.format.23",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "false"
+      },
+      "expect": {
+        "output": {
+          "b": false
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format booleanText > converts \"false\"",
+      "id": "ops.format.24",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": true
+      },
+      "expect": {
+        "output": {
+          "a": "true"
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format booleanText > renders true",
+      "id": "ops.format.25",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": false
+      },
+      "expect": {
+        "output": {
+          "a": "false"
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format booleanText > renders false",
+      "id": "ops.format.26",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "True"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format booleanText > refuses \"True\" on encode",
+      "id": "ops.format.27",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "1"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format booleanText > refuses \"1\" on encode",
+      "id": "ops.format.28",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "booleanText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": "true"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [],
+          "path": "b",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format booleanText > refuses a string on decode",
+      "id": "ops.format.29",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "{\"a\":[1,null,\"x\"],\"b\":{\"c\":true}}"
+      },
+      "expect": {
+        "output": {
+          "b": {
+            "a": [
+              1,
+              null,
+              "x"
+            ],
+            "b": {
+              "c": true
+            }
+          }
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format jsonText > parses JSON text",
+      "id": "ops.format.30",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": {
+          "a": [
+            1,
+            null,
+            "x"
+          ],
+          "b": {
+            "c": true
+          }
+        }
+      },
+      "expect": {
+        "output": {
+          "a": "{\"a\":[1,null,\"x\"],\"b\":{\"c\":true}}"
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format jsonText > renders JSON back canonically",
+      "id": "ops.format.31",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "{a:1}"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "not JSON text"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format jsonText > refuses text that is not JSON",
+      "id": "ops.format.32",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "kind": "jsonText",
+            "op": "format",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "{\"x\":[{\"__proto__\":1}]}"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "__proto__"
+          ],
+          "path": "a",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/format.unit.test.ts: format jsonText > refuses JSON holding a __proto__ key anywhere",
+      "id": "ops.format.33",
+      "kind": "run"
+    }
+  ]
+}

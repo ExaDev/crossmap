@@ -1,0 +1,124 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "count",
+            "from": "n",
+            "op": "aggregate",
+            "to": "c"
+          }
+        ],
+        "rules": [],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "an aggregate's from (n) needs more wildcards than its to (c): it combines the elements of the wildcards to drops",
+            "ruleIndex": 0
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on aggregates > needs more wildcards in from than in to",
+      "id": "validate.aggregate.1",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "fn": "count",
+            "from": "refunds[].x[]",
+            "op": "aggregate",
+            "to": "sales[].n"
+          }
+        ],
+        "rules": [
+          {
+            "from": "orders[].id",
+            "op": "move",
+            "to": "sales[].id"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "an aggregate groups refunds[] into sales[], which orders[] feeds: the results would land in the wrong elements",
+            "ruleIndex": 1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on aggregates > rejects grouping into a target array another source array feeds",
+      "id": "validate.aggregate.2",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "fn": "count",
+            "from": "xs[]",
+            "op": "aggregate",
+            "to": "total"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "total"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": []
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on aggregates > compares a decode-direction write with the source-side paths (no issue)",
+      "id": "validate.aggregate.3",
+      "kind": "validate"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "decode",
+            "op": "default",
+            "to": "total",
+            "value": 0
+          }
+        ],
+        "rules": [
+          {
+            "from": "total",
+            "op": "move",
+            "to": "t"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "issues": [
+          {
+            "message": "two rules use the same from path: total",
+            "ruleIndex": -1
+          }
+        ]
+      },
+      "from": "src/validate.unit.test.ts: validateCrosswalk on aggregates > compares a decode-direction default with the source-side paths",
+      "id": "validate.aggregate.4",
+      "kind": "validate"
+    }
+  ]
+}

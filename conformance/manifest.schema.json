@@ -1,0 +1,60 @@
+{
+  "$defs": {
+    "id": {
+      "description": "Unique across the whole corpus; lower-case ASCII letters, digits, dots, hyphens and underscores.",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$",
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "files": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "cases": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "generated": {
+            "const": true
+          },
+          "skip": {
+            "additionalProperties": false,
+            "properties": {
+              "rust": {
+                "items": {
+                  "$ref": "#/$defs/id"
+                },
+                "type": "array"
+              },
+              "ts": {
+                "items": {
+                  "$ref": "#/$defs/id"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "rust",
+              "ts"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "cases",
+          "skip"
+        ],
+        "type": "object"
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "files"
+  ],
+  "title": "The conformance manifest",
+  "type": "object"
+}

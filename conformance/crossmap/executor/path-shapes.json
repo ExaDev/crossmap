@@ -1,0 +1,703 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "street",
+            "op": "move",
+            "to": "address.street"
+          },
+          {
+            "from": "meta.owner.name",
+            "op": "move",
+            "to": "ownerName"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "meta": {
+          "owner": {
+            "name": "Ann"
+          }
+        },
+        "street": "High St"
+      },
+      "expect": {
+        "output": {
+          "address": {
+            "street": "High St"
+          },
+          "ownerName": "Ann"
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > nests and flattens with move rules (encode half)",
+      "id": "executor.path-shapes.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "street",
+            "op": "move",
+            "to": "address.street"
+          },
+          {
+            "from": "meta.owner.name",
+            "op": "move",
+            "to": "ownerName"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "address": {
+          "street": "High St"
+        },
+        "ownerName": "Ann"
+      },
+      "expect": {
+        "output": {
+          "meta": {
+            "owner": {
+              "name": "Ann"
+            }
+          },
+          "street": "High St"
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > nests and flattens with move rules (decode half)",
+      "id": "executor.path-shapes.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 2,
+            "from": "grid[][]",
+            "op": "scale",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "grid": [
+          [
+            1,
+            2
+          ],
+          [],
+          [
+            1
+          ]
+        ]
+      },
+      "expect": {
+        "output": {
+          "cells": [
+            [
+              2,
+              4
+            ],
+            [],
+            [
+              2
+            ]
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > maps an array of arrays index-aligned at both levels (encode half)",
+      "id": "executor.path-shapes.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "factor": 2,
+            "from": "grid[][]",
+            "op": "scale",
+            "to": "cells[][]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "cells": [
+          [
+            2,
+            4
+          ],
+          [],
+          [
+            2
+          ]
+        ]
+      },
+      "expect": {
+        "output": {
+          "grid": [
+            [
+              1,
+              2
+            ],
+            [],
+            [
+              1
+            ]
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > maps an array of arrays index-aligned at both levels (decode half)",
+      "id": "executor.path-shapes.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "p[].t[]",
+            "op": "move",
+            "to": "n[].l[]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "p": [
+          {
+            "t": []
+          },
+          {
+            "t": [
+              "x"
+            ]
+          },
+          {
+            "t": []
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "n": [
+            {
+              "l": []
+            },
+            {
+              "l": [
+                "x"
+              ]
+            },
+            {
+              "l": []
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > keeps an inner empty array, trailing or not, so the outer array keeps its length (encode half)",
+      "id": "executor.path-shapes.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "p[].t[]",
+            "op": "move",
+            "to": "n[].l[]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "n": [
+          {
+            "l": []
+          },
+          {
+            "l": [
+              "x"
+            ]
+          },
+          {
+            "l": []
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "p": [
+            {
+              "t": []
+            },
+            {
+              "t": [
+                "x"
+              ]
+            },
+            {
+              "t": []
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > keeps an inner empty array, trailing or not, so the outer array keeps its length (decode half)",
+      "id": "executor.path-shapes.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "x.y",
+            "op": "move",
+            "to": "a.0"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "x": {
+          "y": "v"
+        }
+      },
+      "expect": {
+        "output": {
+          "a": {
+            "0": "v"
+          }
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > treats a key spelled as a digit as a record key (encode half)",
+      "id": "executor.path-shapes.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "x.y",
+            "op": "move",
+            "to": "a.0"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "a": {
+          "0": "v"
+        }
+      },
+      "expect": {
+        "output": {
+          "x": {
+            "y": "v"
+          }
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > treats a key spelled as a digit as a record key (decode half)",
+      "id": "executor.path-shapes.8",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "[\"dc:title\"]",
+            "op": "move",
+            "to": "title"
+          },
+          {
+            "from": "[\"a.b\"][\"[x]\"]",
+            "op": "move",
+            "to": "[\"c d\"]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a.b": {
+          "[x]": 1
+        },
+        "dc:title": "Maps"
+      },
+      "expect": {
+        "output": {
+          "c d": 1,
+          "title": "Maps"
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > reads and writes keys that need quoting (encode half)",
+      "id": "executor.path-shapes.9",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "[\"dc:title\"]",
+            "op": "move",
+            "to": "title"
+          },
+          {
+            "from": "[\"a.b\"][\"[x]\"]",
+            "op": "move",
+            "to": "[\"c d\"]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "c d": 1,
+        "title": "Maps"
+      },
+      "expect": {
+        "output": {
+          "a.b": {
+            "[x]": 1
+          },
+          "dc:title": "Maps"
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > reads and writes keys that need quoting (decode half)",
+      "id": "executor.path-shapes.10",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "point[0]",
+            "op": "move",
+            "to": "lat"
+          },
+          {
+            "from": "point[1]",
+            "op": "move",
+            "to": "lon"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "point": [
+          "52.2N",
+          "0.1E"
+        ]
+      },
+      "expect": {
+        "output": {
+          "lat": "52.2N",
+          "lon": "0.1E"
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > maps fixed positions of a tuple (encode half)",
+      "id": "executor.path-shapes.11",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "point[0]",
+            "op": "move",
+            "to": "lat"
+          },
+          {
+            "from": "point[1]",
+            "op": "move",
+            "to": "lon"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "lat": "52.2N",
+        "lon": "0.1E"
+      },
+      "expect": {
+        "output": {
+          "point": [
+            "52.2N",
+            "0.1E"
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > maps fixed positions of a tuple (decode half)",
+      "id": "executor.path-shapes.12",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "rows[][0]",
+            "op": "move",
+            "to": "items[].name"
+          },
+          {
+            "from": "rows[][1]",
+            "op": "move",
+            "to": "items[].count"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "rows": [
+          [
+            "a",
+            1
+          ],
+          [
+            "b",
+            2
+          ]
+        ]
+      },
+      "expect": {
+        "output": {
+          "items": [
+            {
+              "count": 1,
+              "name": "a"
+            },
+            {
+              "count": 2,
+              "name": "b"
+            }
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > maps a fixed index under a wildcard (encode half)",
+      "id": "executor.path-shapes.13",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "rows[][0]",
+            "op": "move",
+            "to": "items[].name"
+          },
+          {
+            "from": "rows[][1]",
+            "op": "move",
+            "to": "items[].count"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "items": [
+          {
+            "count": 1,
+            "name": "a"
+          },
+          {
+            "count": 2,
+            "name": "b"
+          }
+        ]
+      },
+      "expect": {
+        "output": {
+          "rows": [
+            [
+              "a",
+              1
+            ],
+            [
+              "b",
+              2
+            ]
+          ]
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > maps a fixed index under a wildcard (decode half)",
+      "id": "executor.path-shapes.14",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "point[1]",
+            "op": "move",
+            "to": "lon"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "point": [
+          1
+        ]
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "point[1]",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > throws RuleApplicationError when the array is shorter than a fixed index",
+      "id": "executor.path-shapes.15",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "lon",
+            "op": "move",
+            "to": "point[1]"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "lon": 1
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "point[0]: no rule wrote this array element, so the array would have a gap"
+          ],
+          "path": "point[0]",
+          "ruleIndex": -1
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > throws RuleApplicationError naming the gap when no rule writes an earlier element",
+      "id": "executor.path-shapes.16",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x"
+          },
+          {
+            "from": "b",
+            "op": "move",
+            "to": "x.y"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": {
+          "z": 1
+        },
+        "b": 2
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "x.y",
+          "ruleIndex": 1
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > throws for two rules claiming one location whichever comes first (whole first) (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "executor.path-shapes.17",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "b",
+            "op": "move",
+            "to": "x.y"
+          },
+          {
+            "from": "a",
+            "op": "move",
+            "to": "x"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": {
+          "z": 1
+        },
+        "b": 2
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "x",
+          "ruleIndex": 1
+        }
+      },
+      "from": "src/executor.unit.test.ts: paths beyond records and one wildcard > throws for two rules claiming one location whichever comes first (part first) (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "executor.path-shapes.18",
+      "kind": "run"
+    }
+  ]
+}

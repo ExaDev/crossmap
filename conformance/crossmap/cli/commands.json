@@ -1,0 +1,211 @@
+{
+  "cases": [
+    {
+      "args": [
+        "encode",
+        "{dir}/cw.json",
+        "{dir}/doc.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stderr": {
+          "equals": ""
+        },
+        "stdoutJson": {
+          "id": "MF-2041",
+          "weightKilograms": 1250
+        }
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+        "doc.json": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}"
+      },
+      "from": "cli/run.unit.test.ts: run > encodes a document and prints it as JSON",
+      "id": "cli.commands.1",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "encode",
+        "{dir}/cw.json",
+        "{dir}/doc.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stderr": {
+          "equals": ""
+        },
+        "stdout": "{\n  \"id\": \"MF-2041\",\n  \"weightKilograms\": 1250\n}\n"
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+        "doc.json": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}"
+      },
+      "from": "cli/run.unit.test.ts: run > prints with two-space indentation and one trailing line feed (key order is the rule order here)",
+      "id": "cli.commands.2",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "decode",
+        "{dir}/cw.json",
+        "{dir}/doc.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stdoutJson": {
+          "consignmentId": "MF-2041",
+          "weightGrams": 1250000
+        }
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+        "doc.json": "{\"id\":\"MF-2041\",\"weightKilograms\":1250}"
+      },
+      "from": "cli/run.unit.test.ts: run > decodes a document back to the source shape",
+      "id": "cli.commands.3",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "{dir}/cw.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stderr": {
+          "equals": ""
+        },
+        "stdout": ""
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}"
+      },
+      "from": "cli/run.unit.test.ts: run > validates a sound crosswalk silently",
+      "id": "cli.commands.4",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "{dir}/cw.json"
+      ],
+      "expect": {
+        "status": 1,
+        "stderr": {
+          "equals": "crosswalk structure error: two rules write the same to path: id\n"
+        },
+        "stdout": ""
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001},{\"op\":\"move\",\"from\":\"other\",\"to\":\"id\"}]}"
+      },
+      "from": "cli/run.unit.test.ts: run > rejects a structurally unsound crosswalk, naming the rule",
+      "id": "cli.commands.5",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "encode",
+        "{dir}/cw.json",
+        "{dir}/doc.json"
+      ],
+      "expect": {
+        "status": 1,
+        "stderr": {
+          "contains": [
+            "rule 0 (consignmentId)"
+          ]
+        }
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+        "doc.json": "{}"
+      },
+      "from": "cli/run.unit.test.ts: run > rejects a document a rule cannot apply to, with the library's message",
+      "id": "cli.commands.6",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "validate",
+        "{dir}/cw.json"
+      ],
+      "expect": {
+        "status": 1,
+        "stderr": {
+          "startsWith": "crosswalk syntax error: "
+        }
+      },
+      "files": {
+        "cw.json": "{\"rules\":\"none\"}"
+      },
+      "from": "cli/run.unit.test.ts: run > rejects a value that is not a crosswalk",
+      "id": "cli.commands.7",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "round-trip",
+        "{dir}/cw.json",
+        "{dir}/samples.json"
+      ],
+      "expect": {
+        "status": 0,
+        "stderr": {
+          "equals": ""
+        },
+        "stdout": ""
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+        "samples.json": "[{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}]"
+      },
+      "from": "cli/run.unit.test.ts: run > passes a round trip that reproduces every sample",
+      "id": "cli.commands.8",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "round-trip",
+        "{dir}/cw.json",
+        "{dir}/samples.json"
+      ],
+      "expect": {
+        "status": 1,
+        "stderr": {
+          "startsWith": "sample 0 "
+        }
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.1}]}",
+        "samples.json": "[{\"weightGrams\":3}]"
+      },
+      "from": "cli/run.unit.test.ts: run > fails a round trip whose decode differs from its sample",
+      "id": "cli.commands.9",
+      "kind": "cli"
+    },
+    {
+      "args": [
+        "round-trip",
+        "{dir}/cw.json",
+        "{dir}/samples.json"
+      ],
+      "expect": {
+        "status": 2,
+        "stderr": {
+          "contains": [
+            "JSON array"
+          ]
+        }
+      },
+      "files": {
+        "cw.json": "{\"source\":\"meridian-freight/consignment\",\"target\":\"shared/consignment/v1\",\"rules\":[{\"op\":\"move\",\"from\":\"consignmentId\",\"to\":\"id\"},{\"op\":\"scale\",\"from\":\"weightGrams\",\"to\":\"weightKilograms\",\"factor\":0.001}]}",
+        "samples.json": "{\"consignmentId\":\"MF-2041\",\"weightGrams\":1250000}"
+      },
+      "from": "cli/run.unit.test.ts: run > treats a samples file that is not an array as a usage error",
+      "id": "cli.commands.10",
+      "kind": "cli"
+    }
+  ]
+}

@@ -1,0 +1,515 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "family",
+              "given": "given",
+              "id": "id"
+            },
+            "op": "template",
+            "template": "{family}, {given} ({id})",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "family": "Lovelace",
+        "given": "Ada",
+        "id": "a1"
+      },
+      "expect": {
+        "output": {
+          "t": "Lovelace, Ada (a1)"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: template > renders",
+      "id": "ops.template.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "family",
+              "given": "given",
+              "id": "id"
+            },
+            "op": "template",
+            "template": "{family}, {given} ({id})",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "t": "Lovelace, Ada (a1)"
+      },
+      "expect": {
+        "output": {
+          "family": "Lovelace",
+          "given": "Ada",
+          "id": "a1"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: template > splits back",
+      "id": "ops.template.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "family",
+              "given": "given",
+              "id": "id"
+            },
+            "op": "template",
+            "template": "{family}, {given} ({id})",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "t": ",  ()"
+      },
+      "expect": {
+        "output": {
+          "family": "",
+          "given": "",
+          "id": ""
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: template > splits empty fields",
+      "id": "ops.template.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "family",
+              "given": "given",
+              "id": "id"
+            },
+            "op": "template",
+            "template": "{family}, {given} ({id})",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "family": "Smith, Jr",
+        "given": "Ann",
+        "id": "x"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "template field family holds \"Smith, Jr\""
+          ],
+          "path": "family, given, id",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: template > refuses a value holding the boundary that follows it (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "ops.template.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "family",
+              "given": "given",
+              "id": "id"
+            },
+            "op": "template",
+            "template": "{family}, {given} ({id})",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "family": "Smith",
+        "given": "Ann, PhD",
+        "id": "x"
+      },
+      "expect": {
+        "output": {
+          "t": "Smith, Ann, PhD (x)"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: template > accepts a value holding a boundary that does not follow it (encode)",
+      "id": "ops.template.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "family",
+              "given": "given",
+              "id": "id"
+            },
+            "op": "template",
+            "template": "{family}, {given} ({id})",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "t": "Smith, Ann, PhD (x)"
+      },
+      "expect": {
+        "output": {
+          "family": "Smith",
+          "given": "Ann, PhD",
+          "id": "x"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: template > accepts a value holding a boundary that does not follow it (decode)",
+      "id": "ops.template.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "family",
+              "given": "given",
+              "id": "id"
+            },
+            "op": "template",
+            "template": "{family}, {given} ({id})",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "family": "a",
+        "given": "b",
+        "id": 1
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "messageContains": [
+            "must be a string"
+          ],
+          "path": "family, given, id",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: template > refuses a value that is not a string (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "ops.template.7",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "family": "family",
+              "given": "given",
+              "id": "id"
+            },
+            "op": "template",
+            "template": "{family}, {given} ({id})",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "t": "no separators here"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "t",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: template > refuses text without the template's shape (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "ops.template.8",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "a": "a"
+            },
+            "op": "template",
+            "template": "<{a}>",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "t": ">"
+      },
+      "expect": {
+        "error": {
+          "class": "RuleApplicationError",
+          "path": "t",
+          "ruleIndex": 0
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: template > refuses text without the template's shape (angle brackets) (class, rule index and path recorded from the TypeScript implementation)",
+      "id": "ops.template.9",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "a": "a",
+              "b": "b"
+            },
+            "op": "template",
+            "template": "{{{a}}} - {b}",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "1",
+        "b": "2"
+      },
+      "expect": {
+        "output": {
+          "t": "{1} - 2"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: parseTemplate > separates literals and placeholders and unescapes doubled braces",
+      "id": "ops.template.10",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": {
+              "a": "a",
+              "b": "b"
+            },
+            "op": "template",
+            "template": "{{{a}}} - {b}",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "t": "{1} - 2"
+      },
+      "expect": {
+        "output": {
+          "a": "1",
+          "b": "2"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: parseTemplate > unescapes doubled braces on decode",
+      "id": "ops.template.11",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": {
+              "a": "a"
+            },
+            "op": "template",
+            "template": "{",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: parseTemplate > rejects {",
+      "id": "ops.template.12",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": {
+              "a": "a"
+            },
+            "op": "template",
+            "template": "{a",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: parseTemplate > rejects {a",
+      "id": "ops.template.13",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": {
+              "a": "a"
+            },
+            "op": "template",
+            "template": "{a-b}",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: parseTemplate > rejects {a-b}",
+      "id": "ops.template.14",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": {
+              "a": "a"
+            },
+            "op": "template",
+            "template": "{}",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: parseTemplate > rejects {}",
+      "id": "ops.template.15",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": {
+              "a": "a"
+            },
+            "op": "template",
+            "template": "x } y",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: parseTemplate > rejects x } y",
+      "id": "ops.template.16",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": {
+              "a": "a"
+            },
+            "op": "template",
+            "template": "{__proto__}",
+            "to": "t"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError"
+        }
+      },
+      "from": "src/ops/template.unit.test.ts: parseTemplate > rejects {__proto__}",
+      "id": "ops.template.17",
+      "kind": "parse"
+    }
+  ]
+}

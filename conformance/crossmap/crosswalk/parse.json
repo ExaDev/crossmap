@@ -1,0 +1,461 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > parses the valid crosswalk and defaults omitted arrays",
+      "id": "crosswalk.parse.1",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [
+          {
+            "direction": "encode",
+            "from": "internal",
+            "op": "drop"
+          },
+          {
+            "direction": "encode",
+            "op": "default",
+            "to": "locale",
+            "value": "en-GB"
+          }
+        ],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          },
+          {
+            "factor": 0.01,
+            "from": "cents",
+            "op": "scale",
+            "to": "units"
+          },
+          {
+            "from": "status",
+            "map": {
+              "open": "OPEN"
+            },
+            "mapBack": {
+              "OPEN": "open"
+            },
+            "op": "enum",
+            "to": "state"
+          },
+          {
+            "from": "when",
+            "kind": "isoDateTime",
+            "op": "format",
+            "to": "whenIso"
+          },
+          {
+            "from": "names",
+            "op": "split",
+            "separator": ",",
+            "to": "nameParts"
+          },
+          {
+            "from": {
+              "family": "family",
+              "given": "given"
+            },
+            "op": "template",
+            "template": "{family}, {given}",
+            "to": "display"
+          },
+          {
+            "from": "id",
+            "op": "copy",
+            "to": [
+              "ref",
+              "meta.ref"
+            ]
+          }
+        ],
+        "source": "native",
+        "target": "shared"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [
+            {
+              "direction": "encode",
+              "from": "internal",
+              "op": "drop"
+            },
+            {
+              "direction": "encode",
+              "op": "default",
+              "to": "locale",
+              "value": "en-GB"
+            }
+          ],
+          "rules": [
+            {
+              "from": "a",
+              "op": "move",
+              "to": "b"
+            },
+            {
+              "factor": 0.01,
+              "from": "cents",
+              "op": "scale",
+              "to": "units"
+            },
+            {
+              "from": "status",
+              "map": {
+                "open": "OPEN"
+              },
+              "mapBack": {
+                "OPEN": "open"
+              },
+              "op": "enum",
+              "to": "state"
+            },
+            {
+              "from": "when",
+              "kind": "isoDateTime",
+              "op": "format",
+              "to": "whenIso"
+            },
+            {
+              "from": "names",
+              "op": "split",
+              "separator": ",",
+              "to": "nameParts"
+            },
+            {
+              "from": {
+                "family": "family",
+                "given": "given"
+              },
+              "op": "template",
+              "template": "{family}, {given}",
+              "to": "display"
+            },
+            {
+              "from": "id",
+              "op": "copy",
+              "to": [
+                "ref",
+                "meta.ref"
+              ]
+            }
+          ],
+          "source": "native",
+          "target": "shared"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > returns the full crosswalk (first rule) (original asserted acceptance or rejection only; expectation recorded from the TypeScript implementation)",
+      "id": "crosswalk.parse.2",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "a..",
+            "op": "move",
+            "to": "b"
+          },
+          {
+            "from": "c",
+            "op": "move",
+            "to": "d..",
+            "when": 3
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "minIssues": 2
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > throws CrosswalkSyntaxError carrying every issue",
+      "id": "crosswalk.parse.3",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "nodes[].id",
+            "op": "move"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [
+            {
+              "from": "nodes[].id",
+              "op": "move",
+              "to": "nodes[].id"
+            }
+          ],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > reads a move rule with no to as one whose to is its from",
+      "id": "crosswalk.parse.4",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "factor": 2,
+            "from": "nodes[].weight",
+            "op": "scale"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [
+            {
+              "factor": 2,
+              "from": "nodes[].weight",
+              "op": "scale",
+              "to": "nodes[].weight"
+            }
+          ],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > reads a scale rule with no to as one whose to is its from",
+      "id": "crosswalk.parse.5",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "nodes[].kind",
+            "map": {
+              "a": "A"
+            },
+            "mapBack": {
+              "A": "a"
+            },
+            "op": "enum"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [
+            {
+              "from": "nodes[].kind",
+              "map": {
+                "a": "A"
+              },
+              "mapBack": {
+                "A": "a"
+              },
+              "op": "enum",
+              "to": "nodes[].kind"
+            }
+          ],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > reads a enum rule with no to as one whose to is its from",
+      "id": "crosswalk.parse.6",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "nodes[].at",
+            "kind": "isoDateTime",
+            "op": "format"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [
+            {
+              "from": "nodes[].at",
+              "kind": "isoDateTime",
+              "op": "format",
+              "to": "nodes[].at"
+            }
+          ],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > reads a format rule with no to as one whose to is its from",
+      "id": "crosswalk.parse.7",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "nodes[].tags",
+            "op": "split",
+            "separator": ";"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [
+            {
+              "from": "nodes[].tags",
+              "op": "split",
+              "separator": ";",
+              "to": "nodes[].tags"
+            }
+          ],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > reads a split rule with no to as one whose to is its from",
+      "id": "crosswalk.parse.8",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "x",
+            "op": "move",
+            "to": "y"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "crosswalk": {
+          "oneWay": [],
+          "rules": [
+            {
+              "from": "x",
+              "op": "move",
+              "to": "y"
+            }
+          ],
+          "source": "a",
+          "target": "b"
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > keeps a to that is written",
+      "id": "crosswalk.parse.9",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": {
+              "x": "x"
+            },
+            "op": "template",
+            "template": "{x}"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "rules.0.to"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > still requires a to on a template rule",
+      "id": "crosswalk.parse.10",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "x",
+            "op": "copy"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "rules.0.to"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > still requires a to on a copy rule",
+      "id": "crosswalk.parse.11",
+      "kind": "parse"
+    },
+    {
+      "crosswalk": {
+        "rules": [
+          {
+            "from": "a..b",
+            "op": "move"
+          }
+        ],
+        "source": "a",
+        "target": "b"
+      },
+      "expect": {
+        "error": {
+          "class": "CrosswalkSyntaxError",
+          "messageContains": [
+            "rules.0.from"
+          ]
+        }
+      },
+      "from": "src/crosswalk.unit.test.ts: parseCrosswalk > validates a to left out as the from path it stands for",
+      "id": "crosswalk.parse.12",
+      "kind": "parse"
+    }
+  ]
+}

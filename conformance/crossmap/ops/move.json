@@ -1,0 +1,208 @@
+{
+  "cases": [
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": 1
+      },
+      "expect": {
+        "output": {
+          "b": 1
+        }
+      },
+      "from": "src/ops/move.unit.test.ts: moveValue > carries any JSON value across unchanged (#1)",
+      "id": "ops.move.1",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": "x"
+      },
+      "expect": {
+        "output": {
+          "b": "x"
+        }
+      },
+      "from": "src/ops/move.unit.test.ts: moveValue > carries any JSON value across unchanged (#2)",
+      "id": "ops.move.2",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": null
+      },
+      "expect": {
+        "output": {
+          "b": null
+        }
+      },
+      "from": "src/ops/move.unit.test.ts: moveValue > carries any JSON value across unchanged (#3)",
+      "id": "ops.move.3",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": true
+      },
+      "expect": {
+        "output": {
+          "b": true
+        }
+      },
+      "from": "src/ops/move.unit.test.ts: moveValue > carries any JSON value across unchanged (#4)",
+      "id": "ops.move.4",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": {
+          "deep": [
+            1
+          ]
+        }
+      },
+      "expect": {
+        "output": {
+          "b": {
+            "deep": [
+              1
+            ]
+          }
+        }
+      },
+      "from": "src/ops/move.unit.test.ts: moveValue > carries any JSON value across unchanged (#5)",
+      "id": "ops.move.5",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "encode",
+      "document": {
+        "a": [
+          1,
+          2
+        ]
+      },
+      "expect": {
+        "output": {
+          "b": [
+            1,
+            2
+          ]
+        }
+      },
+      "from": "src/ops/move.unit.test.ts: moveValue > carries any JSON value across unchanged (#6)",
+      "id": "ops.move.6",
+      "kind": "run"
+    },
+    {
+      "crosswalk": {
+        "oneWay": [],
+        "rules": [
+          {
+            "from": "a",
+            "op": "move",
+            "to": "b"
+          }
+        ],
+        "source": "n",
+        "target": "s"
+      },
+      "direction": "decode",
+      "document": {
+        "b": {
+          "deep": [
+            1
+          ]
+        }
+      },
+      "expect": {
+        "output": {
+          "a": {
+            "deep": [
+              1
+            ]
+          }
+        }
+      },
+      "from": "src/ops/move.unit.test.ts: moveValue > carries any JSON value back unchanged",
+      "id": "ops.move.7",
+      "kind": "run"
+    }
+  ]
+}
