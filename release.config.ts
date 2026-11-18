@@ -27,7 +27,7 @@ export const commitTypes: readonly CommitType[] = [
 ];
 
 /**
- * Runs on `main`. Analyses commits since the last tag, bumps the version, publishes to npmjs.org through trusted OIDC publishing (no stored token, see .github/workflows/ci.yml), creates a versioned tag and GitHub Release with generated notes, and commits CHANGELOG.md and package.json back to main. The repository URL is the one in package.json, over https with the workflow's GITHUB_TOKEN: main has no ruleset, so that token can push the release commit. A ruleset on main would reject that push and need a bypass identity (json-compose's deploy key is the worked example).
+ * Runs on `main`. Analyses commits since the last tag and computes the one version every artefact is released at; scripts/semantic-release-version.mjs writes it into the Rust workspace, the lock file and the npm manifests and regenerates the schema whose `$id` names it. The release commit holds those files and CHANGELOG.md, and is tagged and given a GitHub Release with generated notes. semantic-release publishes nothing: the jobs after it in .github/workflows/ci.yml build the crates, the wheels and the npm package from the tagged commit and publish them to crates.io, PyPI and npm through trusted publishing (no stored token). The release commit and tag are pushed over SSH with the deploy key ci.yml provisions.
  */
 const config: Options = {
   branches: ['main'],
@@ -48,12 +48,13 @@ const config: Options = {
       },
     ],
     '@semantic-release/changelog',
-    ['@semantic-release/npm', { npmPublish: true }],
+    './scripts/semantic-release-version.mjs',
     '@semantic-release/github',
     [
       '@semantic-release/git',
       {
-        assets: ['CHANGELOG.md', 'package.json'],
+        // Every file scripts/release-version.py and the schema generator write, beside the changelog.
+        assets: ['CHANGELOG.md', 'package.json', 'packages/crossmap/package.json', 'rust/Cargo.toml', 'rust/Cargo.lock', 'schemas/crossmap.schema.json'],
         message: 'chore(release): ${nextRelease.version} [skip ci]',
       },
     ],
