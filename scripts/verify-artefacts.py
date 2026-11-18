@@ -1,8 +1,8 @@
 """Checks that the crates, the Python distributions and the npm tarball built from one commit carry one version and one schema.
 
-Usage: verify-artefacts.py <directory> [--python <interpreter>]
+Usage: verify-artefacts.py <directory> <artefacts>... [--python <interpreter>]
 
-<directory> holds what the artefacts workflow builds: the `.crate` files of every published crate, `crate.schema.json` (the schema the packaged `crossmap` crate generates), every wheel and the sdist of `crosswalk-codec`, and the npm tarball of `crossmap`. The expected version is the one scripts/release-version.py reads from this checkout, after checking every manifest agrees with it, and the expected schema is this checkout's schemas/crossmap.schema.json.
+<artefacts> names which artefacts <directory> holds and are checked, any of `crates`, `python` and `npm`: `crates` is the `.crate` files of every published crate and `crate.schema.json` (the schema the packaged `crossmap` crate generates), `python` every wheel and the sdist of `crosswalk-codec`, and `npm` the npm tarball of `crossmap`. Each is checked against the same two expectations: the version scripts/release-version.py reads from this checkout, after checking every manifest agrees with it, and this checkout's schemas/crossmap.schema.json. So artefacts checked in separate runs on one commit carry one version and one schema exactly as those checked together do.
 
 Each artefact's version is read from its own metadata (the crate's Cargo.toml, the wheel's METADATA, the sdist's PKG-INFO, the tarball's package.json), never its file name. The schema is compared byte for byte in three places: the crate's generated schema, the file the npm tarball ships under schemas/, and what `crosswalk_codec.json_schema_text()` returns from a wheel installed into a fresh environment of <interpreter> (default: this one) from <directory> alone.
 
@@ -113,34 +113,44 @@ def wheel_schema(directory: Path, interpreter: str) -> bytes:
         return result.stdout
 
 
+ARTEFACTS = ("crates", "python", "npm")
+
+
 def main(arguments: list[str]) -> int:
-    match arguments:
-        case [directory]:
-            interpreter = sys.executable
-        case [directory, "--python", interpreter]:
-            pass
-        case _:
-            sys.stderr.write(__doc__ or "")
-            return 2
-    artefacts = Path(directory)
+    interpreter = sys.executable
+    if len(arguments) >= 2 and arguments[-2] == "--python":
+        interpreter = arguments[-1]
+        arguments = arguments[:-2]
+    if len(arguments) < 2 or any(kind not in ARTEFACTS for kind in arguments[1:]) or len(set(arguments[1:])) != len(arguments[1:]):
+        sys.stderr.write(__doc__ or "")
+        return 2
+    artefacts = Path(arguments[0])
+    kinds = set(arguments[1:])
     version = expected_version()
     schema = (ROOT / "schemas" / "crossmap.schema.json").read_bytes()
     print(f"expected version {version}, schema sha256 {digest(schema)}")
 
     found: list[tuple[str, tuple[str, str], tuple[str, str]]] = []
-    for crate in CRATES:
-        path = single(artefacts, f"{crate}-[0-9]*.crate")
-        found.append((path.name, crate_version(path), (crate, version)))
-    wheels = sorted(artefacts.glob("crosswalk_codec-*.whl"))
-    if not wheels:
-        message = f"no crosswalk_codec wheel in {artefacts}"
-        raise SystemExit(message)
-    found.extend((wheel.name, wheel_version(wheel), (DISTRIBUTION, version)) for wheel in wheels)
-    sdist = single(artefacts, "crosswalk_codec-*.tar.gz")
-    found.append((sdist.name, sdist_version(sdist), (DISTRIBUTION, version)))
-    npm = single(artefacts, f"{NPM_PACKAGE}-*.tgz")
-    npm_identity, npm_schema = tarball(npm)
-    found.append((npm.name, npm_identity, (NPM_PACKAGE, version)))
+    schemas: dict[str, bytes] = {}
+    if "crates" in kinds:
+        for crate in CRATES:
+            path = single(artefacts, f"{crate}-[0-9]*.crate")
+            found.append((path.name, crate_version(path), (crate, version)))
+        schemas["crate.schema.json (the packaged crate's generated schema)"] = (artefacts / "crate.schema.json").read_bytes()
+    if "python" in kinds:
+        wheels = sorted(artefacts.glob("crosswalk_codec-*.whl"))
+        if not wheels:
+            message = f"no crosswalk_codec wheel in {artefacts}"
+            raise SystemExit(message)
+        found.extend((wheel.name, wheel_version(wheel), (DISTRIBUTION, version)) for wheel in wheels)
+        sdist = single(artefacts, "crosswalk_codec-*.tar.gz")
+        found.append((sdist.name, sdist_version(sdist), (DISTRIBUTION, version)))
+        schemas["crosswalk_codec.json_schema_text() from the installed wheel"] = wheel_schema(artefacts, interpreter)
+    if "npm" in kinds:
+        npm = single(artefacts, f"{NPM_PACKAGE}-*.tgz")
+        npm_identity, npm_schema = tarball(npm)
+        found.append((npm.name, npm_identity, (NPM_PACKAGE, version)))
+        schemas[f"{npm.name} {SCHEMA_IN_TARBALL}"] = npm_schema
 
     failures = 0
     for name, identity, wanted in found:
@@ -148,11 +158,6 @@ def main(arguments: list[str]) -> int:
         failures += not ok
         print(f"{'ok  ' if ok else 'FAIL'} {name}: {identity[0]} {identity[1]}{'' if ok else f', expected {wanted[0]} {wanted[1]}'}")
 
-    schemas = {
-        "crate.schema.json (the packaged crate's generated schema)": (artefacts / "crate.schema.json").read_bytes(),
-        f"{npm.name} {SCHEMA_IN_TARBALL}": npm_schema,
-        "crosswalk_codec.json_schema_text() from the installed wheel": wheel_schema(artefacts, interpreter),
-    }
     for name, text in schemas.items():
         ok = text == schema
         failures += not ok
