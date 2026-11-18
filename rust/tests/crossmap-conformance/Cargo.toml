@@ -1,0 +1,23 @@
+[package]
+name = "crossmap-conformance"
+description = "Loads the language-neutral conformance corpus, checks every file against its format and the manifest, and runs every case against the Rust crates."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dev-dependencies]
+crossmap.workspace = true
+crossmap-cli.workspace = true
+serde_json.workspace = true
+
+[[test]]
+name = "conformance"
+path = "tests/conformance.rs"
+# A plain main that prints each failing case id, rather than libtest, so a corpus failure names the case.
+harness = false
+
+[lints]
+workspace = true
