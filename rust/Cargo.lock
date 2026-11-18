@@ -941,7 +941,7 @@ dependencies = [
 
 [[package]]
 name = "trilean-eval"
-version = "2.0.3"
+version = "3.0.0"
 dependencies = [
  "trilean-json-shape",
  "trilean-regex",
@@ -949,7 +949,7 @@ dependencies = [
 
 [[package]]
 name = "trilean-json-shape"
-version = "2.0.3"
+version = "3.0.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -959,7 +959,7 @@ dependencies = [
 
 [[package]]
 name = "trilean-json-shape-derive"
-version = "2.0.3"
+version = "3.0.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -969,11 +969,11 @@ dependencies = [
 
 [[package]]
 name = "trilean-json-shape-pattern"
-version = "2.0.3"
+version = "3.0.0"
 
 [[package]]
 name = "trilean-regex"
-version = "2.0.1"
+version = "2.0.5"
 
 [[package]]
 name = "unarray"
