@@ -16,7 +16,7 @@ conformance/
   generate/                  the generator of the seeded differential sample
 ```
 
-Run the corpus on TypeScript with `pnpm conformance` (a turbo task that builds first, because the JSON Schema cases read `schemas/crossmap.schema.json`), or `pnpm exec tsx conformance/runner/run.ts [corpus directory]` once built. `pnpm test` also runs it, and runs the runner's self-test. The runner exits non-zero on any mismatch, any corpus problem (format, schema, manifest, ids) and on an empty corpus.
+Run the corpus on TypeScript with `pnpm conformance` (a turbo task that builds first, because the JSON Schema cases read `schemas/crossmap.schema.json`, which the build writes), or `pnpm exec tsx conformance/runner/run.ts [corpus directory]` once built. `pnpm test` also runs it, and runs the runner's self-test. The runner exits non-zero on any mismatch, any corpus problem (format, schema, manifest, ids) and on an empty corpus.
 
 ## Files
 
@@ -45,7 +45,7 @@ Numbers are written as JSON writes them and read as `JSON.parse` reads them (IEE
 | `round-trip` | `crosswalk`, `samples` | `ok`, or a `RoundTripMismatchError` with `sampleIndex` and `path` (or another error) |
 | `cli` | `args`, `files`, `stdin`, `server` | exit status, stdout (exact, `contains`, or `stdoutJson`) and stderr (`equals`, `startsWith`, `contains`) |
 | `is-url` | `argument` | whether the command reads it as a URL |
-| `schema-*` | the built `schemas/crossmap.schema.json` | its canonical form, its trilean reference, a JSON pointer's value, whether a rule requires `to`, and whether a document validates |
+| `schema-*` | `schemas/crossmap.schema.json` (built by the TypeScript runner, committed for the Rust one) | its canonical form, its trilean reference, a JSON pointer's value, whether a rule requires `to`, and whether a document validates |
 
 A `cli` case runs the command with `files` written into a fresh directory, `stdin` as standard input and `server` (response status, body and headers by request path) as a local HTTP server. These placeholders are replaced in `args` and in expected text: `{dir}` the directory, `{origin}` the server's origin, `{version}` the package version. In `schema-*` cases `{trileanVersion}` and `{packageVersion}` are replaced the same way. The TypeScript runner calls `run` from `cli/run.ts` in process; another implementation runs its binary.
 
