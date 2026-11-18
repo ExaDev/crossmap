@@ -1,8 +1,17 @@
 //! The `crossmap` command, with everything it touches outside its arguments injected so it runs the same under test
 //! as from a terminal.
+//!
+//! The command is two pure steps around the reading of its arguments: [`plan`] reads the command line and either
+//! names the sources to read or settles the outcome (help, version, bad usage), and [`complete`] takes the texts read
+//! (or why each could not be) and produces the outcome. [`run`] joins them with a [`CliIo`]. A host that reads in its
+//! own way (the npm package's Node shim, which reads through Node's file system and `fetch`) calls the two steps and
+//! does the reading between them, and so prints exactly what this command prints. The native reader, [`read_source`],
+//! is behind the `read` feature, so the steps compile without it to `wasm32-unknown-unknown`.
 
 #![forbid(unsafe_code)]
 
+mod argument;
+#[cfg(feature = "read")]
 pub mod read_source;
 
 use crossmap::{
@@ -10,7 +19,9 @@ use crossmap::{
     validate_crosswalk,
 };
 
-pub use read_source::{ReadLimits, STDIN, is_url, read_source};
+pub use argument::{STDIN, SUPPORTED_SCHEMES, is_url, scheme_of};
+#[cfg(feature = "read")]
+pub use read_source::{ReadLimits, read_source};
 
 /// The version the command reports.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -71,7 +82,7 @@ cannot be read (a missing file, a failed fetch, an unsupported scheme) or is
 not JSON.
 ";
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum Command {
     Encode,
     Decode,
@@ -153,137 +164,193 @@ fn parse_command_line(args: &[String]) -> Result<CommandLine, String> {
     Ok(line)
 }
 
-fn fail(io: &mut dyn CliIo, status: i32, lines: &[&str]) -> i32 {
-    io.write_stderr(&format!("{}\n", lines.join("\n").trim_end()));
-    status
+/// What the command settled on: its exit status and everything it writes to each stream.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Outcome {
+    /// The exit status: [`EXIT_OK`], [`EXIT_REJECTED`] or [`EXIT_USAGE`].
+    pub status: i32,
+    /// Everything written to standard output.
+    pub stdout: String,
+    /// Everything written to standard error.
+    pub stderr: String,
 }
 
-/// Reads one argument as JSON, or the message saying why it cannot be.
-fn read_json(io: &dyn CliIo, source: &str) -> Result<Value, String> {
-    let name = if source == STDIN {
-        "standard input"
-    } else {
-        source
-    };
-    let text = io
-        .read_text(source)
-        .map_err(|error| format!("cannot read {name}: {error}"))?;
-    serde_json::from_str(&text).map_err(|error| format!("{name} is not valid JSON: {error}"))
+impl Outcome {
+    fn failure(status: i32, lines: &[&str]) -> Outcome {
+        Outcome {
+            status,
+            stdout: String::new(),
+            stderr: format!("{}\n", lines.join("\n").trim_end()),
+        }
+    }
+
+    fn printed(stdout: String) -> Outcome {
+        Outcome {
+            status: EXIT_OK,
+            stdout,
+            stderr: String::new(),
+        }
+    }
 }
 
-/// Runs the command and returns its exit status.
-pub fn run(args: &[String], io: &mut dyn CliIo) -> i32 {
+/// A command line that names a command and its sources, ready for them to be read.
+#[derive(Clone, Debug)]
+pub struct Invocation {
+    command: Command,
+    operands: Vec<String>,
+}
+
+impl Invocation {
+    /// The sources to read, in argument order: the crosswalk, then the document where the command has one. Each is
+    /// [`STDIN`], a URL (see [`is_url`]) or a path; at most one is [`STDIN`].
+    pub fn operands(&self) -> &[String] {
+        &self.operands
+    }
+}
+
+/// Reads the command line. `Ok` names the sources to read before [`complete`]; `Err` is the whole outcome when there
+/// is nothing to read: the version or the usage text asked for, or bad usage. `version` is what `--version` prints.
+///
+/// # Errors
+///
+/// The outcome, when the command ends without reading anything.
+pub fn plan(args: &[String], version: &str) -> Result<Invocation, Outcome> {
+    let usage = || Outcome::failure(EXIT_USAGE, &["expected a command and its files", "", USAGE]);
     let line = match parse_command_line(args) {
         Ok(line) => line,
-        Err(message) => return fail(io, EXIT_USAGE, &[&message, "", USAGE]),
+        Err(message) => return Err(Outcome::failure(EXIT_USAGE, &[&message, "", USAGE])),
     };
     if line.version {
-        let version = format!("{}\n", io.version());
-        io.write_stdout(&version);
-        return EXIT_OK;
+        return Err(Outcome::printed(format!("{version}\n")));
     }
     if line.help {
-        io.write_stdout(USAGE);
-        return EXIT_OK;
+        return Err(Outcome::printed(USAGE.to_owned()));
     }
     let Some((name, operands)) = line.positionals.split_first() else {
-        return fail(
-            io,
-            EXIT_USAGE,
-            &["expected a command and its files", "", USAGE],
-        );
+        return Err(usage());
     };
     let Some(command) =
         Command::named(name).filter(|command| command.operand_count() == operands.len())
     else {
-        return fail(
-            io,
-            EXIT_USAGE,
-            &["expected a command and its files", "", USAGE],
-        );
+        return Err(usage());
     };
     if operands.iter().filter(|operand| *operand == STDIN).count() > 1 {
-        return fail(
-            io,
+        return Err(Outcome::failure(
             EXIT_USAGE,
             &["only one argument can be read from standard input"],
-        );
+        ));
     }
-    // Read together so two remote arguments are fetched concurrently; the first failure in argument order is reported.
-    let reader: &dyn CliIo = io;
-    let read: Vec<Result<Value, String>> = std::thread::scope(|scope| {
-        let handles: Vec<_> = operands
-            .iter()
-            .map(|operand| scope.spawn(move || read_json(reader, operand)))
-            .collect();
-        handles
-            .into_iter()
-            .map(|handle| {
-                handle
-                    .join()
-                    .unwrap_or_else(|_| Err("the read failed".to_owned()))
-            })
-            .collect()
-    });
-    let mut documents = Vec::with_capacity(read.len());
-    for file in read {
-        match file {
+    Ok(Invocation {
+        command,
+        operands: operands.to_vec(),
+    })
+}
+
+/// Finishes the command from what reading its sources gave: `reads` holds, for each of
+/// [`Invocation::operands`] in order, the text read or the reason it could not be (which the message names the
+/// argument in front of). The first failure in argument order is the one reported.
+pub fn complete(invocation: &Invocation, reads: Vec<Result<String, String>>) -> Outcome {
+    if reads.len() != invocation.operands.len() {
+        return Outcome::failure(EXIT_USAGE, &["expected a command and its files", "", USAGE]);
+    }
+    let mut documents = Vec::with_capacity(reads.len());
+    for (source, read) in invocation.operands.iter().zip(reads) {
+        match parse_json(source, read) {
             Ok(value) => documents.push(value),
-            Err(message) => return fail(io, EXIT_USAGE, &[&message]),
+            Err(message) => return Outcome::failure(EXIT_USAGE, &[&message]),
         }
     }
     let (crosswalk_document, document) = match documents.as_slice() {
         [crosswalk] => (crosswalk, None),
         [crosswalk, document] => (crosswalk, Some(document)),
         _ => {
-            return fail(
-                io,
-                EXIT_USAGE,
-                &["expected a command and its files", "", USAGE],
-            );
+            return Outcome::failure(EXIT_USAGE, &["expected a command and its files", "", USAGE]);
         }
     };
-    match execute(command, io, crosswalk_document, document) {
-        Ok(status) => status,
-        Err(error) => fail(io, EXIT_REJECTED, &[&error.to_string()]),
+    match execute(invocation.command, crosswalk_document, document) {
+        Ok(outcome) => outcome,
+        Err(error) => Outcome::failure(EXIT_REJECTED, &[&error.to_string()]),
     }
+}
+
+/// One source's text as JSON, or the message saying why it cannot be.
+fn parse_json(source: &str, read: Result<String, String>) -> Result<Value, String> {
+    let name = if source == STDIN {
+        "standard input"
+    } else {
+        source
+    };
+    let text = read.map_err(|error| format!("cannot read {name}: {error}"))?;
+    serde_json::from_str(&text).map_err(|error| format!("{name} is not valid JSON: {error}"))
+}
+
+/// Runs the command and returns its exit status.
+pub fn run(args: &[String], io: &mut dyn CliIo) -> i32 {
+    let outcome = match plan(args, io.version()) {
+        Ok(invocation) => {
+            // Read together so two remote arguments are fetched concurrently; `complete` reports the first failure in
+            // argument order.
+            let reader: &dyn CliIo = io;
+            let reads: Vec<Result<String, String>> = std::thread::scope(|scope| {
+                let handles: Vec<_> = invocation
+                    .operands()
+                    .iter()
+                    .map(|operand| scope.spawn(move || reader.read_text(operand)))
+                    .collect();
+                handles
+                    .into_iter()
+                    .map(|handle| {
+                        handle
+                            .join()
+                            .unwrap_or_else(|_| Err("the read failed".to_owned()))
+                    })
+                    .collect()
+            });
+            complete(&invocation, reads)
+        }
+        Err(outcome) => outcome,
+    };
+    if !outcome.stdout.is_empty() {
+        io.write_stdout(&outcome.stdout);
+    }
+    if !outcome.stderr.is_empty() {
+        io.write_stderr(&outcome.stderr);
+    }
+    outcome.status
 }
 
 fn execute(
     command: Command,
-    io: &mut dyn CliIo,
     crosswalk_document: &Value,
     document: Option<&Value>,
-) -> Result<i32, CrossmapError> {
+) -> Result<Outcome, CrossmapError> {
     let crosswalk = parse_crosswalk(crosswalk_document)?;
     let null = Value::Null;
     let document = document.unwrap_or(&null);
     match command {
-        Command::Encode => print(io, &encode(&crosswalk, document)?),
-        Command::Decode => print(io, &decode(&crosswalk, document)?),
+        Command::Encode => Ok(print(&encode(&crosswalk, document)?)),
+        Command::Decode => Ok(print(&decode(&crosswalk, document)?)),
         Command::Validate => {
             let issues = validate_crosswalk(&crosswalk);
             if issues.is_empty() {
-                Ok(EXIT_OK)
+                Ok(Outcome::default())
             } else {
                 Err(CrossmapError::Structure { issues })
             }
         }
         Command::RoundTrip => {
             let Value::Array(samples) = document else {
-                return Ok(fail(
-                    io,
+                return Ok(Outcome::failure(
                     EXIT_USAGE,
                     &["the samples file must hold a JSON array of documents"],
                 ));
             };
             assert_round_trip(&crosswalk, samples)?;
-            Ok(EXIT_OK)
+            Ok(Outcome::default())
         }
     }
 }
 
-fn print(io: &mut dyn CliIo, value: &Value) -> Result<i32, CrossmapError> {
-    io.write_stdout(&format!("{}\n", stringify_pretty(value)));
-    Ok(EXIT_OK)
+fn print(value: &Value) -> Outcome {
+    Outcome::printed(format!("{}\n", stringify_pretty(value)))
 }
