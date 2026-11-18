@@ -1,5 +1,5 @@
 //! `format`: a textual form and the machine value it spells, each converted as JavaScript converts it, so the
-//! canonical text of every kind is the text the TypeScript implementation renders.
+//! canonical text of every kind is the text JavaScript renders for it.
 
 use json_shape::{Value, number_to_string};
 

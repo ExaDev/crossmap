@@ -1,7 +1,7 @@
 """
 The conformance corpus, run through the installed package.
 
-Every case of every kind runs except the `schema-*` kinds, which test the published JSON Schema file, an artefact of the npm package that the Python package does not ship. The corpus's `skip` lists name the TypeScript and the Rust implementations; this package is the Rust implementation, so a case marked to skip for Rust is skipped here.
+Every case of every kind runs except the `schema-*` kinds, which test the published JSON Schema file, an artefact of the npm package that the Python package does not ship. The corpus's `skip` lists name the original TypeScript implementation (`ts`) and the Rust one (`rust`); this package is the Rust implementation, so a case marked to skip for Rust is skipped here.
 """
 
 from __future__ import annotations
@@ -117,7 +117,7 @@ CLASS_NAMES: dict[type[BaseException], str] = {
     CrosswalkStructureError: "CrosswalkStructureError",
     RuleApplicationError: "RuleApplicationError",
     RoundTripMismatchError: "RoundTripMismatchError",
-    # A `when` predicate that cannot be evaluated is a plain `Error` in the TypeScript library and a `ValueError` here.
+    # A `when` that cannot be evaluated is a plain `Error` in the corpus, as in the npm package, and a `ValueError` here.
     ValueError: "Error",
 }
 

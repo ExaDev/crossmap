@@ -63,7 +63,7 @@ select = ["ALL"]
 ignore = [
   # Prose is never hard-wrapped, so a docstring or comment is one line per paragraph; the formatter keeps code short.
   "E501",
-  # The project's documentation states what a function returns as a noun phrase, as the Rust and TypeScript sources do.
+  # The project's documentation states what a function returns as a noun phrase, as the Rust and JavaScript sources do.
   "D401",
   # The licence is the repository's LICENSE file, not a header in every file.
   "CPY001",

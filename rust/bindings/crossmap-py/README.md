@@ -33,7 +33,7 @@ assert_round_trip(crosswalk, [table])
 
 ## API
 
-The names follow the TypeScript and Rust libraries in Python's spelling.
+The names follow the npm package's and the Rust crate's in Python's spelling.
 
 | Name | |
 | --- | --- |
@@ -45,7 +45,7 @@ The names follow the TypeScript and Rust libraries in Python's spelling.
 | `rule_sides(rule)` | The `from_` and `to` paths of a two-way rule, such as an element of `crosswalk.to_dict()["rules"]`. |
 | `json_schema_text()` | The crosswalk format's JSON Schema 2020-12 document as text, byte for byte the `crossmap/schemas/crossmap.schema.json` the npm package of the same version ships. |
 
-Every error the codec raises is a `CrossmapError`: `CrosswalkSyntaxError` and `CrosswalkStructureError` carry `issues` (`SyntaxIssue(message)`, `CrosswalkIssue(rule_index, message)`), `RuleApplicationError` carries `rule_index`, `path` and `detail`, and `RoundTripMismatchError` carries `sample_index`, `path` and `detail`. A `when` predicate that cannot be evaluated at all (a `lookup` node, or a collection that is not an array of records) raises `ValueError`, as the TypeScript library raises a plain `Error` there.
+Every error the codec raises is a `CrossmapError`: `CrosswalkSyntaxError` and `CrosswalkStructureError` carry `issues` (`SyntaxIssue(message)`, `CrosswalkIssue(rule_index, message)`), `RuleApplicationError` carries `rule_index`, `path` and `detail`, and `RoundTripMismatchError` carries `sample_index`, `path` and `detail`. A `when` predicate that cannot be evaluated at all (a `lookup` node, or a collection that is not an array of records) raises `ValueError`, as the npm package throws a plain `Error` there.
 
 The package installs the `crossmap` command, the same command the npm package installs, documented in the [crossmap README](https://github.com/ExaDev/crossmap#command-line).
 

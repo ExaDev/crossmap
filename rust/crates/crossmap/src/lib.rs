@@ -6,7 +6,7 @@
 //! with trilean predicate trees.
 //!
 //! Documents are [`Value`]s, an ordered JSON value whose numbers are doubles read and written as JavaScript reads and
-//! writes them, so a document means here what it means to the TypeScript implementation. The crate does no input or
+//! writes them, so a document means here what it means to JavaScript's `JSON.parse`. The crate does no input or
 //! output and compiles to `wasm32-unknown-unknown`.
 
 #![forbid(unsafe_code)]

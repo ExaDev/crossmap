@@ -4,7 +4,7 @@
 //! crosswalk object, holding the parsed crosswalk and its prepared form, and the free functions that need no
 //! crosswalk. Documents cross as JavaScript values (see [`convert`]). The error classes are JavaScript too, handed to
 //! [`register_error_classes`] by the package's entry point, and every [`CrossmapError`] is thrown as an instance of
-//! its class with the fields the TypeScript implementation's had. A `when` gate is evaluated here, by the core crate.
+//! its class with the fields the package's API documents. A `when` gate is evaluated here, by the core crate.
 //!
 //! The binding does no input or output. The command's steps ([`cli_plan`], [`cli_complete`]) are the native
 //! command's own, from `crossmap-cli` without its reader; the package's Node shim reads the files, standard input
@@ -106,9 +106,9 @@ fn issues_to_js(issues: &[crossmap::CrosswalkIssue]) -> JsValue {
         .into()
 }
 
-/// The error as an instance of its JavaScript class, constructed with the arguments the TypeScript implementation's
-/// constructor took, so its message is built by the same code whoever constructs it. A `when` that cannot be
-/// evaluated is a plain `Error`, as it was in TypeScript.
+/// The error as an instance of its JavaScript class, constructed with the arguments the class's constructor takes,
+/// so its message is built by the same code whoever constructs it. A `when` that cannot be evaluated is a plain
+/// `Error`, outside the codec's classes.
 fn error_to_js(error: &CrossmapError) -> JsValue {
     let construct = |class: fn(&ErrorClasses) -> &Function, arguments: Vec<JsValue>| {
         CLASSES.with(|classes| match classes.borrow().as_ref() {
