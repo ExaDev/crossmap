@@ -19,6 +19,7 @@ mod ops;
 mod output;
 mod path;
 mod roundtrip;
+pub mod schema;
 mod validate;
 mod when;
 
@@ -28,7 +29,7 @@ pub use crosswalk::{
 };
 pub use error::{CrossmapError, CrosswalkIssue, SyntaxIssue};
 pub use executor::{Compiled, compile_crosswalk, decode, encode};
-pub use js::{js_ordered, stringify, stringify_pretty};
+pub use js::{canonical_json, js_ordered, stringify, stringify_pretty};
 pub use json_shape::Value;
 pub use path::{
     EmptySite, PathMatch, PathStep, Reading, TrailStep, format_path, format_trail, is_path,
