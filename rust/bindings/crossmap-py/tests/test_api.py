@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pickle
 import subprocess
 import sys
@@ -60,12 +62,20 @@ def test_exports_the_documented_names() -> None:
         "compile_crosswalk",
         "decode",
         "encode",
+        "json_schema_text",
         "parse_crosswalk",
         "rule_sides",
         "validate_crosswalk",
     }
     for name in crosswalk_codec.__all__:
         assert hasattr(crosswalk_codec, name), name
+
+
+def test_returns_the_repository_schema_byte_for_byte() -> None:
+    # The committed schema this wheel was built from, which the npm package ships and the crate generates.
+    committed = (Path(__file__).resolve().parents[4] / "schemas" / "crossmap.schema.json").read_bytes()
+    assert crosswalk_codec.json_schema_text().encode() == committed
+    assert json.loads(crosswalk_codec.json_schema_text())["$id"].endswith(f"/crossmap@{crosswalk_codec.__version__}/schemas/crossmap.schema.json")
 
 
 def test_ships_its_type_information() -> None:
