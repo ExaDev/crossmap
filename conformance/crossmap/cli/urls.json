@@ -346,7 +346,7 @@
     {
       "args": [
         "validate",
-        "file://{dir}/cw.json"
+        "{dirUrl}/cw.json"
       ],
       "expect": {
         "status": 0,
@@ -652,13 +652,13 @@
     {
       "args": [
         "validate",
-        "file://{dir}/absent.json"
+        "{dirUrl}/absent.json"
       ],
       "expect": {
         "status": 2,
         "stderr": {
           "contains": [
-            "cannot read file://{dir}/absent.json: "
+            "cannot read {dirUrl}/absent.json: "
           ]
         }
       },
