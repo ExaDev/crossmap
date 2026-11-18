@@ -404,6 +404,12 @@ fn run_command(py: Python<'_>, args: Vec<String>) -> i32 {
     py.detach(|| crossmap_cli::run(&args, &mut crossmap_cli::StandardStreams))
 }
 
+/// The crosswalk format's JSON Schema as text, byte for byte the `schemas/crossmap.schema.json` the npm package ships.
+#[pyfunction]
+fn json_schema_text() -> String {
+    crossmap::schema::json_schema_text()
+}
+
 #[pymodule]
 fn _native(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PyCrosswalk>()?;
@@ -424,6 +430,7 @@ fn _native(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(py_read_path, module)?)?;
     module.add_function(wrap_pyfunction!(is_url, module)?)?;
     module.add_function(wrap_pyfunction!(run_command, module)?)?;
+    module.add_function(wrap_pyfunction!(json_schema_text, module)?)?;
     module.add("VERSION", crossmap_cli::VERSION)?;
     Ok(())
 }

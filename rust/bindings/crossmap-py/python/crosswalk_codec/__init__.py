@@ -26,6 +26,7 @@ from crosswalk_codec._native import (
     compile_crosswalk,
     decode,
     encode,
+    json_schema_text,
     parse_crosswalk,
     validate_crosswalk,
 )
@@ -53,6 +54,7 @@ __all__ = [
     "compile_crosswalk",
     "decode",
     "encode",
+    "json_schema_text",
     "parse_crosswalk",
     "rule_sides",
     "validate_crosswalk",
