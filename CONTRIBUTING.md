@@ -27,6 +27,12 @@
 
 `pnpm --filter ./packages/crossmap run test` packs the package with `npm pack`, checks the tarball holds exactly the published files, installs it into a fresh directory and runs `packages/crossmap/test/` there in plain Node: the conformance corpus (every kind except the JSON Schema kinds), the command's end-to-end scenarios and the API's contract. `run check:package` runs `publint` and `attw --pack --profile esm-only`.
 
+## The Rust workspace
+
+`rust/` holds the core crate (`crates/crossmap`), the command (`crates/crossmap-cli`), the wasm binding the npm package is built from (`bindings/crossmap-wasm`), the Python binding built into the `crosswalk-codec` wheel (`bindings/crossmap-py`), the conformance runner and the xtask. `sh scripts/rust.sh <task>` runs cargo from `rust/` against the committed lock file and the pinned toolchain, and CI runs the same tasks: `fmt`, `clippy`, `test`, `conformance` (every case of the corpus, none skipped), `deny`, `schema-check`, `publish-dry-run` and `packaged-schema`. `python3 -I scripts/release-version.py check` fails when the manifests disagree on the release version.
+
+The Python package is built with `maturin build --release --locked` in `rust/bindings/crossmap-py` and tested by installing the wheel into a fresh environment with `tests/requirements.txt` (hashed, generated from `pyproject.toml`'s `test` group by the command at its head) and running `pytest` there. The same environment runs `ruff check`, `ruff format --check` and `mypy python tests`.
+
 ## Releases
 
 A push to `main` runs semantic-release in CI (the `release` job in `ci.yml`, whose filename is the one the npm trusted publisher is registered against). It reads the conventional commits since the last tag, bumps the version, publishes to npm through OIDC trusted publishing with provenance, tags the release, writes `CHANGELOG.md` and commits it back to `main`. `release.config.ts` holds the commit types and the release level each triggers, and commitlint imports the same list.
