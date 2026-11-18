@@ -9,15 +9,17 @@ pip install crosswalk-codec
 ```python
 from crosswalk_codec import assert_round_trip, decode, encode, parse_crosswalk
 
-crosswalk = parse_crosswalk({
-    "source": "field-sensors/reading",
-    "target": "observations/v1",
-    "rules": [
-        {"op": "move", "from": "rows[].sensor", "to": "observations[].deviceId"},
-        {"op": "scale", "from": "rows[].depthM", "to": "observations[].depthMm", "factor": 1000},
-    ],
-    "oneWay": [{"op": "drop", "from": "rows[].batteryPct", "direction": "encode"}],
-})
+crosswalk = parse_crosswalk(
+    {
+        "source": "field-sensors/reading",
+        "target": "observations/v1",
+        "rules": [
+            {"op": "move", "from": "rows[].sensor", "to": "observations[].deviceId"},
+            {"op": "scale", "from": "rows[].depthM", "to": "observations[].depthMm", "factor": 1000},
+        ],
+        "oneWay": [{"op": "drop", "from": "rows[].batteryPct", "direction": "encode"}],
+    }
+)
 
 table = {"rows": [{"sensor": "S-01", "depthM": 3, "batteryPct": 91}]}
 encode(crosswalk, table)
