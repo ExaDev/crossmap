@@ -1,19 +1,39 @@
 # crossmap
 
-[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/ExaDev/crossmap) [![npm](https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/crossmap) [![Release](https://img.shields.io/github/v/release/ExaDev/crossmap)](https://github.com/ExaDev/crossmap/releases/latest) [![CI](https://img.shields.io/github/actions/workflow/status/ExaDev/crossmap/ci.yml?branch=main)](https://github.com/ExaDev/crossmap/actions)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/ExaDev/crossmap) [![crates.io](https://img.shields.io/crates/v/crossmap?logo=rust)](https://crates.io/crates/crossmap) [![npm](https://img.shields.io/npm/v/crossmap?logo=npm)](https://www.npmjs.com/package/crossmap) [![PyPI](https://img.shields.io/pypi/v/crosswalk-codec?logo=pypi&logoColor=white)](https://pypi.org/project/crosswalk-codec/) [![Release](https://img.shields.io/github/v/release/ExaDev/crossmap)](https://github.com/ExaDev/crossmap/releases/latest) [![CI](https://img.shields.io/github/actions/workflow/status/ExaDev/crossmap/ci.yml?branch=main)](https://github.com/ExaDev/crossmap/actions)
 
-A bidirectional crosswalk codec. One crosswalk document describes how to map between a dataset's native JSON shape and a shared target shape, and that one document derives both directions: every two-way operation knows its own inverse, so `decode` undoes `encode` over the paths the crosswalk maps. What cannot be undone is declared as one-way rules rather than hidden. Rules are gated with [trilean](https://github.com/ExaDev/trilean) predicate trees, and the whole format is defined by one Zod schema with a generated JSON Schema shipped in the package.
+A bidirectional crosswalk codec. One crosswalk document describes how to map between a dataset's native JSON shape and a shared target shape, and that one document derives both directions: every two-way operation knows its own inverse, so `decode` undoes `encode` over the paths the crosswalk maps. What cannot be undone is declared as one-way rules rather than hidden. Rules are gated with [trilean](https://github.com/ExaDev/trilean) predicate trees, and the format has a published JSON Schema.
+
+The codec is written in Rust and published three ways, each the same codec over the same format and each held to the same [conformance corpus](conformance/README.md):
+
+| Registry | Package | What it is |
+| --- | --- | --- |
+| crates.io | [`crossmap`](https://crates.io/crates/crossmap) | the library, with no input or output, which compiles to `wasm32-unknown-unknown` |
+| crates.io | [`crossmap-cli`](https://crates.io/crates/crossmap-cli) | the `crossmap` command |
+| npm | [`crossmap`](https://www.npmjs.com/package/crossmap) | the library compiled to WebAssembly, for Node 22 or later, Bun, Deno, browsers and Cloudflare Workers, with the `crossmap` command ([package README](packages/crossmap/README.md)) |
+| PyPI | [`crosswalk-codec`](https://pypi.org/project/crosswalk-codec/) | the library as a native extension for CPython 3.11 or later, with the `crossmap` command ([package README](rust/bindings/crossmap-py/README.md)) |
+
+## Install
+
+```sh
+cargo add crossmap serde_json    # the library; serde_json reads a document into a crossmap::Value
+cargo install crossmap-cli       # the command
+npm install crossmap             # the library and the command, for JavaScript
+pip install crosswalk-codec      # the library and the command, for Python
+```
 
 ## Usage
 
-A crosswalk does not depend on what the dataset is about. The three examples below map a table, a graph and a nested record to a shared shape with the same small set of rules, and each one holds its round trip.
+A crosswalk does not depend on what the dataset is about. The three examples below map a table, a graph and a nested record to a shared shape with the same small set of rules, and each one holds its round trip. Each is shown in JavaScript, Python and Rust; the crosswalk is the same JSON document in all three.
+
+In Rust a document is a `crossmap::Value`, an ordered JSON value read with serde_json, whose numbers are doubles as JavaScript reads them. In JavaScript it is the value `JSON.parse` would return, and in Python the `dict`, `list`, `str`, number, `bool` and `None` values `json.loads` would return.
 
 ### Rows of a table
 
-Sensor readings, such as a CSV read into JSON, with text numbers, a unit and a flag column:
+Sensor readings, such as a CSV read into JSON, with text numbers, a unit and a flag column.
 
-```ts
-import { assertRoundTrip, decode, encode, parseCrosswalk } from "crossmap";
+```js
+import { assertRoundTrip, encode, parseCrosswalk } from "crossmap";
 
 const readings = parseCrosswalk({
   source: "field-sensors/reading",
@@ -47,11 +67,85 @@ encode(readings, table);
 assertRoundTrip(readings, [table]);
 ```
 
+```python
+from crosswalk_codec import assert_round_trip, encode, parse_crosswalk
+
+readings = parse_crosswalk(
+    {
+        "source": "field-sensors/reading",
+        "target": "observations/v1",
+        "rules": [
+            {"op": "move", "from": "rows[].sensor", "to": "observations[].deviceId"},
+            {"op": "format", "from": "rows[].takenAt", "to": "observations[].takenAtMs", "kind": "isoDateTime"},
+            {"op": "format", "from": "rows[].level", "to": "observations[].level", "kind": "numberText"},
+            {"op": "scale", "from": "rows[].depthM", "to": "observations[].depthMm", "factor": 1000},
+            {"op": "enum", "from": "rows[].flag", "to": "observations[].quality", "map": {"ok": "GOOD", "sus": "SUSPECT"}, "mapBack": {"GOOD": "ok", "SUSPECT": "sus"}},
+        ],
+        "oneWay": [{"op": "drop", "from": "rows[].batteryPct", "direction": "encode"}],
+    }
+)
+
+table = {
+    "rows": [
+        {"sensor": "S-01", "takenAt": "2026-10-18T09:30:00.000Z", "level": "12.5", "depthM": 3, "flag": "ok", "batteryPct": 91},
+        {"sensor": "S-02", "takenAt": "2026-10-18T09:45:00.000Z", "level": "7", "depthM": 5, "flag": "sus", "batteryPct": 40},
+    ],
+}
+
+encode(readings, table)
+# {'observations': [
+#     {'deviceId': 'S-01', 'takenAtMs': 1792315800000, 'level': 12.5, 'depthMm': 3000, 'quality': 'GOOD'},
+#     {'deviceId': 'S-02', 'takenAtMs': 1792316700000, 'level': 7, 'depthMm': 5000, 'quality': 'SUSPECT'},
+# ]}
+
+assert_round_trip(readings, [table])
+```
+
+```rust
+use crossmap::{Value, assert_round_trip, encode, parse_crosswalk, stringify};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let readings = parse_crosswalk(&serde_json::from_str(
+        r#"{
+          "source": "field-sensors/reading",
+          "target": "observations/v1",
+          "rules": [
+            { "op": "move", "from": "rows[].sensor", "to": "observations[].deviceId" },
+            { "op": "format", "from": "rows[].takenAt", "to": "observations[].takenAtMs", "kind": "isoDateTime" },
+            { "op": "format", "from": "rows[].level", "to": "observations[].level", "kind": "numberText" },
+            { "op": "scale", "from": "rows[].depthM", "to": "observations[].depthMm", "factor": 1000 },
+            { "op": "enum", "from": "rows[].flag", "to": "observations[].quality", "map": { "ok": "GOOD", "sus": "SUSPECT" }, "mapBack": { "GOOD": "ok", "SUSPECT": "sus" } }
+          ],
+          "oneWay": [{ "op": "drop", "from": "rows[].batteryPct", "direction": "encode" }]
+        }"#,
+    )?)?;
+
+    let table: Value = serde_json::from_str(
+        r#"{
+          "rows": [
+            { "sensor": "S-01", "takenAt": "2026-10-18T09:30:00.000Z", "level": "12.5", "depthM": 3, "flag": "ok", "batteryPct": 91 },
+            { "sensor": "S-02", "takenAt": "2026-10-18T09:45:00.000Z", "level": "7", "depthM": 5, "flag": "sus", "batteryPct": 40 }
+          ]
+        }"#,
+    )?;
+
+    assert_eq!(
+        stringify(&encode(&readings, &table)?),
+        r#"{"observations":[{"deviceId":"S-01","takenAtMs":1792315800000,"level":12.5,"depthMm":3000,"quality":"GOOD"},{"deviceId":"S-02","takenAtMs":1792316700000,"level":7,"depthMm":5000,"quality":"SUSPECT"}]}"#
+    );
+
+    assert_round_trip(&readings, &[table])?;
+    Ok(())
+}
+```
+
 ### A graph
 
-Two arrays that refer to each other, here a citation network exported with its own field names, mapped onto nodes and edges:
+Two arrays that refer to each other, here a citation network exported with its own field names, mapped onto nodes and edges.
 
-```ts
+```js
+import { assertRoundTrip, encode, parseCrosswalk } from "crossmap";
+
 const network = parseCrosswalk({
   source: "reading-group/export",
   target: "graph/v1",
@@ -62,7 +156,6 @@ const network = parseCrosswalk({
     { op: "move", from: "cites[].cited", to: "edges[].target" },
     { op: "enum", from: "cites[].kind", to: "edges[].type", map: { direct: "CITES", survey: "CITES_IN_SURVEY" }, mapBack: { CITES: "direct", CITES_IN_SURVEY: "survey" } },
   ],
-  oneWay: [],
 });
 
 const exported = {
@@ -86,11 +179,77 @@ encode(network, exported);
 assertRoundTrip(network, [exported]);
 ```
 
+```python
+from crosswalk_codec import assert_round_trip, encode, parse_crosswalk
+
+network = parse_crosswalk(
+    {
+        "source": "reading-group/export",
+        "target": "graph/v1",
+        "rules": [
+            {"op": "move", "from": "papers[].key", "to": "nodes[].id"},
+            {"op": "move", "from": "papers[].venue", "to": "nodes[].type"},
+            {"op": "move", "from": "cites[].citing", "to": "edges[].source"},
+            {"op": "move", "from": "cites[].cited", "to": "edges[].target"},
+            {"op": "enum", "from": "cites[].kind", "to": "edges[].type", "map": {"direct": "CITES", "survey": "CITES_IN_SURVEY"}, "mapBack": {"CITES": "direct", "CITES_IN_SURVEY": "survey"}},
+        ],
+    }
+)
+
+exported = {
+    "papers": [{"key": "p1", "venue": "journal"}, {"key": "p2", "venue": "workshop"}, {"key": "p3", "venue": "journal"}],
+    "cites": [{"citing": "p2", "cited": "p1", "kind": "direct"}, {"citing": "p3", "cited": "p1", "kind": "survey"}],
+}
+
+encode(network, exported)
+# {'nodes': [{'id': 'p1', 'type': 'journal'}, {'id': 'p2', 'type': 'workshop'}, {'id': 'p3', 'type': 'journal'}],
+#  'edges': [{'source': 'p2', 'target': 'p1', 'type': 'CITES'}, {'source': 'p3', 'target': 'p1', 'type': 'CITES_IN_SURVEY'}]}
+
+assert_round_trip(network, [exported])
+```
+
+```rust
+use crossmap::{Value, assert_round_trip, encode, parse_crosswalk, stringify};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let network = parse_crosswalk(&serde_json::from_str(
+        r#"{
+          "source": "reading-group/export",
+          "target": "graph/v1",
+          "rules": [
+            { "op": "move", "from": "papers[].key", "to": "nodes[].id" },
+            { "op": "move", "from": "papers[].venue", "to": "nodes[].type" },
+            { "op": "move", "from": "cites[].citing", "to": "edges[].source" },
+            { "op": "move", "from": "cites[].cited", "to": "edges[].target" },
+            { "op": "enum", "from": "cites[].kind", "to": "edges[].type", "map": { "direct": "CITES", "survey": "CITES_IN_SURVEY" }, "mapBack": { "CITES": "direct", "CITES_IN_SURVEY": "survey" } }
+          ]
+        }"#,
+    )?)?;
+
+    let exported: Value = serde_json::from_str(
+        r#"{
+          "papers": [{ "key": "p1", "venue": "journal" }, { "key": "p2", "venue": "workshop" }, { "key": "p3", "venue": "journal" }],
+          "cites": [{ "citing": "p2", "cited": "p1", "kind": "direct" }, { "citing": "p3", "cited": "p1", "kind": "survey" }]
+        }"#,
+    )?;
+
+    assert_eq!(
+        stringify(&encode(&network, &exported)?),
+        r#"{"nodes":[{"id":"p1","type":"journal"},{"id":"p2","type":"workshop"},{"id":"p3","type":"journal"}],"edges":[{"source":"p2","target":"p1","type":"CITES"},{"source":"p3","target":"p1","type":"CITES_IN_SURVEY"}]}"#
+    );
+
+    assert_round_trip(&network, &[exported])?;
+    Ok(())
+}
+```
+
 ### A nested record with an optional block
 
-A catalogue record that nests a list and an optional licence block, with a field that is lossy in one direction and a value added on the way out:
+A catalogue record that nests a list and an optional licence block, with a field that is lossy in one direction and a value added on the way out.
 
-```ts
+```js
+import { assertRoundTrip, decode, encode, parseCrosswalk } from "crossmap";
+
 const catalogue = parseCrosswalk({
   source: "branch-library/record",
   target: "catalogue/v2",
@@ -141,15 +300,135 @@ const printOnly = { recordId: "BL-1043", subjects: "maps", copies: [{ barcode: "
 assertRoundTrip(catalogue, [record, printOnly]);
 ```
 
+```python
+from crosswalk_codec import assert_round_trip, decode, encode, parse_crosswalk
+
+digital = {"kind": "compare", "op": "eq", "left": {"kind": "reference", "key": "digital"}, "right": {"kind": "booleanLiteral", "value": True}}
+catalogue = parse_crosswalk(
+    {
+        "source": "branch-library/record",
+        "target": "catalogue/v2",
+        "rules": [
+            {"op": "move", "from": "recordId", "to": "id"},
+            {"op": "split", "from": "subjects", "to": "topics", "separator": ";"},
+            {"op": "move", "from": "copies[].barcode", "to": "holdings[].barcode"},
+            {"op": "move", "from": "digital", "to": "digital"},
+            {"op": "move", "from": "licence.url", "to": "access.licenceUrl", "when": digital},
+        ],
+        "oneWay": [
+            {"op": "drop", "from": "staffNotes", "direction": "encode"},
+            {"op": "default", "to": "origin", "value": "branch-library", "direction": "encode"},
+        ],
+    }
+)
+
+record = {
+    "recordId": "BL-1042",
+    "subjects": "maps;local history",
+    "copies": [{"barcode": "0041"}, {"barcode": "0042"}],
+    "digital": True,
+    "licence": {"url": "https://example.org/licence"},
+    "staffNotes": "re-bind spine",
+}
+
+entry = encode(catalogue, record)
+# {'id': 'BL-1042', 'topics': ['maps', 'local history'], 'holdings': [{'barcode': '0041'}, {'barcode': '0042'}],
+#  'digital': True, 'access': {'licenceUrl': 'https://example.org/licence'}, 'origin': 'branch-library'}
+
+decode(catalogue, entry)
+# record again, except staffNotes
+
+print_only = {"recordId": "BL-1043", "subjects": "maps", "copies": [{"barcode": "0043"}], "digital": False}
+
+# Raises RoundTripMismatchError naming the first path where decode(encode(sample)) differs from the sample.
+assert_round_trip(catalogue, [record, print_only])
+```
+
+```rust
+use crossmap::{Value, assert_round_trip, decode, encode, parse_crosswalk, stringify};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let catalogue = parse_crosswalk(&serde_json::from_str(
+        r#"{
+          "source": "branch-library/record",
+          "target": "catalogue/v2",
+          "rules": [
+            { "op": "move", "from": "recordId", "to": "id" },
+            { "op": "split", "from": "subjects", "to": "topics", "separator": ";" },
+            { "op": "move", "from": "copies[].barcode", "to": "holdings[].barcode" },
+            { "op": "move", "from": "digital", "to": "digital" },
+            {
+              "op": "move",
+              "from": "licence.url",
+              "to": "access.licenceUrl",
+              "when": { "kind": "compare", "op": "eq", "left": { "kind": "reference", "key": "digital" }, "right": { "kind": "booleanLiteral", "value": true } }
+            }
+          ],
+          "oneWay": [
+            { "op": "drop", "from": "staffNotes", "direction": "encode" },
+            { "op": "default", "to": "origin", "value": "branch-library", "direction": "encode" }
+          ]
+        }"#,
+    )?)?;
+
+    let record: Value = serde_json::from_str(
+        r#"{
+          "recordId": "BL-1042",
+          "subjects": "maps;local history",
+          "copies": [{ "barcode": "0041" }, { "barcode": "0042" }],
+          "digital": true,
+          "licence": { "url": "https://example.org/licence" },
+          "staffNotes": "re-bind spine"
+        }"#,
+    )?;
+
+    let entry = encode(&catalogue, &record)?;
+    assert_eq!(
+        stringify(&entry),
+        r#"{"id":"BL-1042","topics":["maps","local history"],"holdings":[{"barcode":"0041"},{"barcode":"0042"}],"digital":true,"access":{"licenceUrl":"https://example.org/licence"},"origin":"branch-library"}"#
+    );
+
+    // The record again, except staffNotes.
+    assert_eq!(
+        stringify(&decode(&catalogue, &entry)?),
+        r#"{"recordId":"BL-1042","subjects":"maps;local history","copies":[{"barcode":"0041"},{"barcode":"0042"}],"digital":true,"licence":{"url":"https://example.org/licence"}}"#
+    );
+
+    let print_only: Value = serde_json::from_str(
+        r#"{ "recordId": "BL-1043", "subjects": "maps", "copies": [{ "barcode": "0043" }], "digital": false }"#,
+    )?;
+
+    // An Err(CrossmapError::RoundTripMismatch { .. }) names the first path where decode(encode(sample)) differs.
+    assert_round_trip(&catalogue, &[record, print_only])?;
+    Ok(())
+}
+```
+
+## API
+
+Each package has the same functions, spelt in its language's convention. The rest of this README uses the JavaScript names.
+
+| JavaScript | Python | Rust | |
+| --- | --- | --- | --- |
+| `parseCrosswalk(document)` | `parse_crosswalk(document)` | `parse_crosswalk(&Value)` | parses a crosswalk document, reporting every syntax issue at once |
+| `validateCrosswalk(crosswalk)` | `validate_crosswalk(crosswalk)` | `validate_crosswalk(&Crosswalk)` | the structural defects of the rule list, empty when it can execute |
+| `encode(crosswalk, document)`, `decode(crosswalk, document)` | `encode`, `decode` | `encode`, `decode` | translate a document in either direction |
+| `compileCrosswalk(crosswalk)` | `compile_crosswalk(crosswalk)` | `compile_crosswalk(&Crosswalk)` | validates and prepares now, returning an `encode` and `decode` that take only the document |
+| `assertRoundTrip(crosswalk, samples)` | `assert_round_trip(crosswalk, samples)` | `assert_round_trip(&Crosswalk, &[Value])` | checks that `decode(encode(sample))` gives each sample back |
+| `ruleSides(rule)` | `rule_sides(rule)` | `rule_sides(&TwoWayRule)` | the `from` and `to` paths of a two-way rule |
+| `crossmap/schemas/crossmap.schema.json` | `json_schema_text()` | `schema::json_schema_text()` | the [JSON Schema](#json-schema) of the format |
+
+The errors are `CrossmapError` and its four kinds: `CrosswalkSyntaxError` for a document that is not a crosswalk, `CrosswalkStructureError` for a rule list that parses but cannot execute, `RuleApplicationError` naming the rule and path that failed, and `RoundTripMismatchError` naming the sample and path. In JavaScript and Python each is a class extending `CrossmapError`; in Rust each is a variant of the `CrossmapError` enum (`Syntax`, `Structure`, `RuleApplication`, `RoundTripMismatch`), whose `class_name` gives the name above.
+
 ## Command line
 
-The package installs a `crossmap` command, so a crosswalk can be applied without writing code:
+The `crossmap` command applies a crosswalk without writing code. It is the same command from all three registries (`cargo install crossmap-cli`, `npx crossmap` or `npm install -g crossmap`, and `pip install crosswalk-codec`):
 
 ```sh
-npx crossmap encode crosswalk.json document.json
-npx crossmap decode crosswalk.json shared.json
-npx crossmap validate crosswalk.json
-npx crossmap round-trip crosswalk.json samples.json
+crossmap encode crosswalk.json document.json
+crossmap decode crosswalk.json shared.json
+crossmap validate crosswalk.json
+crossmap round-trip crosswalk.json samples.json
 ```
 
 `encode` and `decode` print the translated document as JSON. `validate` and `round-trip` print nothing when they succeed; `samples.json` is a JSON array of source-shape documents. Any file argument can be `-` to read standard input, though not both at once.
@@ -157,15 +436,15 @@ npx crossmap round-trip crosswalk.json samples.json
 Any file argument can also be a URL, so a published crosswalk applies to a published document without downloading either, and either one or both can be remote:
 
 ```sh
-npx crossmap encode https://example.com/crosswalk.json https://example.com/document.json
-npx crossmap validate https://example.com/crosswalk.json
+crossmap encode https://example.com/crosswalk.json https://example.com/document.json
+crossmap validate https://example.com/crosswalk.json
 ```
 
-The readable schemes are `http:`, `https:`, `data:` and `file:`, alongside plain paths and `-`. An argument is a URL when it starts with a scheme of two or more characters and a colon, so a Windows path such as `C:\x.json` stays a path. Redirects are followed. A remote read gives up after a timeout and refuses a body over a size cap, both named constants in `cli/read-source.ts` with the reason for each. Any other scheme (`ftp:`, `s3:` and the like) exits 2 as unsupported, because reading it needs a client or credentials a data-only command should not take on. Fetching a crosswalk is safe in the sense that matters here: a crosswalk is data the codec validates, never code that runs.
+The readable schemes are `http:`, `https:`, `data:` and `file:`, alongside plain paths and `-`. An argument is a URL when it starts with a scheme of two or more characters and a colon, so a Windows path such as `C:\x.json` stays a path. A `file:` URL names a path as Node's `fileURLToPath` reads it on the platform the command runs on. Redirects are followed. A remote read gives up after a timeout and refuses a body over a size cap, both named constants in `rust/crates/crossmap-cli/src/read_source.rs` with the reason for each. Any other scheme (`ftp:`, `s3:` and the like) exits 2 as unsupported, because reading it needs a client or credentials a data-only command should not take on. Fetching a crosswalk is safe in the sense that matters here: a crosswalk is data the codec validates, never code that runs.
 
-The library does not read URLs and imports no Node module, so it runs unchanged in a browser or worker. Where `fetch` exists, the caller does the read:
+The libraries do not read files or URLs: the Rust crate does no input or output, and the npm package's library imports no Node module, so it runs unchanged in a browser or worker. Where `fetch` exists, the caller does the read:
 
-```ts
+```js
 import { decode, parseCrosswalk } from "crossmap";
 
 const crosswalk = parseCrosswalk(await (await fetch("https://example.com/crosswalk.json")).json());
@@ -204,7 +483,7 @@ Each derives both directions from one declaration. Decode swaps `from` and `to` 
 
 For example (a template writes a literal brace as `{{` or `}}`):
 
-```ts
+```js
 { op: "template", from: { given: "people[].given", family: "people[].family" }, to: "names[]", template: "{family}, {given}" }
 { op: "copy", from: "items[].id", to: ["nodes[].id", "labels[].text"] }
 ```
@@ -213,7 +492,7 @@ For example (a template writes a literal brace as `{{` or `}}`):
 
 `keep` lists paths whose value goes across unchanged, at the same path, in both directions. Each one means exactly the identity `move` from that path to itself, so these two crosswalks are the same crosswalk:
 
-```ts
+```js
 { source: "export", target: "graph/v1", keep: ["meta", "nodes[].id", "nodes[].label"] }
 { source: "export", target: "graph/v1", rules: [{ op: "move", from: "meta" }, { op: "move", from: "nodes[].id" }, { op: "move", from: "nodes[].label" }] }
 ```
@@ -236,7 +515,7 @@ Every rule may carry `when`, a trilean predicate tree, evaluated against the gov
 
 A two-way rule that iterates an array can be gated per element. A reference with wildcards names a field of the element the rule is visiting, written against the rule's `from` side: on a rule over `items[].radius`, `items[].kind` is the `kind` of the same item. The reference's part through its last wildcard must be the array the rule's `from` iterates at that depth, and it may have fewer wildcards than the rule, gating every inner element on a field of the outer one. While decoding, that part is rebased onto the `to` side's array, so `items[].kind` reads `shapes[i].kind` when the rule maps `items[]` to `shapes[]`; the field below it has to keep its name in both shapes, as with any gate. A gated element is skipped before anything below it is read, so an element that lacks the rule's path is skipped rather than absent. Collection references bind the same way. One-way rules visit no element, so their references have no wildcards.
 
-```ts
+```js
 {
   op: "move",
   from: "items[].radius",
@@ -249,19 +528,17 @@ An element that every rule writing into it skips leaves a gap in the output arra
 
 ### Execution
 
-The executor is pure and synchronous. Encode reads every `from` from the input as given and writes every `to` into a fresh output, so the input is never mutated. A `from` that is absent from the document is a `RuleApplicationError`, never a silent skip. The output is checked to be valid JSON throughout, so an input value that is not JSON (an `undefined` property, say) fails that check with a Zod error rather than reaching a caller. The check does not copy the output: a record or array that a `move` carries whole is the input's own object, shared by the output, so copy it (`structuredClone`) before changing either one in place.
+The executor is pure and synchronous. Encode reads every `from` from the input as given and writes every `to` into a fresh output, so the input is never mutated. A `from` that is absent from the document is a `RuleApplicationError`, never a silent skip. Every document is JSON throughout: a Rust `Value` is JSON by construction, and the npm and Python packages refuse a value that is not JSON at the boundary with a `TypeError` naming where it is, rather than dropping or converting it (each package's README says which values it accepts).
 
-A crosswalk is validated and prepared once, the first time it is used: `encode` and `decode` keep the prepared form for each crosswalk object, so running one crosswalk over many documents (every instance of a collection, both halves of a round trip) validates it once. `compileCrosswalk(crosswalk)` does the same step explicitly, throwing `CrosswalkStructureError` there rather than on the first run, and returns `{ encode, decode }` taking only the document. The crosswalk is read when it is prepared, so changing a crosswalk object after it has been used has no effect on it; parse a new one instead.
+A crosswalk is validated and prepared once, the first time it is used: `encode` and `decode` keep the prepared form for each crosswalk, so running one crosswalk over many documents (every instance of a collection, both halves of a round trip) validates it once. `compileCrosswalk(crosswalk)` does the same step explicitly, throwing `CrosswalkStructureError` there rather than on the first run, and returns `{ encode, decode }` taking only the document. The crosswalk is read when it is prepared, so in JavaScript changing a crosswalk object after it has been used has no effect on it; parse a new one instead. A parsed crosswalk cannot be changed in Rust or Python.
 
-```ts
+```js
 import { compileCrosswalk } from "crossmap";
 
 const codec = compileCrosswalk(network);
 const shared = codec.encode(exported);
 codec.decode(shared);
 ```
-
-The errors crossmap defines all extend `CrossmapError`: `CrosswalkSyntaxError` for a document that is not a crosswalk, `CrosswalkStructureError` for a rule list that parses but cannot execute, `RuleApplicationError` naming the rule and path that failed, and `RoundTripMismatchError` naming the sample and path.
 
 ## Round trips
 
@@ -275,7 +552,9 @@ The errors crossmap defines all extend `CrossmapError`: `CrosswalkSyntaxError` f
 
 ## JSON Schema
 
-The crosswalk format is published as a JSON Schema 2020-12 document, generated by the Rust core crate (`crossmap::schema`) and canonicalised per RFC 8785; the TypeScript build writes the same bytes from the Zod definitions. It is exposed through the package exports map as `crossmap/schemas/crossmap.schema.json`. It describes a crosswalk as a document may be written, so what `parseCrosswalk` fills in (the `rules`, `keep` and `oneWay` lists, a single-path rule's `to`) is optional in it. The `when` field is a `$ref` to trilean's published predicate schema, pinned to the trilean version this package depends on, so the predicate grammar has one source of truth.
+The crosswalk format is published as a JSON Schema 2020-12 document, canonicalised per RFC 8785. The crate writes it (`crossmap::schema::json_schema_text`, from `rust/crates/crossmap/src/schema.rs`), the repository commits it as `schemas/crossmap.schema.json`, and the tests fail when the committed file is not what the crate writes. The npm package exports it as `crossmap/schemas/crossmap.schema.json` and the Python package returns it from `json_schema_text()`, and the release checks both are byte for byte the crate's. It describes a crosswalk as a document may be written, so what `parseCrosswalk` fills in (the `rules`, `keep` and `oneWay` lists, a single-path rule's `to`) is optional in it. The `when` field is a `$ref` to trilean's published predicate schema, pinned to the trilean release `crossmap::schema::TRILEAN_VERSION` names, so the predicate grammar has one source of truth.
+
+The schema is byte for byte the one the original TypeScript implementation generated from its Zod definitions, apart from the version its `$id` names: the crate's tests compare it with that file, kept as `rust/tests/fixtures/pre-port-crossmap.schema.json`.
 
 ## Not in this version
 
@@ -289,15 +568,17 @@ Each of these is a deliberate omission, listed so it is not mistaken for an over
 
 ## Development
 
-Node 22 or later, pnpm, ESM only. See [CONTRIBUTING.md](CONTRIBUTING.md) for the hooks, the commit conventions and the constraints a change must preserve, and [SECURITY.md](SECURITY.md) for reporting a vulnerability.
+The codec, the command and both bindings are one Cargo workspace in `rust/`, on the toolchain `rust/rust-toolchain.toml` pins (rustup installs it on first use). `packages/crossmap` is the npm package built from the wasm binding, and the repository root holds the release tooling; both install with pnpm (Node 22 or later). The Python package is built with maturin from `rust/bindings/crossmap-py`. See [CONTRIBUTING.md](CONTRIBUTING.md) for the hooks, the commit conventions and the constraints a change must preserve, and [SECURITY.md](SECURITY.md) for reporting a vulnerability.
 
-| Script | |
+| Command | |
 | --- | --- |
-| `pnpm lint` / `pnpm lint:check` | ESLint, fixing and check-only |
-| `pnpm typecheck` | `tsc` over both tsconfig programs |
-| `pnpm test` | Vitest, tests colocated as `*.unit.test.ts` |
-| `pnpm build` | tsdown into `dist`, then the JSON Schema generation script |
-| `pnpm bench` | Encode and decode against a hand-written copy of the same fields: the ratio of the two on this machine in this run, and the input reads each makes per node |
+| `sh scripts/rust.sh fmt` / `clippy` / `test` | formatting, clippy with warnings denied, and every crate's tests |
+| `sh scripts/rust.sh conformance` | the conformance corpus against the crates, failing unless every case executes and passes |
+| `sh scripts/rust.sh deny` | cargo-deny's advisories, bans, licences and sources |
+| `sh scripts/rust.sh schema-check` | fails when `schemas/crossmap.schema.json` is not what the crate writes (`sh scripts/rust.sh xtask schema` rewrites it) |
+| `sh scripts/rust.sh bench` | encode and decode against hand-written copies of the same fields: each one's ratio to its copy in this run on this machine |
+| `pnpm --dir packages/crossmap run build` / `test` | builds the npm package from the wasm binding, then packs it, installs the tarball into an empty project and runs its suites there |
+| `maturin build --release --locked` then `pytest` | in `rust/bindings/crossmap-py`: builds the wheel, then runs its suites against it installed |
 
 `CLAUDE.md` and `AGENTS.md` are symlinks to this file.
 
