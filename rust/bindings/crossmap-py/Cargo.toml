@@ -1,0 +1,24 @@
+[package]
+name = "crossmap-py"
+description = "The Python binding of crossmap, built by maturin into the crosswalk-codec distribution."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+name = "_native"
+crate-type = ["cdylib"]
+# The binding's tests are the pytest suite, run against the built wheel installed in a fresh environment. A Rust test harness would link the extension against libpython, which an extension module must not do.
+test = false
+doctest = false
+
+[dependencies]
+crossmap.workspace = true
+crossmap-cli.workspace = true
+pyo3.workspace = true
+
+[lints]
+workspace = true

@@ -12,6 +12,7 @@ ignore = []
 unused-allowed-license = "deny"
 allow = [
     "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
     "BSD-3-Clause",
     "CDLA-Permissive-2.0",
     "ISC",
@@ -28,7 +29,16 @@ allow-wildcard-paths = true
 allow = [
     { crate = "crossmap", reason = "The codec." },
     { crate = "crossmap-cli", reason = "The crossmap command." },
+    { crate = "crossmap-py", reason = "The Python binding, built into the crosswalk-codec wheel." },
     { crate = "crossmap-conformance", reason = "Runs the conformance corpus against the codec and the command." },
+    { crate = "pyo3", reason = "The Python binding's interface to the interpreter." },
+    { crate = "pyo3-ffi", reason = "The C API declarations pyo3 calls." },
+    { crate = "pyo3-macros", reason = "pyo3's attribute macros, which declare the module, its functions and its classes." },
+    { crate = "pyo3-macros-backend", reason = "The code generation behind pyo3's macros." },
+    { crate = "pyo3-build-config", reason = "Finds the Python the binding is built for, at build time." },
+    { crate = "target-lexicon", reason = "pyo3-build-config reads the build target with it." },
+    { crate = "heck", reason = "pyo3's macros convert names between cases with it." },
+    { crate = "portable-atomic", reason = "Atomics pyo3 uses on targets without native ones." },
     { crate = "trilean", reason = "The predicate trees `when` is written in, their reading and their three-valued evaluator." },
     { crate = "trilean-regex", reason = "The regular expressions trilean's text comparisons evaluate." },
     { crate = "json-shape", reason = "The ordered JSON value documents are read as, written as JavaScript writes it, and the reading of trilean's trees." },

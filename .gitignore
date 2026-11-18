@@ -15,3 +15,8 @@ reports/
 
 # Cargo build output of the Rust workspace.
 rust/target/
+
+# Python bytecode and tool caches of the Python binding.
+__pycache__/
+.mypy_cache/
+.ruff_cache/

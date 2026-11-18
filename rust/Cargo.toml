@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/crossmap",
     "crates/crossmap-cli",
+    "bindings/crossmap-py",
     "tests/crossmap-conformance",
 ]
 
@@ -26,6 +27,9 @@ thiserror = "2"
 proptest = { version = "1", default-features = false, features = ["std"] }
 ureq = { version = "3", default-features = false, features = ["rustls"] }
 base64 = "0.23"
+# `abi3-py311` builds one wheel against the stable ABI of CPython 3.11, the oldest CPython still supported upstream, so
+# it installs on that and every later CPython.
+pyo3 = { version = "0.30.1", features = ["abi3-py311"] }
 percent-encoding = "2"
 
 [workspace.lints.rust]
