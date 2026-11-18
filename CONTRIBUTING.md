@@ -21,6 +21,12 @@
 - **No wall-clock figures in tests or docs.** Assert structure and counts of work.
 - **The executor answers to a reference.** `test/support/reference-executor.ts` is the plain rule-at-a-time executor, and the property tests in `src/executor-reference.unit.test.ts` require the same output, key order included, or the same error from the shipped one over generated crosswalks and documents. A deliberate change to what encode or decode does is made in both, in the same commit; a change that only makes them faster changes the shipped one and leaves the reference alone. `pnpm bench` measures a change against a hand-written copy, as ratios and input reads per node rather than times.
 
+## The wasm package
+
+`packages/crossmap` is the npm package built from the Rust workspace: `rust/bindings/crossmap-wasm` (wasm-bindgen, no input or output) compiled to wasm, with the API, the error classes and the command's Node shim beside it in `rust/bindings/crossmap-wasm/js/`. `pnpm --filter ./packages/crossmap run build` runs `cargo xtask npm crossmap` through `scripts/rust.sh`, which needs the `wasm-bindgen` command at the version `rust/Cargo.lock` pins (`sh scripts/rust.sh install-wasm-bindgen`) and the JSON Schema in `schemas/`, which it copies into the package. The xtask writes `packages/crossmap/dist` and `packages/crossmap/schemas` (build output, gitignored) and fails when the manifest's `./dist/` paths and the files it wrote differ.
+
+`pnpm --filter ./packages/crossmap run test` packs the package with `npm pack`, checks the tarball holds exactly the published files, installs it into a fresh directory and runs `packages/crossmap/test/` there in plain Node: the conformance corpus (every kind except the JSON Schema kinds), the command's end-to-end scenarios and the API's contract. `run check:package` runs `publint` and `attw --pack --profile esm-only`.
+
 ## Releases
 
 A push to `main` runs semantic-release in CI (the `release` job in `ci.yml`, whose filename is the one the npm trusted publisher is registered against). It reads the conventional commits since the last tag, bumps the version, publishes to npm through OIDC trusted publishing with provenance, tags the release, writes `CHANGELOG.md` and commits it back to `main`. `release.config.ts` holds the commit types and the release level each triggers, and commitlint imports the same list.
