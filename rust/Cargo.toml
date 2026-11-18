@@ -1,9 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
+    "bindings/crossmap-wasm",
     "crates/crossmap",
     "crates/crossmap-cli",
     "tests/crossmap-conformance",
+    "xtask",
 ]
 
 [workspace.package]
@@ -15,7 +17,9 @@ repository = "https://github.com/ExaDev/crossmap"
 
 [workspace.dependencies]
 crossmap = { path = "crates/crossmap" }
-crossmap-cli = { path = "crates/crossmap-cli" }
+# Without its native reader, which only the binary and the conformance runner turn on: the wasm binding uses the
+# command's pure steps and leaves the reading to its host.
+crossmap-cli = { path = "crates/crossmap-cli", default-features = false }
 # trilean's predicate trees, their reading and their three-valued evaluator, and the ordered JSON value they are read from. These are path dependencies on the trilean repository's working tree while its Rust evaluator is under review, and become crates.io versions once it is published.
 json-shape = { path = "../../../trilean-worktrees/rust-predicate-evaluator/rust/crates/json-shape" }
 trilean = { path = "../../../trilean-worktrees/rust-predicate-evaluator/rust/crates/trilean" }
@@ -26,10 +30,16 @@ thiserror = "2"
 proptest = { version = "1", default-features = false, features = ["std"] }
 ureq = { version = "3", default-features = false, features = ["rustls"] }
 base64 = "0.23"
+# Without its default features, which pull in the futures crates the binding does not use. As trilean's workspace
+# sets it.
+js-sys = { version = "0.3.106", default-features = false }
+wasm-bindgen = "0.2.129"
 percent-encoding = "2"
 
 [workspace.lints.rust]
-unsafe_code = "forbid"
+# `deny` and not `forbid`, because the wasm binding's generated FFI allows it locally; the library crates forbid it
+# with `#![forbid(unsafe_code)]` in their own roots.
+unsafe_code = "deny"
 missing_docs = "warn"
 
 [workspace.lints.clippy]
