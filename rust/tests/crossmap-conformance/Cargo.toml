@@ -10,7 +10,7 @@ publish = false
 
 [dev-dependencies]
 crossmap.workspace = true
-crossmap-cli.workspace = true
+crossmap-cli = { workspace = true, features = ["read"] }
 serde_json.workspace = true
 
 [[test]]

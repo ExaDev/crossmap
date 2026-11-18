@@ -1,5 +1,7 @@
 //! The `crossmap` executable.
 
+#![forbid(unsafe_code)]
+
 use std::io::Write as _;
 use std::process::ExitCode;
 
