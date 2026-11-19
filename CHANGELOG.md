@@ -1,3 +1,9 @@
+## [0.12.1](https://github.com/ExaDev/crossmap/compare/v0.12.0...v0.12.1) (2026-11-19)
+
+### Documentation
+
+* move the worked examples and the format reference out of the README ([35c7fb4](https://github.com/ExaDev/crossmap/commit/35c7fb4ee977af4be8a30b7899fb9ead732bba15))
+
 ## [0.12.0](https://github.com/ExaDev/crossmap/compare/v0.11.1...v0.12.0) (2026-11-19)
 
 ### Features
