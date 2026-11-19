@@ -1,3 +1,73 @@
+## [0.12.0](https://github.com/ExaDev/crossmap/compare/v0.11.1...v0.12.0) (2026-11-19)
+
+### Features
+
+* **npm:** build the crossmap package from the wasm binding ([f08586d](https://github.com/ExaDev/crossmap/commit/f08586d8ae741cb63a1039a447d8b322096aa37b)), closes [#init](https://github.com/ExaDev/crossmap/issues/init)
+* **python:** add the crosswalk-codec Python package over the Rust codec ([af22bc5](https://github.com/ExaDev/crossmap/commit/af22bc537dcb25dc81d3ba28d3e3bd28c6360094))
+* **python:** return the crosswalk JSON Schema from the wheel ([66116a9](https://github.com/ExaDev/crossmap/commit/66116a99515478da40bdcb5e0931b4fb22ec648b))
+* **rust:** port the crosswalk codec and its command to Rust ([017dfe8](https://github.com/ExaDev/crossmap/commit/017dfe8852b5b4895cd71fe687e53e97fcd8cb50))
+* **rust:** write the crosswalk JSON Schema from the core crate ([aa98796](https://github.com/ExaDev/crossmap/commit/aa987967a20015df0afc85b0a83192c4fa7ef5b8))
+* **wasm:** bind the codec and the command's steps to wasm ([74beda1](https://github.com/ExaDev/crossmap/commit/74beda190d2151ba27fd23ef6e8a2ec65b3e93f4))
+
+### Bug Fixes
+
+* **ci:** leave the packaged crates where the schema and version checks read them ([bbfadb2](https://github.com/ExaDev/crossmap/commit/bbfadb2955c3768ba721cefe001676bfba61d981))
+* **ci:** route a public repository's jobs to Blacksmith instead of the fleet ([4df793f](https://github.com/ExaDev/crossmap/commit/4df793f533db45e412982e55ecad548d6938fc23))
+* **cli:** read a file: URL on Windows as Node's fileURLToPath does ([1877f74](https://github.com/ExaDev/crossmap/commit/1877f74fa91cce3d9b624444c78267165093d907))
+
+### Code Refactoring
+
+* **cli:** share the command's standard-stream host with other hosts ([6eaa8b6](https://github.com/ExaDev/crossmap/commit/6eaa8b61d8f74d1a40d021799bf0110272cdf9e0))
+* **cli:** split the command into pure plan and complete steps ([21be88c](https://github.com/ExaDev/crossmap/commit/21be88c2edb59b4263c5d64ff33bab6894cef7b6))
+* remove the TypeScript implementation and its tooling ([2ffb809](https://github.com/ExaDev/crossmap/commit/2ffb8098be3416d14bf9a378f7b427316cebb5f5))
+
+### Documentation
+
+* **conformance:** name the Rust, npm and Python runners of the corpus ([e10f7af](https://github.com/ExaDev/crossmap/commit/e10f7afdaab80bddc773565f9332fa85f9ec063c))
+* describe contributing and the security scope for the Rust codec ([8b83ab1](https://github.com/ExaDev/crossmap/commit/8b83ab192eefc1b2f0f9e7a61c0c723a99278979))
+* describe the committed schema and the Rust generator that writes it ([6e622f3](https://github.com/ExaDev/crossmap/commit/6e622f39e794b489dd79262cb5d76491207c1364))
+* describe the Rust codec and its three packages in the README ([618b663](https://github.com/ExaDev/crossmap/commit/618b663e34e8670daf00f7146af6c56cf3ff485d))
+* **npm:** list the breaking changes from the TypeScript package ([d850f79](https://github.com/ExaDev/crossmap/commit/d850f790928b33c578b476a67dfc737edcf93271))
+* state parity with the packages and the corpus, not a removed implementation ([f8f3252](https://github.com/ExaDev/crossmap/commit/f8f3252af44ee68269c31b88a82ee9e99acfdd1f))
+
+### Styles
+
+* **python:** format the binding's sources and README with the pinned ruff ([877f0e8](https://github.com/ExaDev/crossmap/commit/877f0e8e3b5511968826b2deedcaf21698e6679e))
+
+### Tests
+
+* add a language-neutral conformance corpus and its TypeScript runner ([ec2d563](https://github.com/ExaDev/crossmap/commit/ec2d5633f5ff760dd4ac92896ff1d4341a6fd62f))
+* **bench:** measure encode and decode against hand-written copies in Rust ([8e303b6](https://github.com/ExaDev/crossmap/commit/8e303b64a9484c1e240572e426f114b33196fdaa))
+* **conformance:** name a case directory's file: URL with {dirUrl} ([36df6cc](https://github.com/ExaDev/crossmap/commit/36df6ccd8085c1570af045d48e9a99db42b5308e))
+* **python:** run the conformance corpus and API tests on the installed wheel ([9bb253e](https://github.com/ExaDev/crossmap/commit/9bb253ea88743fddc958c15ec9404f38be97efc5))
+* **rust:** count the JSON Schema kinds as having no Rust executor ([528b6dd](https://github.com/ExaDev/crossmap/commit/528b6dd981475ba51498c014c3cea0fd139082e6))
+* **rust:** execute the JSON Schema conformance cases ([5b26b53](https://github.com/ExaDev/crossmap/commit/5b26b53ad9749fe9ef87423cbab81b93fbdc4161))
+* **rust:** hold the codec to the properties the corpus cannot state ([7f62525](https://github.com/ExaDev/crossmap/commit/7f625258c192ac8e1fa4492b18dd1b4d3e2105f9))
+* **rust:** keep the pre-port JSON Schema and trilean's published schema ([62a1b52](https://github.com/ExaDev/crossmap/commit/62a1b52f153cc0c8789bfe787528ac1a50a0c6f1))
+* **schema:** check the trilean pin against the pre-port schema ([7744815](https://github.com/ExaDev/crossmap/commit/7744815bfea0cbc4a8ef0c9265490cf001af1968))
+
+### Build System
+
+* read and write the one release version every artefact carries ([eb7e8f7](https://github.com/ExaDev/crossmap/commit/eb7e8f7bbfb51a6e0a214f1c9b2a883dfec01469))
+* **rust:** allowlist the dependency graph and test the built command ([ad635cb](https://github.com/ExaDev/crossmap/commit/ad635cb016172252a6a7b43ddcbb309c31f1ffe8))
+* **rust:** allowlist the wasm binding and its glue crates in cargo-deny ([c9fd256](https://github.com/ExaDev/crossmap/commit/c9fd2560ceaf4f408a40128687ccdafa907e4d39))
+* **rust:** commit the generated JSON Schema and check it is current ([9be5077](https://github.com/ExaDev/crossmap/commit/9be50779e821db79049b27dda67448bd8817647b))
+* **rust:** make crossmap and crossmap-cli publishable to crates.io ([1721690](https://github.com/ExaDev/crossmap/commit/1721690e87495f7336f1505d99b00f92ae321a1f)), closes [ExaDev/trilean#192](https://github.com/ExaDev/trilean/issues/192)
+* **rust:** take trilean-eval and trilean-json-shape from crates.io ([f27cff4](https://github.com/ExaDev/crossmap/commit/f27cff4572270ae1429721f95712ed778253f698))
+* **rust:** take trilean's crates from the trilean@3.0.0 release commit ([8f88481](https://github.com/ExaDev/crossmap/commit/8f884817d70fe50f169fac337da34ba34c2b04cc)), closes [ExaDev/trilean#192](https://github.com/ExaDev/trilean/issues/192)
+* write the release and commitlint configurations in JavaScript ([2bff31d](https://github.com/ExaDev/crossmap/commit/2bff31d31973b5cba945f2007e9fd10a603f4386))
+
+### Continuous Integration
+
+* check the Rust workspace and its three artefacts in place of the TypeScript jobs ([b7164c5](https://github.com/ExaDev/crossmap/commit/b7164c50177d7cdf591c1bbf35accc0246cb303a))
+* create the directory npm pack writes the tarball into ([c011a4f](https://github.com/ExaDev/crossmap/commit/c011a4fcf86d0dcb1162433a5bb01dfb7c87189d))
+* dry-run an already published npm version as a pre-release of it ([6035e95](https://github.com/ExaDev/crossmap/commit/6035e959ae522f18b1af313cc5413cab0fe5a5f8))
+* keep the build cache out of container wheel builds ([d10b3b9](https://github.com/ExaDev/crossmap/commit/d10b3b97ebfcd9bceea7a016eb6be5142ce70b96))
+* let Dependabot update the Rust workspace's crates ([e773b38](https://github.com/ExaDev/crossmap/commit/e773b38a3129d317c193d830687a755d6d3526e4))
+* release the crates, the wheels and the npm package at one version ([e89f47c](https://github.com/ExaDev/crossmap/commit/e89f47cc9f335762012d2cc9ffd8a56e0eca943a))
+* run the crates dry run as its own job, naming an unpublished dependency ([2d3fe7c](https://github.com/ExaDev/crossmap/commit/2d3fe7c43c260e739203c7c07ccd5d4b684a174c))
+* skip the Required Checks job in a cancelled run ([14c91fd](https://github.com/ExaDev/crossmap/commit/14c91fd0e2bde8e234b8d9b60253100542de49f4))
+
 ## [0.11.1](https://github.com/ExaDev/crossmap/compare/v0.11.0...v0.11.1) (2026-11-05)
 
 ### Bug Fixes
