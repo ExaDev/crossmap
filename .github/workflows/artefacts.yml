@@ -91,6 +91,9 @@ jobs:
           python-version: '3.11'
       - id: rust
         uses: ./.github/actions/setup-rust
+        with:
+          # Linux wheels compile inside a container with an older libc than the host, which cannot run build-script binaries restored from a host build.
+          cache-targets: ${{ matrix.manylinux == '' && 'true' || 'false' }}
       - name: Build the wheel
         uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
         with:
