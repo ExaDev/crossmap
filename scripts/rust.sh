@@ -10,7 +10,7 @@
 #   deny                    cargo-deny's advisories, bans, licences and sources
 #   schema-check            fails when schemas/crossmap.schema.json is not what the crate generates
 #   published-dependencies  fails, naming them, while a published crate's path dependency outside the workspace is not on crates.io at its required version
-#   publish-dry-run         packages the published crates (crossmap, crossmap-cli) together and builds each from its package, without uploading
+#   publish-dry-run         packages the published crates (crossmap, crossmap-cli) together, leaving the .crate files in target/package, and builds each from its package, without uploading
 #   publish                 publishes them to crates.io, with the token in CARGO_REGISTRY_TOKEN
 #   packaged-schema         prints the schema the packaged crossmap crate generates, built from its .crate file alone (run publish-dry-run first)
 #   xtask <arguments>       the repository's build tasks: `xtask npm crossmap` builds the npm package from the wasm binding, `xtask schema` writes the schema
@@ -49,6 +49,9 @@ case "$task" in
     cargo metadata --locked --no-deps --format-version 1 | python3 -I ../scripts/published-dependencies.py $crates
     ;;
   publish-dry-run)
+    # `cargo publish --dry-run` verifies each package but keeps no .crate file; `cargo package` writes them to target/package, where packaged-schema and the artefact check read them.
+    # shellcheck disable=SC2086 # $published is a list of arguments.
+    cargo package --locked $published
     # shellcheck disable=SC2086 # $published is a list of arguments.
     cargo publish --locked --dry-run $published
     ;;
