@@ -7,6 +7,11 @@ inputs:
     required: false
     default: 'false'
 
+  cache-targets:
+    description: Whether the cache holds the build output (`target`). A job that compiles inside a manylinux or musllinux container sets it to false, because build-script binaries the cache restored from a host build need a newer libc than the container has.
+    required: false
+    default: 'true'
+
 outputs:
   trilean-checkout:
     description: STOPGAP, removed with the trilean checkout below. The absolute path of trilean's checkout, for a container that must mount it.
@@ -40,6 +45,7 @@ runs:
     - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       with:
         workspaces: rust
+        cache-targets: ${{ inputs.cache-targets }}
 
     # The command line tool and the wasm-bindgen library the glue is generated for must be the same version, so the version is read from the lock file, never written here.
     - name: Install wasm-bindgen at the locked version
