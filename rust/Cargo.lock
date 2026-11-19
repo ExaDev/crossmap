@@ -943,6 +943,8 @@ dependencies = [
 [[package]]
 name = "trilean-eval"
 version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2cd0b38d401e2ae286f57cdcc85a8554729f4cf7ac3e71828fec43f63f24c23"
 dependencies = [
  "trilean-json-shape",
  "trilean-regex",
@@ -951,6 +953,8 @@ dependencies = [
 [[package]]
 name = "trilean-json-shape"
 version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61afa2c9bfda446cfa7c269dea08ef3f2cb6d813ebacd942e128179ab41168fc"
 dependencies = [
  "serde",
  "serde_json",
@@ -961,6 +965,8 @@ dependencies = [
 [[package]]
 name = "trilean-json-shape-derive"
 version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "865a6ae2b6b8cde10fc0fafb3d73a5b02b3cae55213e836493811c5260300ca2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -971,10 +977,14 @@ dependencies = [
 [[package]]
 name = "trilean-json-shape-pattern"
 version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26ca1bcdd8eee30e138ece7983be89ce7caf9d8e063f9c6935218148447b1d46"
 
 [[package]]
 name = "trilean-regex"
 version = "2.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccfcf1974f8ea46eb0099a681a5ed920c6ba9afe43be85f40a674c58484f7f07"
 
 [[package]]
 name = "unarray"
