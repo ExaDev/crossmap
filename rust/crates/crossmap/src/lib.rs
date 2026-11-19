@@ -39,9 +39,9 @@ pub use roundtrip::assert_round_trip;
 pub use validate::validate_crosswalk;
 pub use when::{Gate, When, WhenElement};
 
-// The repository README's Rust examples, compiled and run as this crate's doctests, so the README cannot show code
-// that does not build or results the codec does not give. Only under rustdoc's doctest pass, which is the one build
+// The Rust examples of the repository's docs/usage.md, compiled and run as this crate's doctests, so the usage guide
+// cannot show code that does not build or results the codec does not give. Only under rustdoc's doctest pass, which is the one build
 // that reads the file: a crate built from its published package never evaluates the path.
 #[cfg(doctest)]
-#[doc = include_str!("../../../../README.md")]
-struct ReadmeExamples;
+#[doc = include_str!("../../../../docs/usage.md")]
+struct UsageExamples;
