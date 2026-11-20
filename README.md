@@ -26,7 +26,10 @@ pip install crosswalk-codec      # the library and the command, for Python
 
 A crosswalk does not depend on what the dataset is about. This one maps the rows of a table to a shared shape and holds its round trip; [docs/usage.md](docs/usage.md) has two more (a graph and a nested record).
 
-Sensor readings, such as a CSV read into JSON, with text numbers, a unit and a flag column.
+Sensor readings, such as a CSV read into JSON, with text numbers, a unit and a flag column. Each language's version is below.
+
+<details>
+<summary>JavaScript</summary>
 
 ```js
 import { assertRoundTrip, encode, parseCrosswalk } from "crossmap";
@@ -63,7 +66,10 @@ encode(readings, table);
 assertRoundTrip(readings, [table]);
 ```
 
-The same example in Python:
+</details>
+
+<details>
+<summary>Python</summary>
 
 ```python
 from crosswalk_codec import assert_round_trip, encode, parse_crosswalk
@@ -99,7 +105,10 @@ encode(readings, table)
 assert_round_trip(readings, [table])
 ```
 
-And in Rust, where a document is a `crossmap::Value` read with serde_json:
+</details>
+
+<details>
+<summary>Rust (a document is a `crossmap::Value`, read with serde_json)</summary>
 
 ```rust
 use crossmap::{Value, assert_round_trip, encode, parse_crosswalk, stringify};
@@ -138,6 +147,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
+</details>
 
 ## API
 
@@ -179,6 +190,9 @@ The readable schemes are `http:`, `https:`, `data:` and `file:`, alongside plain
 
 The libraries do not read files or URLs: the Rust crate does no input or output, and the npm package's library imports no Node module, so it runs unchanged in a browser or worker. Where `fetch` exists, the caller does the read:
 
+<details>
+<summary>JavaScript</summary>
+
 ```js
 import { decode, parseCrosswalk } from "crossmap";
 
@@ -186,7 +200,10 @@ const crosswalk = parseCrosswalk(await (await fetch("https://example.com/crosswa
 const native = decode(crosswalk, await (await fetch("https://example.com/shared.json")).json());
 ```
 
-In Python the standard library does the read:
+</details>
+
+<details>
+<summary>Python (the standard library does the read)</summary>
 
 ```python
 import json
@@ -197,6 +214,8 @@ from crosswalk_codec import decode, parse_crosswalk
 crosswalk = parse_crosswalk(json.load(urlopen("https://example.com/crosswalk.json")))
 native = decode(crosswalk, json.load(urlopen("https://example.com/shared.json")))
 ```
+
+</details>
 
 In Rust any HTTP client does the read, and `serde_json` turns the body into a `crossmap::Value` for `parse_crosswalk` and `decode`.
 
