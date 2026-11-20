@@ -1,6 +1,6 @@
 # Usage
 
-The worked examples of the [crossmap README](../README.md), each in JavaScript, Python and Rust. The Rust blocks are compiled and run as the crate's doctests, so they cannot show code that does not build or results the codec does not give.
+The worked examples of the [crossmap README](../README.md), each in JavaScript, Python and Rust. Every block is run in its own package's test suite (the Rust blocks as the crate's doctests), so none can show code that does not build or run.
 
 A crosswalk does not depend on what the dataset is about. The three examples below map a table, a graph and a nested record to a shared shape with the same small set of rules, and each one holds its round trip. Each is shown in JavaScript, Python and Rust; the crosswalk is the same JSON document in all three.
 

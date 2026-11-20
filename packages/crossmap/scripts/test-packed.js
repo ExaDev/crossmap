@@ -9,7 +9,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const packageDirectory = fileURLToPath(new URL("..", import.meta.url));
-const corpus = fileURLToPath(new URL("../../../conformance", import.meta.url));
+const repositoryRoot = fileURLToPath(new URL("../../..", import.meta.url));
+const corpus = join(repositoryRoot, "conformance");
 
 /** The files the tarball must hold: the manifest and readme npm always adds, the built `dist` and the copied schemas. A file added to the build, or one that stops being built, is a deliberate change here. */
 const PUBLISHED = new Set([
@@ -63,7 +64,7 @@ try {
   const run = spawnSync(process.execPath, ["--test", "--test-concurrency=1", ...tests], {
     cwd: consumer,
     stdio: "inherit",
-    env: { ...process.env, CROSSMAP_CORPUS: corpus },
+    env: { ...process.env, CROSSMAP_CORPUS: corpus, CROSSMAP_DOCS: repositoryRoot },
   });
   status = run.status ?? 1;
 } finally {
