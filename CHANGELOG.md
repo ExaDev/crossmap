@@ -1,3 +1,9 @@
+## [0.12.3](https://github.com/ExaDev/crossmap/compare/v0.12.2...v0.12.3) (2026-11-20)
+
+### Bug Fixes
+
+* **deps:** take the patched undici and fast-uri that the release tooling resolves ([b8f94ee](https://github.com/ExaDev/crossmap/commit/b8f94ee21d9321d8dd461ddeec1717cdcf3ed7c2))
+
 ## [0.12.2](https://github.com/ExaDev/crossmap/compare/v0.12.1...v0.12.2) (2026-11-20)
 
 ### Documentation
