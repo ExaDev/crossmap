@@ -1,3 +1,10 @@
+## [0.12.2](https://github.com/ExaDev/crossmap/compare/v0.12.1...v0.12.2) (2026-11-20)
+
+### Documentation
+
+* add the red npm badge ahead of the version badge, as the other repositories have ([d6f3698](https://github.com/ExaDev/crossmap/commit/d6f3698cbb86acf69d08df9602e0687cdb50f23e))
+* brand-coloured registry badges and one version badge linking to the release ([5a720e8](https://github.com/ExaDev/crossmap/commit/5a720e8e3f82d27974ab6e3558a492151428f527))
+
 ## [0.12.1](https://github.com/ExaDev/crossmap/compare/v0.12.0...v0.12.1) (2026-11-19)
 
 ### Documentation
