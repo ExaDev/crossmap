@@ -8,7 +8,7 @@ The codec is a Cargo workspace in `rust/` on the toolchain `rust/rust-toolchain.
 
 ## Before opening a PR
 
-`sh scripts/rust.sh <task>` runs cargo from `rust/` against the committed lock file and the pinned toolchain, and CI runs the same tasks: `fmt`, `clippy` (warnings denied), `test` (every crate's tests, the Rust examples of `docs/usage.md` as doctests and the schema checks among them), `conformance` (every case of the corpus, none skipped), `deny`, `schema-check`, `published-dependencies` (fails, naming it, while a path dependency of a published crate is not on crates.io), `publish-dry-run` and `packaged-schema`. `python3 -I scripts/release-version.py check` fails when the manifests disagree on the release version. CI also builds the npm package and the wheels and tests each from its installed artefact, as below.
+`sh scripts/rust.sh <task>` runs cargo from `rust/` against the committed lock file and the pinned toolchain, and CI runs the same tasks: `fmt`, `clippy` (warnings denied), `test` (every crate's tests, the Rust examples of `README.md` and `docs/usage.md` as doctests and the schema checks among them), `conformance` (every case of the corpus, none skipped), `deny`, `schema-check`, `published-dependencies` (fails, naming it, while a path dependency of a published crate is not on crates.io), `publish-dry-run` and `packaged-schema`. `python3 -I scripts/release-version.py check` fails when the manifests disagree on the release version. CI also builds the npm package and the wheels and tests each from its installed artefact, as below, and each package's suite also runs its language's examples from `README.md` and `docs/usage.md` as written (only a block that reads a published URL is skipped).
 
 ## Constraints a change must preserve
 

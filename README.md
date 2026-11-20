@@ -24,7 +24,7 @@ pip install crosswalk-codec      # the library and the command, for Python
 
 ## Usage
 
-A crosswalk does not depend on what the dataset is about. This one maps the rows of a table to a shared shape and holds its round trip; [docs/usage.md](docs/usage.md) has it and two more (a graph and a nested record) in JavaScript, Python and Rust.
+A crosswalk does not depend on what the dataset is about. This one maps the rows of a table to a shared shape and holds its round trip; [docs/usage.md](docs/usage.md) has two more (a graph and a nested record).
 
 Sensor readings, such as a CSV read into JSON, with text numbers, a unit and a flag column.
 
@@ -61,6 +61,82 @@ encode(readings, table);
 
 // decode gives the rows back, except batteryPct: the drop rule declared it lossy.
 assertRoundTrip(readings, [table]);
+```
+
+The same example in Python:
+
+```python
+from crosswalk_codec import assert_round_trip, encode, parse_crosswalk
+
+readings = parse_crosswalk(
+    {
+        "source": "field-sensors/reading",
+        "target": "observations/v1",
+        "rules": [
+            {"op": "move", "from": "rows[].sensor", "to": "observations[].deviceId"},
+            {"op": "format", "from": "rows[].takenAt", "to": "observations[].takenAtMs", "kind": "isoDateTime"},
+            {"op": "format", "from": "rows[].level", "to": "observations[].level", "kind": "numberText"},
+            {"op": "scale", "from": "rows[].depthM", "to": "observations[].depthMm", "factor": 1000},
+            {"op": "enum", "from": "rows[].flag", "to": "observations[].quality", "map": {"ok": "GOOD", "sus": "SUSPECT"}, "mapBack": {"GOOD": "ok", "SUSPECT": "sus"}},
+        ],
+        "oneWay": [{"op": "drop", "from": "rows[].batteryPct", "direction": "encode"}],
+    }
+)
+
+table = {
+    "rows": [
+        {"sensor": "S-01", "takenAt": "2026-10-18T09:30:00.000Z", "level": "12.5", "depthM": 3, "flag": "ok", "batteryPct": 91},
+        {"sensor": "S-02", "takenAt": "2026-10-18T09:45:00.000Z", "level": "7", "depthM": 5, "flag": "sus", "batteryPct": 40},
+    ],
+}
+
+encode(readings, table)
+# {'observations': [
+#     {'deviceId': 'S-01', 'takenAtMs': 1792315800000, 'level': 12.5, 'depthMm': 3000, 'quality': 'GOOD'},
+#     {'deviceId': 'S-02', 'takenAtMs': 1792316700000, 'level': 7, 'depthMm': 5000, 'quality': 'SUSPECT'},
+# ]}
+
+assert_round_trip(readings, [table])
+```
+
+And in Rust, where a document is a `crossmap::Value` read with serde_json:
+
+```rust
+use crossmap::{Value, assert_round_trip, encode, parse_crosswalk, stringify};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let readings = parse_crosswalk(&serde_json::from_str(
+        r#"{
+          "source": "field-sensors/reading",
+          "target": "observations/v1",
+          "rules": [
+            { "op": "move", "from": "rows[].sensor", "to": "observations[].deviceId" },
+            { "op": "format", "from": "rows[].takenAt", "to": "observations[].takenAtMs", "kind": "isoDateTime" },
+            { "op": "format", "from": "rows[].level", "to": "observations[].level", "kind": "numberText" },
+            { "op": "scale", "from": "rows[].depthM", "to": "observations[].depthMm", "factor": 1000 },
+            { "op": "enum", "from": "rows[].flag", "to": "observations[].quality", "map": { "ok": "GOOD", "sus": "SUSPECT" }, "mapBack": { "GOOD": "ok", "SUSPECT": "sus" } }
+          ],
+          "oneWay": [{ "op": "drop", "from": "rows[].batteryPct", "direction": "encode" }]
+        }"#,
+    )?)?;
+
+    let table: Value = serde_json::from_str(
+        r#"{
+          "rows": [
+            { "sensor": "S-01", "takenAt": "2026-10-18T09:30:00.000Z", "level": "12.5", "depthM": 3, "flag": "ok", "batteryPct": 91 },
+            { "sensor": "S-02", "takenAt": "2026-10-18T09:45:00.000Z", "level": "7", "depthM": 5, "flag": "sus", "batteryPct": 40 }
+          ]
+        }"#,
+    )?;
+
+    assert_eq!(
+        stringify(&encode(&readings, &table)?),
+        r#"{"observations":[{"deviceId":"S-01","takenAtMs":1792315800000,"level":12.5,"depthMm":3000,"quality":"GOOD"},{"deviceId":"S-02","takenAtMs":1792316700000,"level":7,"depthMm":5000,"quality":"SUSPECT"}]}"#
+    );
+
+    assert_round_trip(&readings, &[table])?;
+    Ok(())
+}
 ```
 
 ## API
@@ -109,6 +185,20 @@ import { decode, parseCrosswalk } from "crossmap";
 const crosswalk = parseCrosswalk(await (await fetch("https://example.com/crosswalk.json")).json());
 const native = decode(crosswalk, await (await fetch("https://example.com/shared.json")).json());
 ```
+
+In Python the standard library does the read:
+
+```python
+import json
+from urllib.request import urlopen
+
+from crosswalk_codec import decode, parse_crosswalk
+
+crosswalk = parse_crosswalk(json.load(urlopen("https://example.com/crosswalk.json")))
+native = decode(crosswalk, json.load(urlopen("https://example.com/shared.json")))
+```
+
+In Rust any HTTP client does the read, and `serde_json` turns the body into a `crossmap::Value` for `parse_crosswalk` and `decode`.
 
 The exit status is 0 on success, 1 when the library rejects the crosswalk or the document (the reason is on standard error), and 2 for bad usage or an argument that cannot be read (a missing file, a failed or oversized fetch, an unsupported scheme) or is not JSON.
 
