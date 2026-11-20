@@ -132,7 +132,7 @@ dependencies = [
 
 [[package]]
 name = "crossmap"
-version = "0.12.3"
+version = "0.12.4"
 dependencies = [
  "proptest",
  "serde",
@@ -144,7 +144,7 @@ dependencies = [
 
 [[package]]
 name = "crossmap-cli"
-version = "0.12.3"
+version = "0.12.4"
 dependencies = [
  "base64",
  "crossmap",
@@ -155,7 +155,7 @@ dependencies = [
 
 [[package]]
 name = "crossmap-conformance"
-version = "0.12.3"
+version = "0.12.4"
 dependencies = [
  "crossmap",
  "crossmap-cli",
@@ -166,7 +166,7 @@ dependencies = [
 
 [[package]]
 name = "crossmap-py"
-version = "0.12.3"
+version = "0.12.4"
 dependencies = [
  "crossmap",
  "crossmap-cli",
@@ -175,7 +175,7 @@ dependencies = [
 
 [[package]]
 name = "crossmap-wasm"
-version = "0.12.3"
+version = "0.12.4"
 dependencies = [
  "crossmap",
  "crossmap-cli",
@@ -1222,7 +1222,7 @@ checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
 
 [[package]]
 name = "xtask"
-version = "0.12.3"
+version = "0.12.4"
 dependencies = [
  "crossmap",
  "serde_json",

@@ -1,3 +1,10 @@
+## [0.12.4](https://github.com/ExaDev/crossmap/compare/v0.12.3...v0.12.4) (2026-11-20)
+
+### Documentation
+
+* fold each language's README example into its own collapsible section ([87b1027](https://github.com/ExaDev/crossmap/commit/87b102720da1f6cfd84bb88691ddd3018bd18d02))
+* show the README examples in Python and Rust, and run every language's examples in its suite ([2dad434](https://github.com/ExaDev/crossmap/commit/2dad43416d8d898bf96c3f98be474480cb288c5e))
+
 ## [0.12.3](https://github.com/ExaDev/crossmap/compare/v0.12.2...v0.12.3) (2026-11-20)
 
 ### Bug Fixes
