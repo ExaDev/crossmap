@@ -28,6 +28,6 @@ jobs:
       # The fleet's runner group refuses public repositories, so GitHub never offers a public repository's job to the fleet and a job routed there stays queued. This repository is public: the action is skipped for a public repository, and the outputs above then fall back to Blacksmith.
       - id: fallback
         if: ${{ github.event.repository.private }}
-        uses: ExaDev/runner-fallback-action@b774d51ff5360bf53705b2eb34ff019afd4d7f07
+        uses: ExaDev/runner-fallback-action@7f5c8d0533729d82dac393390b065ec05d4ef140
         with:
           fallback-labels: blacksmith-2vcpu-ubuntu-2404
