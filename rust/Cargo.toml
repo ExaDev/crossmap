@@ -10,7 +10,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.12.4"
+version = "0.12.5"
 edition = "2024"
 rust-version = "1.99.1"
 license = "MIT"
@@ -18,10 +18,10 @@ repository = "https://github.com/ExaDev/crossmap"
 
 [workspace.dependencies]
 # A published crate's requirement on its sibling carries the release version, which crates.io resolves the dependency by; scripts/release-version.py writes it with the workspace version.
-crossmap = { path = "crates/crossmap", version = "=0.12.4" }
+crossmap = { path = "crates/crossmap", version = "=0.12.5" }
 # Without its native reader, which only the binary and the conformance runner turn on: the wasm binding uses the
 # command's pure steps and leaves the reading to its host.
-crossmap-cli = { path = "crates/crossmap-cli", version = "=0.12.4", default-features = false }
+crossmap-cli = { path = "crates/crossmap-cli", version = "=0.12.5", default-features = false }
 # trilean's predicate trees, their reading and their three-valued evaluator, and the ordered JSON value they are read from, published as trilean-eval and trilean-json-shape and imported under their old names.
 json-shape = { package = "trilean-json-shape", version = "3.0.0" }
 trilean = { package = "trilean-eval", version = "3.0.0" }

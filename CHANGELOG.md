@@ -1,3 +1,9 @@
+## [0.12.5](https://github.com/ExaDev/crossmap/compare/v0.12.4...v0.12.5) (2026-11-23)
+
+### Bug Fixes
+
+* pin the runner-fallback action to the version that sends public repositories to hosted runners ([b41783c](https://github.com/ExaDev/crossmap/commit/b41783c5a2302d710cf87a0e3cbede1d608e2211))
+
 ## [0.12.4](https://github.com/ExaDev/crossmap/compare/v0.12.3...v0.12.4) (2026-11-20)
 
 ### Documentation
